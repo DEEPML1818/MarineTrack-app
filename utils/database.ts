@@ -1,4 +1,3 @@
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Database keys
@@ -15,6 +14,23 @@ export interface UserData {
   isGuest: boolean;
   createdAt: string;
   lastLogin: string;
+  vesselInfo?: {
+    vesselName: string;
+    vesselType: string;
+    registrationNumber?: string;
+    imoNumber?: string;
+    callSign: string;
+    homePort: string;
+    vesselLength: string;
+    vesselBeam: string;
+    grossTonnage: string;
+  };
+  contactInfo?: {
+    phone: string;
+    email?: string;
+    emergencyContact: string;
+    emergencyPhone: string;
+  };
 }
 
 export interface BoatData {
@@ -50,13 +66,13 @@ export const saveUserToDatabase = async (user: UserData): Promise<void> => {
   try {
     const usersData = await getAllUsers();
     const existingIndex = usersData.findIndex(u => u.id === user.id);
-    
+
     if (existingIndex >= 0) {
       usersData[existingIndex] = { ...user, lastLogin: new Date().toISOString() };
     } else {
       usersData.push(user);
     }
-    
+
     await AsyncStorage.setItem(DB_USERS_KEY, JSON.stringify(usersData));
   } catch (error) {
     console.error('Error saving user to database:', error);
@@ -88,15 +104,15 @@ export const saveBoatData = async (boat: BoatData): Promise<void> => {
   try {
     const boatsData = await getAllBoats();
     const existingIndex = boatsData.findIndex(b => b.userId === boat.userId);
-    
+
     const updatedBoat = { ...boat, updatedAt: new Date().toISOString() };
-    
+
     if (existingIndex >= 0) {
       boatsData[existingIndex] = updatedBoat;
     } else {
       boatsData.push(updatedBoat);
     }
-    
+
     await AsyncStorage.setItem(DB_BOATS_KEY, JSON.stringify(boatsData));
   } catch (error) {
     console.error('Error saving boat data:', error);
@@ -124,17 +140,17 @@ export const getAllBoats = async (): Promise<BoatData[]> => {
 };
 
 // Tracking operations
-export const saveTrackingData = async (tracking: TrackingData): Promise<void> => {
+export const saveTrackingData = async (data: TrackingData): Promise<void> => {
   try {
     const trackingData = await getAllTrackingData();
-    const existingIndex = trackingData.findIndex(t => t.userId === tracking.userId);
-    
+    const existingIndex = trackingData.findIndex(t => t.userId === data.userId);
+
     if (existingIndex >= 0) {
-      trackingData[existingIndex] = tracking;
+      trackingData[existingIndex] = data;
     } else {
-      trackingData.push(tracking);
+      trackingData.push(data);
     }
-    
+
     await AsyncStorage.setItem(DB_TRACKING_KEY, JSON.stringify(trackingData));
   } catch (error) {
     console.error('Error saving tracking data:', error);
@@ -158,7 +174,7 @@ export const getNearbyBoats = async (
 ): Promise<TrackingData[]> => {
   try {
     const allTracking = await getAllTrackingData();
-    
+
     return allTracking.filter(tracking => {
       const distance = calculateDistance(
         latitude,
@@ -201,12 +217,12 @@ export const deleteUserData = async (userId: string): Promise<void> => {
     const users = await getAllUsers();
     const filteredUsers = users.filter(u => u.id !== userId);
     await AsyncStorage.setItem(DB_USERS_KEY, JSON.stringify(filteredUsers));
-    
+
     // Delete boat
     const boats = await getAllBoats();
     const filteredBoats = boats.filter(b => b.userId !== userId);
     await AsyncStorage.setItem(DB_BOATS_KEY, JSON.stringify(filteredBoats));
-    
+
     // Delete tracking
     const tracking = await getAllTrackingData();
     const filteredTracking = tracking.filter(t => t.userId !== userId);

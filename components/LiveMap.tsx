@@ -1,178 +1,150 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, Platform } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
-import { getAllTrackingData } from '@/utils/database';
 import * as Location from 'expo-location';
 
-const { width, height } = Dimensions.get('window');
-
-interface MarkerData {
-  id: string;
-  name: string;
-  latitude: number;
-  longitude: number;
-  type: string;
-  status: string;
-  isCurrentUser?: boolean;
+interface LiveMapProps {
+  userLocation?: { lat: number; lng: number } | null;
 }
 
-export default function LiveMap() {
+export default function LiveMap({ userLocation: propLocation }: LiveMapProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [markers, setMarkers] = useState<MarkerData[]>([]);
-  const [region, setRegion] = useState({
-    latitude: 3.1390,
-    longitude: 101.6869,
-    latitudeDelta: 0.5,
-    longitudeDelta: 0.5,
-  });
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(propLocation || null);
 
   useEffect(() => {
-    getCurrentLocation();
-    const interval = setInterval(() => {
-      loadTrackedVessels();
-    }, 5000); // Update every 5 seconds
-
-    return () => clearInterval(interval);
-  }, [userLocation]);
+    if (propLocation) {
+      setLocation(propLocation);
+    } else {
+      getCurrentLocation();
+    }
+  }, [propLocation]);
 
   const getCurrentLocation = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status === 'granted') {
-      const location = await Location.getCurrentPositionAsync({});
-      const newLocation = {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      };
-      setUserLocation(newLocation);
-      setRegion({
-        ...newLocation,
-        latitudeDelta: 0.5,
-        longitudeDelta: 0.5,
-      });
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const loc = await Location.getCurrentPositionAsync({});
+        setLocation({
+          lat: loc.coords.latitude,
+          lng: loc.coords.longitude,
+        });
+      }
+    } catch (error) {
+      console.error('Error getting location:', error);
     }
-  };
-
-  const loadTrackedVessels = async () => {
-    if (!userLocation) return;
-
-    const trackingData = await getAllTrackingData();
-    const newMarkers: MarkerData[] = trackingData.map(t => ({
-      id: t.userId,
-      name: t.vesselName,
-      latitude: t.location.latitude,
-      longitude: t.location.longitude,
-      type: 'Tracked Vessel',
-      status: t.status,
-    }));
-
-    // Add user's location
-    if (userLocation) {
-      newMarkers.unshift({
-        id: 'me',
-        name: 'My Vessel',
-        latitude: userLocation.latitude,
-        longitude: userLocation.longitude,
-        type: 'Current Location',
-        status: 'Active',
-        isCurrentUser: true,
-      });
-    }
-
-    setMarkers(newMarkers);
   };
 
   return (
-    <View style={styles.mapContainer}>
-      <MapView
-        style={styles.map}
-        provider={PROVIDER_GOOGLE}
-        region={region}
-        showsUserLocation={true}
-        showsMyLocationButton={true}
-        showsCompass={true}
-        onRegionChangeComplete={setRegion}
-      >
-        {markers.map((marker) => (
-          <Marker
-            key={marker.id}
-            coordinate={{
-              latitude: marker.latitude,
-              longitude: marker.longitude,
-            }}
-            title={marker.name}
-            description={`${marker.type} - ${marker.status}`}
-            pinColor={marker.isCurrentUser ? '#FF3B30' : '#007AFF'}
-          >
-            <View style={[
-              styles.markerContainer,
-              { backgroundColor: marker.isCurrentUser ? colors.danger : colors.primary }
-            ]}>
-              <Text style={styles.markerIcon}>
-                {marker.isCurrentUser ? '📍' : '🚢'}
+    <View style={styles.container}>
+      <View style={[styles.mapView, { backgroundColor: colors.background }]}>
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: colors.text }]}>📍 Your Location</Text>
+        </View>
+
+        {location ? (
+          <View style={styles.locationContainer}>
+            <View style={[styles.marker, { backgroundColor: colors.primary }]}>
+              <Text style={styles.markerIcon}>📍</Text>
+            </View>
+
+            <View style={styles.coordsContainer}>
+              <Text style={[styles.coordsLabel, { color: colors.icon }]}>Latitude</Text>
+              <Text style={[styles.coordsValue, { color: colors.text }]}>
+                {location.lat.toFixed(6)}°N
               </Text>
             </View>
-          </Marker>
-        ))}
-      </MapView>
 
-      {/* Legend */}
-      <View style={[styles.legend, { backgroundColor: colors.card }]}>
-        <Text style={[styles.legendTitle, { color: colors.text }]}>
-          Live Vessels: {markers.length}
-        </Text>
-        <Text style={[styles.legendItem, { color: colors.icon }]}>
-          📍 You • 🚢 Others
-        </Text>
+            <View style={styles.coordsContainer}>
+              <Text style={[styles.coordsLabel, { color: colors.icon }]}>Longitude</Text>
+              <Text style={[styles.coordsValue, { color: colors.text }]}>
+                {location.lng.toFixed(6)}°E
+              </Text>
+            </View>
+
+            <View style={[styles.infoBox, { backgroundColor: colors.card }]}>
+              <Text style={[styles.infoText, { color: colors.icon }]}>
+                ℹ️ Full interactive map available on mobile app
+              </Text>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.loadingContainer}>
+            <Text style={[styles.loadingText, { color: colors.icon }]}>
+              Getting your location...
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  mapContainer: {
+  container: {
     width: '100%',
     height: 300,
+  },
+  mapView: {
+    flex: 1,
     borderRadius: 12,
-    overflow: 'hidden',
+    padding: 20,
+    alignItems: 'center',
   },
-  map: {
+  header: {
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  locationContainer: {
     width: '100%',
-    height: '100%',
+    alignItems: 'center',
+    gap: 16,
   },
-  markerContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  marker: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#fff',
+    marginBottom: 10,
   },
   markerIcon: {
-    fontSize: 18,
+    fontSize: 30,
   },
-  legend: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    padding: 10,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+  coordsContainer: {
+    width: '100%',
+    alignItems: 'center',
   },
-  legendTitle: {
+  coordsLabel: {
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '600',
     marginBottom: 4,
   },
-  legendItem: {
-    fontSize: 10,
+  coordsValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  infoBox: {
+    marginTop: 20,
+    padding: 12,
+    borderRadius: 8,
+    width: '100%',
+  },
+  infoText: {
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 14,
   },
 });

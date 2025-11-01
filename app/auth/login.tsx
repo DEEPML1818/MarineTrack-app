@@ -98,16 +98,8 @@ export default function LoginScreen() {
     router.push('/auth/email-login');
   };
 
-  const handleGuestMode = async () => {
-    setLoading(true);
-    try {
-      await createGuestUser();
-      setLoading(false);
-      router.replace('/(tabs)');
-    } catch (error) {
-      setLoading(false);
-      Alert.alert('Error', 'Failed to continue as guest');
-    }
+  const handleGuestMode = () => {
+    router.push('/auth/vessel-registration');
   };
 
   const handleRegister = () => {

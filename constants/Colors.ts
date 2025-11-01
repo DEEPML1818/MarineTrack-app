@@ -1,38 +1,37 @@
-const oceanBlue = '#0077BE';
-const deepNavy = '#001F3F';
-const lightOcean = '#4DA8DA';
-const white = '#FFFFFF';
-const seafoam = '#B8E6E6';
-const coral = '#FF6B6B';
-const darkOcean = '#003D5B';
+const tintColorLight = '#0891b2';
+const tintColorDark = '#06b6d4';
 
 export const Colors = {
   light: {
-    text: deepNavy,
-    background: white,
-    tint: oceanBlue,
-    icon: oceanBlue,
-    tabIconDefault: '#4A90A4',
-    tabIconSelected: oceanBlue,
-    primary: oceanBlue,
-    secondary: lightOcean,
-    accent: seafoam,
-    danger: coral,
-    card: '#F0F8FF',
-    border: '#B0D4E3',
+    text: '#1f2937',
+    background: '#f9fafb',
+    tint: tintColorLight,
+    icon: '#6b7280',
+    tabIconDefault: '#9ca3af',
+    tabIconSelected: tintColorLight,
+    primary: '#0891b2',
+    secondary: '#0e7490',
+    accent: '#06b6d4',
+    success: '#059669',
+    danger: '#dc2626',
+    warning: '#f59e0b',
+    card: '#ffffff',
+    border: '#e5e7eb',
   },
   dark: {
-    text: white,
-    background: deepNavy,
-    tint: lightOcean,
-    icon: seafoam,
-    tabIconDefault: '#6BA3B8',
-    tabIconSelected: lightOcean,
-    primary: lightOcean,
-    secondary: oceanBlue,
-    accent: seafoam,
-    danger: coral,
-    card: darkOcean,
-    border: '#2A5A6B',
+    text: '#f3f4f6',
+    background: '#111827',
+    tint: tintColorDark,
+    icon: '#9ca3af',
+    tabIconDefault: '#6b7280',
+    tabIconSelected: tintColorDark,
+    primary: '#06b6d4',
+    secondary: '#0891b2',
+    accent: '#22d3ee',
+    success: '#10b981',
+    danger: '#f87171',
+    warning: '#fbbf24',
+    card: '#1f2937',
+    border: '#374151',
   },
 };

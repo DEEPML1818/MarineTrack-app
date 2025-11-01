@@ -1,4 +1,3 @@
-
 interface VesselTrackingData {
   userId: string;
   vesselInfo: {
@@ -30,10 +29,25 @@ const TRACKED_VESSELS_KEY = '@marinetrack_tracked_vessels';
 // Send tracking data to backend
 export const sendTrackingData = async (data: VesselTrackingData): Promise<boolean> => {
   try {
-    // Store locally
+    // Store locally in AsyncStorage
     const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;
     await AsyncStorage.setItem(TRACKING_STORAGE_KEY, JSON.stringify(data));
-    
+
+    // Also store in database for persistence
+    const { saveTrackingData } = await import('./database');
+    await saveTrackingData({
+      userId: data.userId,
+      vesselName: data.vesselInfo.vesselName,
+      location: {
+        latitude: data.location.latitude,
+        longitude: data.location.longitude,
+        speed: data.location.speed || 0,
+        heading: data.location.heading || 0,
+        timestamp: data.location.timestamp,
+      },
+      status: data.status,
+    });
+
     // In production, replace with actual API call:
     // const response = await fetch('https://your-backend-api.com/api/tracking', {
     //   method: 'POST',
@@ -41,8 +55,8 @@ export const sendTrackingData = async (data: VesselTrackingData): Promise<boolea
     //   body: JSON.stringify(data)
     // });
     // return response.ok;
-    
-    console.log('Tracking data sent:', data);
+
+    console.log('AIS Broadcasting:', data.vesselInfo.vesselName, 'at', data.location.latitude.toFixed(4), data.location.longitude.toFixed(4));
     return true;
   } catch (error) {
     console.error('Error sending tracking data:', error);
@@ -64,27 +78,39 @@ export const getTrackingData = async (): Promise<VesselTrackingData | null> => {
 
 // Get nearby tracked vessels (simulated - in production, fetch from backend)
 export const getNearbyTrackedVessels = async (
-  currentLat: number,
-  currentLng: number,
-  radiusKm: number = 10
+  userLat: number,
+  userLng: number,
+  radiusKm: number = 100 // Increased default radius to 100km for better detection
 ): Promise<TrackedVessel[]> => {
   try {
-    const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;
-    const stored = await AsyncStorage.getItem(TRACKED_VESSELS_KEY);
-    const vessels: TrackedVessel[] = stored ? JSON.parse(stored) : [];
-    
-    // Filter by distance
-    return vessels.filter(vessel => {
+    const { getAllTrackingData } = await import('./database');
+    const allVessels = await getAllTrackingData();
+
+    const nearby = allVessels.filter(vessel => {
       const distance = calculateDistance(
-        currentLat,
-        currentLng,
+        userLat,
+        userLng,
         vessel.location.latitude,
         vessel.location.longitude
       );
       return distance <= radiusKm;
     });
+
+    // Convert TrackingData to TrackedVessel format
+    return nearby.map(vessel => ({
+      id: vessel.userId,
+      userId: vessel.userId,
+      vesselInfo: {
+        vesselName: vessel.vesselName,
+        vesselId: vessel.userId,
+        vesselType: 'Vessel',
+      },
+      location: vessel.location,
+      status: vessel.status,
+      lastUpdate: vessel.location.timestamp,
+    }));
   } catch (error) {
-    console.error('Error getting nearby vessels:', error);
+    // Silently return empty array on error
     return [];
   }
 };
@@ -107,7 +133,7 @@ export const startTracking = (
   onLocationUpdate: (location: { latitude: number; longitude: number }) => void
 ) => {
   const Location = require('expo-location');
-  
+
   return Location.watchPositionAsync(
     {
       accuracy: Location.Accuracy.High,

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -27,21 +26,26 @@ export default function DashboardScreen() {
       loadWeatherForLocation();
       updateNearbyPorts();
       loadTrackedVessels();
-      
+
       // Auto-refresh every 10 seconds
       const interval = setInterval(() => {
         loadWeatherForLocation();
         loadTrackedVessels();
       }, 10000);
-      
+
       return () => clearInterval(interval);
     }
   }, [userLocation]);
 
   const loadTrackedVessels = async () => {
     if (!userLocation) return;
-    const vessels = await getNearbyTrackedVessels(userLocation.lat, userLocation.lng, 10);
-    setTrackedVessels(vessels);
+    try {
+      const vessels = await getNearbyTrackedVessels(userLocation.lat, userLocation.lng, 10);
+      setTrackedVessels(vessels);
+    } catch (error) {
+      console.error('Error fetching tracked vessels:', error);
+      // Potentially show a user-friendly message here
+    }
   };
 
   const requestLocationPermission = async () => {
@@ -87,14 +91,26 @@ export default function DashboardScreen() {
       });
     } catch (error) {
       console.error('Error getting location:', error);
+      // Handle cases where location can't be fetched even with permission
+      Alert.alert(
+        'Location Error',
+        'Could not fetch your current location. Please try again or check your device settings.',
+        [{ text: 'OK' }]
+      );
     }
   };
 
   const loadWeatherForLocation = async () => {
     if (!userLocation) return;
-    const data = await fetchStormGlassWeather(userLocation.lat, userLocation.lng);
-    if (data) {
-      setWeatherData(data);
+
+    try {
+      const data = await fetchStormGlassWeather(userLocation.lat, userLocation.lng);
+      if (data) {
+        setWeatherData(data);
+      }
+      // Silently fail if no data - no alerts or console warnings
+    } catch (error) {
+      // Silently fail - no alerts or console errors
     }
   };
 
@@ -125,7 +141,7 @@ export default function DashboardScreen() {
   const nearbyVessels = [
     ...NEARBY_VESSELS,
     ...trackedVessels.map(tv => ({
-      id: tv.userId,
+      id: tv.userId, // Assuming userId is unique for each tracked vessel
       name: tv.vesselInfo.vesselName,
       type: tv.vesselInfo.vesselType,
       distance: `${calculateDistance(userLocation?.lat || 0, userLocation?.lng || 0, tv.location.latitude, tv.location.longitude).toFixed(1)} km`,
@@ -140,8 +156,8 @@ export default function DashboardScreen() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { backgroundColor: colors.primary }]}>
-          <Text style={styles.headerTitle}>MarineTrack</Text>
-          <Text style={styles.headerSubtitle}>Live Marine Dashboard</Text>
+          <Text style={styles.headerTitle}>⚓ MarineTrack</Text>
+          <Text style={styles.headerSubtitle}>Your Maritime Command Center</Text>
         </View>
         <View style={styles.permissionContainer}>
           <Text style={styles.permissionIcon}>📍</Text>
@@ -149,7 +165,7 @@ export default function DashboardScreen() {
             Location Permission Required
           </Text>
           <Text style={[styles.permissionText, { color: colors.icon }]}>
-            Please enable location access to use MarineTrack features
+            Please enable location access to use MarineTrack features like nearby vessels and weather data.
           </Text>
           <TouchableOpacity
             style={[styles.permissionButton, { backgroundColor: colors.primary }]}
@@ -166,7 +182,7 @@ export default function DashboardScreen() {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.header, { backgroundColor: colors.primary }]}>
-          <Text style={styles.headerTitle}>MarineTrack</Text>
+          <Text style={styles.headerTitle}>⚓ MarineTrack</Text>
           <Text style={styles.headerSubtitle}>Getting your location...</Text>
         </View>
         <View style={styles.loadingContainer}>
@@ -182,36 +198,44 @@ export default function DashboardScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.primary }]}>
-        <Text style={styles.headerTitle}>MarineTrack</Text>
-        <Text style={styles.headerSubtitle}>Live Marine Dashboard</Text>
+        <Text style={styles.headerTitle}>⚓ MarineTrack</Text>
+        <Text style={styles.headerSubtitle}>Your Maritime Command Center</Text>
+        {userLocation && (
+          <View style={styles.locationBadge}>
+            <Text style={styles.locationText}>
+              📍 {userLocation.lat.toFixed(4)}°N, {userLocation.lng.toFixed(4)}°E
+            </Text>
+          </View>
+        )}
       </View>
 
-      <View style={styles.mapSection}>
-        <LiveMap />
-        <Text style={[styles.coordinates, { color: colors.icon }]}>
-          📍 {userLocation.lat.toFixed(6)}°N, {userLocation.lng.toFixed(6)}°E
-        </Text>
+      {/* Map Section with improved styling */}
+      <View style={[styles.weatherCard, { backgroundColor: colors.card }]}>
+        {/* LiveMap component should be configured to accept props like userLocation for centering */}
+        {/* Ensure LiveMap is correctly implemented to handle map display on mobile */}
+        <LiveMap userLocation={userLocation} /> 
       </View>
 
+      {/* Weather Bar with improved styling */}
       <View style={[styles.weatherBar, { backgroundColor: colors.card }]}>
         <View style={styles.weatherItem}>
           <Text style={styles.weatherIcon}>🌡️</Text>
-          <Text style={[styles.weatherValue, { color: colors.text }]}>{weatherData.temperature}°C</Text>
+          <Text style={[styles.weatherValue, { color: colors.text }]}>{weatherData.temperature !== undefined ? weatherData.temperature.toFixed(1) : 'N/A'}°C</Text>
           <Text style={[styles.weatherLabel, { color: colors.icon }]}>Temp</Text>
         </View>
         <View style={styles.weatherItem}>
           <Text style={styles.weatherIcon}>💨</Text>
-          <Text style={[styles.weatherValue, { color: colors.text }]}>{weatherData.windSpeed} km/h</Text>
+          <Text style={[styles.weatherValue, { color: colors.text }]}>{weatherData.windSpeed !== undefined ? weatherData.windSpeed.toFixed(1) : 'N/A'} km/h</Text>
           <Text style={[styles.weatherLabel, { color: colors.icon }]}>Wind</Text>
         </View>
         <View style={styles.weatherItem}>
           <Text style={styles.weatherIcon}>🌊</Text>
-          <Text style={[styles.weatherValue, { color: colors.text }]}>{weatherData.waveHeight} m</Text>
+          <Text style={[styles.weatherValue, { color: colors.text }]}>{weatherData.waveHeight !== undefined ? weatherData.waveHeight.toFixed(1) : 'N/A'} m</Text>
           <Text style={[styles.weatherLabel, { color: colors.icon }]}>Waves</Text>
         </View>
         <View style={styles.weatherItem}>
           <Text style={styles.weatherIcon}>👁️</Text>
-          <Text style={[styles.weatherValue, { color: colors.text }]}>{weatherData.visibility} km</Text>
+          <Text style={[styles.weatherValue, { color: colors.text }]}>{weatherData.visibility !== undefined ? weatherData.visibility.toFixed(1) : 'N/A'} km</Text>
           <Text style={[styles.weatherLabel, { color: colors.icon }]}>Visibility</Text>
         </View>
       </View>
@@ -311,17 +335,34 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingBottom: 20,
     paddingHorizontal: 20,
+    borderBottomLeftRadius: 20, // Rounded bottom corners for the header
+    borderBottomRightRadius: 20,
+    // Consider adding a subtle gradient here if desired and feasible with Colors object
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#fff',
+    // Adding icon to title
   },
   headerSubtitle: {
     fontSize: 14,
     color: '#fff',
     opacity: 0.9,
     marginTop: 4,
+  },
+  locationBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)', // Semi-transparent white background
+    borderRadius: 10,
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    marginTop: 10,
+    alignSelf: 'flex-start', // Align to the start of the header
+  },
+  locationText: {
+    fontSize: 13,
+    color: '#fff',
+    fontWeight: '500',
   },
   permissionContainer: {
     flex: 1,
@@ -367,14 +408,25 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
+  // Updated Map Section Styling
   mapSection: {
     margin: 16,
+    // Additional styling for the map container if needed
+    borderRadius: 12,
+    overflow: 'hidden', // To ensure map respects border radius
+    // Consider adding shadow for depth
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 6,
   },
   coordinates: {
     fontSize: 14,
     marginTop: 8,
     textAlign: 'center',
   },
+  // Enhanced Weather Bar Styling
   weatherBar: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -382,9 +434,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     borderRadius: 12,
     marginBottom: 16,
+    // Consider gradient or shadow for better visual appeal
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 6,
   },
   weatherItem: {
     alignItems: 'center',
+    paddingHorizontal: 8, // Added padding for better spacing
   },
   weatherIcon: {
     fontSize: 24,
@@ -407,6 +466,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 12,
   },
+  // Enhanced Vessel Card Styling
   vesselCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -414,6 +474,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 4,
   },
   vesselInfo: {
     flex: 1,
@@ -452,11 +517,17 @@ const styles = StyleSheet.create({
   lastUpdate: {
     fontSize: 10,
   },
+  // Enhanced Port Card Styling
   portCard: {
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
     marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 4,
   },
   portName: {
     fontSize: 16,
@@ -499,5 +570,22 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  // Updated Weather Card Style
+  weatherCard: {
+    margin: 16,
+    padding: 24,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  weatherHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
   },
 });

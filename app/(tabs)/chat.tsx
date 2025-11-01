@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -36,23 +35,68 @@ export default function ChatScreen() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [chatId, setChatId] = useState<string>('');
 
+  const chatUnsubscribeRef = useRef<(() => void) | null>(null);
+  const isMountedRef = useRef<boolean>(true);
+
   useEffect(() => {
+    isMountedRef.current = true;
     loadCurrentUser();
     loadNearbyContacts();
-    
+
     const interval = setInterval(loadNearbyContacts, 10000); // Refresh every 10s
-    return () => clearInterval(interval);
+    return () => {
+      isMountedRef.current = false;
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
-    if (selectedContact && currentUser) {
-      setupChat();
-    }
+    let isActive = true;
+
+    const setupChatAsync = async () => {
+      if (!selectedContact || !currentUser) return;
+
+      const roomId = await getChatRoom(currentUser.id, selectedContact.id);
+      if (!isActive) return;
+
+      setChatId(roomId);
+
+      const chatMessages = await getChatMessages(roomId);
+      if (!isActive) return;
+
+      setMessages(chatMessages);
+
+      const subscription = subscribeToMessages(roomId, (newMessage) => {
+        if (isActive && newMessage.senderId !== currentUser.id) {
+          setMessages(prev => [...prev, newMessage]);
+        }
+      });
+
+      const unsubscribe = () => subscription?.unsubscribe();
+
+      if (isActive) {
+        chatUnsubscribeRef.current = unsubscribe;
+      } else {
+        unsubscribe();
+      }
+    };
+
+    setupChatAsync();
+
+    return () => {
+      isActive = false;
+      if (chatUnsubscribeRef.current) {
+        chatUnsubscribeRef.current();
+        chatUnsubscribeRef.current = null;
+      }
+    };
   }, [selectedContact, currentUser]);
 
   const loadCurrentUser = async () => {
     const user = await getCurrentUser();
-    setCurrentUser(user);
+    if (isMountedRef.current) {
+      setCurrentUser(user);
+    }
   };
 
   const loadNearbyContacts = async () => {
@@ -60,21 +104,31 @@ export default function ChatScreen() {
     if (status !== 'granted') return;
 
     const location = await Location.getCurrentPositionAsync({});
-    const vessels = await getNearbyTrackedVessels(location.coords.latitude, location.coords.longitude, 10);
-    
-    const contactList: Contact[] = vessels.map(v => ({
-      id: v.userId,
-      name: v.vesselInfo.vesselName,
-      vessel: v.vesselInfo.vesselType,
-      distance: calculateDistance(
-        location.coords.latitude,
-        location.coords.longitude,
-        v.location.latitude,
-        v.location.longitude
-      ),
-    }));
-    
-    setContacts(contactList);
+
+    if (!isMountedRef.current) return;
+
+    try {
+      const vessels = await getNearbyTrackedVessels(location.coords.latitude, location.coords.longitude, 100);
+
+      if (!isMountedRef.current) return;
+
+      const contactList: Contact[] = vessels.map(v => ({
+        id: v.userId,
+        name: v.vesselInfo.vesselName,
+        vessel: v.vesselInfo.vesselType,
+        distance: calculateDistance(
+          location.coords.latitude,
+          location.coords.longitude,
+          v.location.latitude,
+          v.location.longitude
+        ),
+      }));
+
+      setContacts(contactList);
+    } catch (error) {
+      // Silently fail - no console errors
+      setContacts([]);
+    }
   };
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -91,33 +145,35 @@ export default function ChatScreen() {
 
   const setupChat = async () => {
     if (!selectedContact || !currentUser) return;
-    
+
     const roomId = await getChatRoom(currentUser.id, selectedContact.id);
     setChatId(roomId);
-    
+
     const chatMessages = await getChatMessages(roomId);
     setMessages(chatMessages);
-    
+
     // Subscribe to new messages
     const subscription = subscribeToMessages(roomId, (newMessage) => {
       if (newMessage.senderId !== currentUser.id) {
         setMessages(prev => [...prev, newMessage]);
       }
     });
-    
-    return () => subscription.unsubscribe();
+
+    return () => subscription?.unsubscribe();
   };
 
   const handleSendMessage = async () => {
     if (!message.trim() || !currentUser || !chatId) return;
-    
+
     const newMessage = await sendMessage(
       chatId,
       currentUser.id,
       currentUser.name,
       message.trim()
     );
-    
+
+    if (!isMountedRef.current) return;
+
     setMessages(prev => [...prev, newMessage]);
     setMessage('');
   };
@@ -129,7 +185,7 @@ export default function ChatScreen() {
     >
       <View style={[styles.header, { backgroundColor: colors.primary }]}>
         <Text style={styles.headerTitle}>Communication</Text>
-        <Text style={styles.headerSubtitle}>Connect with nearby vessels (10km radius)</Text>
+        <Text style={styles.headerSubtitle}>Connect with nearby vessels (50km radius)</Text>
       </View>
 
       {selectedContact ? (
@@ -140,7 +196,7 @@ export default function ChatScreen() {
             </TouchableOpacity>
             <View style={styles.chatHeaderInfo}>
               <Text style={[styles.chatHeaderName, { color: colors.text }]}>
-                {selectedContact.name}
+                🚢 {selectedContact.name}
               </Text>
               <Text style={[styles.chatHeaderStatus, { color: colors.icon }]}>
                 {selectedContact.distance.toFixed(1)} km away • {selectedContact.vessel}
@@ -149,35 +205,51 @@ export default function ChatScreen() {
           </View>
 
           <ScrollView style={styles.messagesContainer}>
-            {messages.map((msg) => (
-              <View
-                key={msg.id}
-                style={[
-                  styles.messageBubble,
-                  {
-                    backgroundColor: msg.senderId === currentUser?.id ? colors.primary : colors.card,
-                    alignSelf: msg.senderId === currentUser?.id ? 'flex-end' : 'flex-start',
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.messageText,
-                    { color: msg.senderId === currentUser?.id ? '#fff' : colors.text },
-                  ]}
-                >
-                  {msg.text}
-                </Text>
-                <Text
-                  style={[
-                    styles.messageTime,
-                    { color: msg.senderId === currentUser?.id ? '#fff' : colors.icon },
-                  ]}
-                >
-                  {new Date(msg.timestamp).toLocaleTimeString()}
+            {messages.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={[styles.emptyText, { color: colors.icon }]}>
+                  No messages yet. Start a conversation!
                 </Text>
               </View>
-            ))}
+            ) : (
+              messages.map((msg) => (
+                <View
+                  key={msg.id}
+                  style={[
+                    styles.messageBubble,
+                    {
+                      backgroundColor: msg.senderId === currentUser?.id ? colors.primary : colors.card,
+                      alignSelf: msg.senderId === currentUser?.id ? 'flex-end' : 'flex-start',
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.messageSender,
+                      { color: msg.senderId === currentUser?.id ? '#fff' : colors.icon },
+                    ]}
+                  >
+                    {msg.senderName}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.messageText,
+                      { color: msg.senderId === currentUser?.id ? '#fff' : colors.text },
+                    ]}
+                  >
+                    {msg.text}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.messageTime,
+                      { color: msg.senderId === currentUser?.id ? '#fff' : colors.icon },
+                    ]}
+                  >
+                    {new Date(msg.timestamp).toLocaleTimeString()}
+                  </Text>
+                </View>
+              ))
+            )}
           </ScrollView>
 
           <View style={[styles.inputContainer, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
@@ -204,7 +276,7 @@ export default function ChatScreen() {
           {contacts.length === 0 ? (
             <View style={styles.emptyState}>
               <Text style={[styles.emptyText, { color: colors.icon }]}>
-                No vessels within 10km radius
+                No vessels within 50km radius
               </Text>
               <Text style={[styles.emptySubtext, { color: colors.icon }]}>
                 Enable tracking to be visible to others
@@ -230,6 +302,9 @@ export default function ChatScreen() {
                   <Text style={[styles.location, { color: colors.primary }]}>
                     📍 {contact.distance.toFixed(1)} km away
                   </Text>
+                </View>
+                <View style={styles.chatBadge}>
+                  <Text style={styles.chatIcon}>💬</Text>
                 </View>
               </TouchableOpacity>
             ))
@@ -286,6 +361,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     marginBottom: 12,
+    alignItems: 'center',
   },
   contactAvatar: {
     width: 50,
@@ -312,6 +388,12 @@ const styles = StyleSheet.create({
   location: {
     fontSize: 12,
     marginTop: 6,
+  },
+  chatBadge: {
+    padding: 8,
+  },
+  chatIcon: {
+    fontSize: 24,
   },
   chatView: {
     flex: 1,
@@ -345,6 +427,12 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 16,
     marginBottom: 12,
+  },
+  messageSender: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginBottom: 4,
+    opacity: 0.8,
   },
   messageText: {
     fontSize: 15,

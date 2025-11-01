@@ -4,6 +4,10 @@ const STORMGLASS_API_KEY = '5cf7a41a-b626-11f0-a8f4-0242ac130003-5cf7a492-b626-1
 const AISTREAM_API_KEY = '786e06e04c50efda09a5075482678ca8b48014fd';
 const WEATHERAPI_KEY = 'b8662263280e4b65a6864833253110';
 
+// Cache for failed API calls
+let stormGlassFailedAt: number | null = null;
+const STORMGLASS_RETRY_DELAY = 10 * 60 * 1000; // 10 minutes in milliseconds
+
 export interface WeatherData {
   temperature: number;
   windSpeed: number;
@@ -22,6 +26,15 @@ export interface HourlyForecast {
 }
 
 export const fetchStormGlassWeather = async (lat: number, lng: number): Promise<WeatherData | null> => {
+  // Check if we recently failed and should not retry yet
+  if (stormGlassFailedAt) {
+    const timeSinceFailure = Date.now() - stormGlassFailedAt;
+    if (timeSinceFailure < STORMGLASS_RETRY_DELAY) {
+      // Silently return null during cooldown
+      return null;
+    }
+  }
+
   try {
     const response = await fetch(
       `https://api.stormglass.io/v2/weather/point?lat=${lat}&lng=${lng}&params=airTemperature,windSpeed,waveHeight,visibility`,
@@ -33,9 +46,13 @@ export const fetchStormGlassWeather = async (lat: number, lng: number): Promise<
     );
     
     if (!response.ok) {
-      console.error('StormGlass API error:', response.status);
+      // Silently mark failure and return null - no console errors
+      stormGlassFailedAt = Date.now();
       return null;
     }
+    
+    // Reset failure timer on success
+    stormGlassFailedAt = null;
     
     const data = await response.json();
     const current = data.hours[0];
@@ -49,7 +66,8 @@ export const fetchStormGlassWeather = async (lat: number, lng: number): Promise<
       icon: '⛅'
     };
   } catch (error) {
-    console.error('Error fetching StormGlass weather:', error);
+    // Silently mark failure and return null - no console errors
+    stormGlassFailedAt = Date.now();
     return null;
   }
 };
