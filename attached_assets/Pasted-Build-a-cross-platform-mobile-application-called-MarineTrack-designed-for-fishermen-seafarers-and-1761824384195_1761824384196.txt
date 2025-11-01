@@ -1,0 +1,171 @@
+Build a cross-platform mobile application called MarineTrack, designed for fishermen, seafarers, and small vessel operators to enhance safety, communication, and sustainable fishing at sea.
+
+🎯 App Objective
+
+MarineTrack helps users track vessels in real time, receive weather alerts, send emergency SOS signals, and discover smart fishing zones — all from a single, intuitive mobile platform.
+
+The app must work offline-first, support real-time map tracking, and have a minimal, ocean-inspired interface for easy use at sea.
+
+🧭 Core Features and Screens
+1. Splash & Onboarding
+
+Animated MarineTrack logo with ocean wave animation
+
+3 onboarding slides explaining:
+
+“Track your vessel in real-time”
+
+“Stay safe with weather alerts”
+
+“Send SOS instantly when in danger”
+
+“Get Started” button → redirects to login
+
+2. Login & Registration
+
+Email or phone number login
+
+Register new account with:
+
+Name
+
+Vessel name / ID
+
+Role: Fisherman, Vessel Operator, or Authority Contact
+
+Use Firebase Authentication or Supabase Auth
+
+3. Main Dashboard (Live Map)
+
+Interactive marine map centered on user location
+
+Display nearby vessels (as icons or markers)
+
+Show live GPS coordinates
+
+Weather overlay with icons (rain, wave, wind direction)
+
+Top info bar:
+
+Temperature, wind speed, wave height
+
+Floating action buttons:
+
+⚠️ Weather Alert
+
+🚨 SOS Emergency
+
+🎣 Smart Fishing Zone
+
+💬 Chat / Messages
+
+Tech Recommendation:
+Use Mapbox SDK, Leaflet, or Google Maps API for the map view.
+
+4. Weather & Navigation
+
+Real-time marine weather data from OpenWeatherMap or StormGlass API
+
+Daily and hourly forecast view
+
+Alerts for storms, strong winds, and unsafe navigation zones
+
+Suggested safe routes (visual path overlay on the map)
+
+5. SOS / Emergency
+
+Large red “Send SOS” button at center
+
+On tap:
+
+Sends GPS coordinates, vessel ID, and timestamp
+
+Notifies registered authority contact via push notification or SMS
+
+Triggers alert sound confirmation
+
+Offline mode: if connection is lost, store alert and send once reconnected
+
+6. Smart Fishing Zone
+
+Map overlay highlights:
+
+🟢 Green: Recommended high-yield fishing zones
+
+🔴 Red: Restricted or protected zones
+
+Displays “Best Fishing Time” (based on tide + temperature data)
+
+Uses data analytics (mock or real) for location-based suggestions
+
+7. Communication / Chat
+
+One-to-one or group chat between registered vessels or family contacts
+
+“Last seen” location info for each contact
+
+Option to send short text or audio note
+
+Uses Firebase Realtime Database or Firestore for messaging
+
+8. Settings & Profile
+
+Edit user/vessel info
+
+Add emergency contacts
+
+Choose notification preferences
+
+“Sustainable Fishing Tips” section:
+
+Short articles or infographics promoting eco-friendly fishing
+
+⚙️ App Functionality & Behavior
+
+Offline-First: Cache last known location and weather updates
+
+Real-Time Sync: Live map and message updates using Firebase Realtime Database or WebSocket
+
+Notifications: Push alerts for weather warnings and SOS responses
+
+Data Storage: Store user, vessel, and location history in database
+
+Dark & Light Mode for visibility under sunlight and night use
+
+🎨 Design & UI Guidelines
+
+Theme: Ocean blue, deep navy, and white accents
+
+Font: Poppins / Inter / Roboto (readable in sunlight)
+
+Buttons: Rounded, large, and bold icons
+
+Navigation: Bottom tab bar with 4–5 icons
+
+Minimal text, focus on visual clarity and accessibility
+
+💾 Recommended Tech Stack
+Layer	Technology
+Frontend	React Native or Flutter
+Backend	Firebase / Supabase
+Map API	Mapbox, Leaflet, or Google Maps
+Weather	OpenWeatherMap / StormGlass
+SOS Alerts	Twilio or Firebase Cloud Messaging
+Database	Firestore / Supabase Postgres
+Auth	Firebase Auth (roles: user, authority)
+Hosting	Firebase Hosting / AWS Amplify
+🧩 Output Expectations
+
+The AI should:
+
+Generate all app screens (wireframes/UI)
+
+Create navigation flow between pages
+
+Define database schema for users, vessels, messages, and SOS logs
+
+Produce sample mock data for demo (vessel coordinates, weather alerts)
+
+Generate prototype-ready components or Flutter/React Native code
+
+End goal: A functional MarineTrack mobile app prototype — simple, intuitive, and reliable for maritime users to ensure safety, communication, and sustainability at sea.

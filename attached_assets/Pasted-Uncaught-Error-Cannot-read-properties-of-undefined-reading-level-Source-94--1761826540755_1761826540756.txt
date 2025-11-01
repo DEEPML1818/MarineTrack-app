@@ -1,0 +1,105 @@
+Uncaught Error
+Cannot read properties of undefined (reading 'level')
+Source
+ 
+ 94 |
+    
+?
+ 
+new
+ 
+URL
+(window
+.
+location
+.
+href)
+ 
+ 95 |
+    
+:
+ undefined
+;
+>
+ 96 |
+function
+ 
+ContextNavigator
+({ context
+,
+ location
+:
+ initialLocation 
+=
+ initialUrl
+,
+ wrapper
+:
+ 
+WrapperComponent
+ 
+=
+ react_1
+.
+Fragment
+,
+ linking 
+=
+ {}
+,
+ }) {
+ 
+    |
+                            
+^
+ 
+ 97 |
+    
+// location and linking.getInitialURL are both used to initialize the router state
+ 
+ 98 |
+    
+//  - location is used on web and during static rendering
+ 
+ 99 |
+    
+//  - linking.getInitialURL is used on native
+Call Stack
+handleLog
+node_modules/react-native-reanimated/lib/module/common/logger.js:69:18
+warn
+node_modules/react-native-reanimated/lib/module/common/logger.js:84:5
+<global>
+node_modules/react-native-reanimated/lib/module/animation/util.js:41:10
+loadModuleImplementation
+node_modules/expo/node_modules/@expo/cli/build/metro-require/require.js:248:36
+guardedLoadModule
+node_modules/expo/node_modules/@expo/cli/build/metro-require/require.js:163:16
+metroRequire
+node_modules/expo/node_modules/@expo/cli/build/metro-require/require.js:74:75
+<global>
+node_modules/react-native-reanimated/lib/module/animation/clamp.js:4
+loadModuleImplementation
+node_modules/expo/node_modules/@expo/cli/build/metro-require/require.js:248:36
+guardedLoadModule
+node_modules/expo/node_modules/@expo/cli/build/metro-require/require.js:163:16
+metroRequire
+node_modules/expo/node_modules/@expo/cli/build/metro-require/require.js:74:75
+Collapse all 10 frames
+Component Stack
+ContextNavigator
+node_modules/expo-router/build/ExpoRoot.js:96:29
+ExpoRoot
+node_modules/expo-router/build/ExpoRoot.js:69:30
+_HelmetProvider#constructor
+node_modules/expo-router/vendor/react-helmet-async/lib/index.js:483:5
+App
+<anonymous>:-1:0
+LogBoxStateSubscription#constructor
+node_modules/@expo/metro-runtime/src/error-overlay/Data/LogBoxData.tsx:365:7
+ErrorOverlay
+<anonymous>:-1:0
+withDevTools(ErrorOverlay)
+<anonymous>:-1:0
+AppContainer
+shim:react-native-web/dist/exports/AppRegistry/AppContainer.js
