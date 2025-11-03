@@ -7,7 +7,6 @@ import {
   TextInput,
   ScrollView,
   Platform,
-  Dimensions,
   Modal,
   KeyboardAvoidingView,
 } from 'react-native';
@@ -17,12 +16,7 @@ import { getNearbyTrackedVessels } from '@/utils/trackingService';
 import { getCurrentUser } from '@/utils/auth';
 import { sendMessage, getChatMessages, getChatRoom, subscribeToMessages } from '@/utils/realtimeChat';
 import * as Location from 'expo-location';
-
-let MapView: any = null;
-let Marker: any = null;
-let PROVIDER_GOOGLE: any = null;
-
-const { width, height } = Dimensions.get('window');
+import OpenStreetMap from '@/components/OpenStreetMap';
 
 interface Vessel {
   id: string;
@@ -39,7 +33,7 @@ interface Vessel {
 export default function MapScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [vessels, setVessels] = useState<Vessel[]>([]);
   const [selectedVessel, setSelectedVessel] = useState<Vessel | null>(null);
   const [showChatModal, setShowChatModal] = useState(false);
@@ -47,128 +41,37 @@ export default function MapScreen() {
   const [messages, setMessages] = useState<any[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [chatId, setChatId] = useState<string>('');
-  const [region, setRegion] = useState({
-    latitude: 3.1390,
-    longitude: 101.6869,
-    latitudeDelta: 0.5,
-    longitudeDelta: 0.5,
-  });
 
-  const locationSubscriptionRef = useRef<Location.LocationSubscription | null>(null);
   const chatUnsubscribeRef = useRef<(() => void) | null>(null);
   const isMountedRef = useRef<boolean>(true);
 
   useEffect(() => {
     isMountedRef.current = true;
     loadCurrentUser();
-
-    // Dynamically load react-native-maps only on native platforms
-    if (Platform.OS !== 'web') {
-      import('react-native-maps').then((MapModule) => {
-        MapView = MapModule.default;
-        Marker = MapModule.Marker;
-        PROVIDER_GOOGLE = MapModule.PROVIDER_GOOGLE;
-        console.log('react-native-maps loaded successfully');
-      }).catch((error) => {
-        console.error('Failed to load react-native-maps:', error);
-        console.log('Map will use fallback list view');
-      });
-    } else {
-      console.log('Running on web - using fallback map view');
-    }
-
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    let isActive = true;
-
-    const setupLocation = async () => {
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          console.log('Location permission denied');
-          return;
-        }
-        
-        if (!isActive) return;
-
-        const location = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
-        });
-        
-        if (!isActive) return;
-
-        const newLocation = {
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        };
-        
-        setUserLocation(newLocation);
-        setRegion({
-          ...newLocation,
-          latitudeDelta: 0.1,
-          longitudeDelta: 0.1,
-        });
-
-        console.log('Map centered at:', newLocation.latitude.toFixed(4), newLocation.longitude.toFixed(4));
-
-        const subscription = await Location.watchPositionAsync(
-          {
-            accuracy: Location.Accuracy.High,
-            timeInterval: 10000,
-            distanceInterval: 50,
-          },
-          (location) => {
-            if (isActive) {
-              setUserLocation({
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-              });
-            }
-          }
-        );
-
-        if (isActive) {
-          locationSubscriptionRef.current = subscription;
-        } else {
-          subscription.remove();
-        }
-      } catch (error) {
-        console.log('Error getting location');
-      }
-    };
-
     setupLocation();
 
     return () => {
-      isActive = false;
-      if (locationSubscriptionRef.current) {
-        locationSubscriptionRef.current.remove();
-        locationSubscriptionRef.current = null;
+      isMountedRef.current = false;
+      if (chatUnsubscribeRef.current) {
+        chatUnsubscribeRef.current();
       }
     };
   }, []);
 
   useEffect(() => {
-    if (!userLocation) return;
-
-    loadVessels();
-    const interval = setInterval(() => {
+    if (userLocation) {
       loadVessels();
-    }, 5000);
-
-    return () => clearInterval(interval);
+      const interval = setInterval(loadVessels, 5000);
+      return () => clearInterval(interval);
+    }
   }, [userLocation]);
 
   useEffect(() => {
+    if (!selectedVessel || !currentUser) return;
+
     let isActive = true;
 
-    const setupChatAsync = async () => {
-      if (!selectedVessel || !currentUser || !showChatModal) return;
-
+    const setupChat = async () => {
       const roomId = await getChatRoom(currentUser.id, selectedVessel.id);
       if (!isActive) return;
 
@@ -185,16 +88,10 @@ export default function MapScreen() {
         }
       });
 
-      const unsubscribe = () => subscription?.unsubscribe();
-
-      if (isActive) {
-        chatUnsubscribeRef.current = unsubscribe;
-      } else {
-        unsubscribe();
-      }
+      chatUnsubscribeRef.current = () => subscription.unsubscribe();
     };
 
-    setupChatAsync();
+    setupChat();
 
     return () => {
       isActive = false;
@@ -203,7 +100,7 @@ export default function MapScreen() {
         chatUnsubscribeRef.current = null;
       }
     };
-  }, [selectedVessel, currentUser, showChatModal]);
+  }, [selectedVessel, currentUser]);
 
   const loadCurrentUser = async () => {
     const user = await getCurrentUser();
@@ -212,46 +109,74 @@ export default function MapScreen() {
     }
   };
 
+  const setupLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Location permission denied');
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      if (isMountedRef.current) {
+        setUserLocation({
+          lat: location.coords.latitude,
+          lng: location.coords.longitude,
+        });
+      }
+
+      Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          timeInterval: 10000,
+          distanceInterval: 50,
+        },
+        (location) => {
+          if (isMountedRef.current) {
+            setUserLocation({
+              lat: location.coords.latitude,
+              lng: location.coords.longitude,
+            });
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Error setting up location:', error);
+    }
+  };
+
   const loadVessels = async () => {
     if (!userLocation) return;
 
     try {
-      // Get nearby tracked vessels from the tracking service (which now uses database)
-      const trackedVessels = await getNearbyTrackedVessels(
-        userLocation.latitude,
-        userLocation.longitude,
-        100 // 100km radius for better detection
-      );
-
+      const trackedVessels = await getNearbyTrackedVessels(userLocation.lat, userLocation.lng, 50);
+      
       if (!isMountedRef.current) return;
 
-      // Convert tracked vessels to the format expected by the map
-      const formattedVessels = trackedVessels.map((vessel, index) => ({
-        id: vessel.id || `vessel-${index}`,
-        name: vessel.vesselInfo?.vesselName || 'Unknown Vessel',
-        type: vessel.vesselInfo?.vesselType || 'Vessel',
-        latitude: vessel.location.latitude,
-        longitude: vessel.location.longitude,
-        speed: vessel.location.speed || 0,
-        heading: vessel.location.heading || 0,
-        status: vessel.status || 'Active',
+      const vesselsWithDistance = trackedVessels.map(v => ({
+        id: v.userId,
+        name: v.vesselInfo.vesselName,
+        type: v.vesselInfo.vesselType,
+        latitude: v.location.latitude,
+        longitude: v.location.longitude,
+        speed: v.location.speed || 0,
+        heading: v.location.heading || 0,
         distance: calculateDistance(
-          userLocation.latitude,
-          userLocation.longitude,
-          vessel.location.latitude,
-          vessel.location.longitude
+          userLocation.lat,
+          userLocation.lng,
+          v.location.latitude,
+          v.location.longitude
         ),
+        status: v.status,
       }));
 
-      setVessels(formattedVessels);
-      if (formattedVessels.length > 0) {
-        console.log(`Map displaying ${formattedVessels.length} active vessels`);
-      }
+      setVessels(vesselsWithDistance);
     } catch (error) {
-      // Silently fail - no console errors
-      if (isMountedRef.current) {
-        setVessels([]);
-      }
+      console.error('Error loading vessels:', error);
+      setVessels([]);
     }
   };
 
@@ -272,22 +197,14 @@ export default function MapScreen() {
     setShowChatModal(true);
   };
 
-  const setupChat = async () => {
-    if (!selectedVessel || !currentUser) return;
-
-    const roomId = await getChatRoom(currentUser.id, selectedVessel.id);
-    setChatId(roomId);
-
-    const chatMessages = await getChatMessages(roomId);
-    setMessages(chatMessages);
-
-    const subscription = subscribeToMessages(roomId, (newMessage) => {
-      if (newMessage.senderId !== currentUser.id) {
-        setMessages(prev => [...prev, newMessage]);
-      }
-    });
-
-    return () => subscription?.unsubscribe();
+  const closeChat = () => {
+    setShowChatModal(false);
+    setSelectedVessel(null);
+    setMessages([]);
+    if (chatUnsubscribeRef.current) {
+      chatUnsubscribeRef.current();
+      chatUnsubscribeRef.current = null;
+    }
   };
 
   const handleSendMessage = async () => {
@@ -300,54 +217,11 @@ export default function MapScreen() {
       message.trim()
     );
 
-    if (!isMountedRef.current) return;
-
-    setMessages(prev => [...prev, newMessage]);
-    setMessage('');
+    if (isMountedRef.current) {
+      setMessages(prev => [...prev, newMessage]);
+      setMessage('');
+    }
   };
-
-  const closeChat = () => {
-    setShowChatModal(false);
-    setSelectedVessel(null);
-    setMessages([]);
-  };
-
-  if (Platform.OS === 'web') {
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={[styles.header, { backgroundColor: colors.primary }]}>
-          <Text style={styles.headerTitle}>Live Vessel Map</Text>
-          <Text style={styles.headerSubtitle}>Real-time tracking of all vessels</Text>
-        </View>
-        <View style={[styles.webMapPlaceholder, { backgroundColor: colors.card }]}>
-          <Text style={[styles.webMapText, { color: colors.text }]}>
-            🗺️ Real-Time Vessel Map
-          </Text>
-          <Text style={[styles.webMapSubtext, { color: colors.icon }]}>
-            Interactive map with live vessel tracking and communication is available on mobile devices.
-          </Text>
-          <View style={styles.vesselListContainer}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Nearby Vessels ({vessels.length})</Text>
-            <ScrollView>
-              {vessels.map((vessel) => (
-                <View
-                  key={vessel.id}
-                  style={[styles.vesselCard, { backgroundColor: colors.background, borderColor: colors.border }]}
-                >
-                  <Text style={[styles.vesselName, { color: colors.text }]}>
-                    🚢 {vessel.name}
-                  </Text>
-                  <Text style={[styles.vesselDetails, { color: colors.icon }]}>
-                    {vessel.type} • {vessel.distance.toFixed(1)} km away
-                  </Text>
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-        </View>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
@@ -357,73 +231,16 @@ export default function MapScreen() {
       </View>
 
       <View style={styles.mapContainer}>
-        {userLocation && MapView && Marker ? (
-          <MapView
-            style={styles.map}
-            provider={PROVIDER_GOOGLE}
-            region={region}
-            showsUserLocation={true}
-            showsMyLocationButton={true}
-            showsCompass={true}
-            onRegionChangeComplete={setRegion}
-          >
-            {/* User's vessel */}
-            {userLocation && (
-              <Marker
-                coordinate={userLocation}
-                title="My Vessel"
-                description={currentUser?.name || 'You'}
-                pinColor="#FF3B30"
-              >
-                <View style={[styles.markerContainer, { backgroundColor: colors.danger }]}>
-                  <Text style={styles.markerIcon}>📍</Text>
-                </View>
-              </Marker>
-            )}
-
-            {/* Other vessels */}
-            {vessels.map((vessel) => (
-              <Marker
-                key={vessel.id}
-                coordinate={{
-                  latitude: vessel.latitude,
-                  longitude: vessel.longitude,
-                }}
-                title={vessel.name}
-                description={`${vessel.type} • ${vessel.distance.toFixed(1)} km`}
-                onPress={() => handleVesselPress(vessel)}
-              >
-                <View style={[styles.markerContainer, { backgroundColor: colors.primary }]}>
-                  <Text style={styles.markerIcon}>🚢</Text>
-                </View>
-              </Marker>
-            ))}
-          </MapView>
-        ) : (
-          <View style={[styles.webMapView, { backgroundColor: colors.card }]}>
-            <Text style={[styles.webMapTitle, { color: colors.text }]}>🗺️ Live Map</Text>
-            <Text style={[styles.webMapCoords, { color: colors.icon }]}>
-              {userLocation ? `📍 ${userLocation.latitude.toFixed(4)}°N, ${userLocation.longitude.toFixed(4)}°E` : 'Getting location...'}
-            </Text>
-            <ScrollView style={styles.vesselListWeb}>
-              {vessels.map((vessel) => (
-                <TouchableOpacity
-                  key={vessel.id}
-                  style={[styles.vesselCardWeb, { backgroundColor: colors.background, borderColor: colors.border }]}
-                  onPress={() => handleVesselPress(vessel)}
-                >
-                  <Text style={styles.vesselIconWeb}>🚢</Text>
-                  <View style={styles.vesselInfoWeb}>
-                    <Text style={[styles.vesselNameWeb, { color: colors.text }]}>{vessel.name}</Text>
-                    <Text style={[styles.vesselDetailsWeb, { color: colors.icon }]}>
-                      {vessel.type} • {vessel.distance.toFixed(1)} km • {vessel.speed.toFixed(1)} kn
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        )}
+        <OpenStreetMap
+          userLocation={userLocation}
+          vessels={vessels.map(v => ({
+            id: v.id,
+            name: v.name,
+            latitude: v.latitude,
+            longitude: v.longitude
+          }))}
+          height={500}
+        />
 
         {/* Legend */}
         <View style={[styles.legend, { backgroundColor: colors.card }]}>
@@ -435,6 +252,25 @@ export default function MapScreen() {
           </Text>
         </View>
       </View>
+
+      {/* Vessels List */}
+      <ScrollView style={styles.vesselsList}>
+        {vessels.map((vessel) => (
+          <TouchableOpacity
+            key={vessel.id}
+            style={[styles.vesselCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+            onPress={() => handleVesselPress(vessel)}
+          >
+            <Text style={styles.vesselIcon}>🚢</Text>
+            <View style={styles.vesselInfo}>
+              <Text style={[styles.vesselName, { color: colors.text }]}>{vessel.name}</Text>
+              <Text style={[styles.vesselDetails, { color: colors.icon }]}>
+                {vessel.type} • {vessel.distance.toFixed(1)} km • {vessel.speed.toFixed(1)} kn
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
 
       {/* Chat Modal */}
       <Modal
@@ -456,7 +292,7 @@ export default function MapScreen() {
                   🚢 {selectedVessel.name}
                 </Text>
                 <Text style={[styles.chatHeaderStatus, { color: colors.icon }]}>
-                  {selectedVessel.type} • {selectedVessel.distance.toFixed(1)} km away • {selectedVessel.speed.toFixed(1)} kn
+                  {selectedVessel.type} • {selectedVessel.distance.toFixed(1)} km away
                 </Text>
               </View>
             )}
@@ -552,80 +388,50 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   mapContainer: {
-    flex: 1,
-  },
-  map: {
-    width: '100%',
-    height: '100%',
-  },
-  markerContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#fff',
-  },
-  markerIcon: {
-    fontSize: 20,
+    height: 500,
+    position: 'relative',
   },
   legend: {
     position: 'absolute',
-    top: 10,
-    right: 10,
+    bottom: 16,
+    right: 16,
     padding: 12,
     borderRadius: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowRadius: 4,
     elevation: 5,
   },
   legendTitle: {
-    fontSize: 12,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '600',
     marginBottom: 4,
   },
   legendItem: {
-    fontSize: 10,
+    fontSize: 12,
   },
-  webMapPlaceholder: {
+  vesselsList: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  webMapText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  webMapSubtext: {
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 20,
-  },
-  vesselListContainer: {
-    width: '100%',
-    maxWidth: 400,
-    flex: 1,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 12,
+    padding: 16,
   },
   vesselCard: {
-    padding: 12,
-    borderRadius: 8,
+    flexDirection: 'row',
+    padding: 16,
+    borderRadius: 12,
     borderWidth: 1,
-    marginBottom: 8,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  vesselIcon: {
+    fontSize: 32,
+    marginRight: 12,
+  },
+  vesselInfo: {
+    flex: 1,
   },
   vesselName: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
   },
   vesselDetails: {
@@ -637,13 +443,13 @@ const styles = StyleSheet.create({
   },
   chatHeader: {
     padding: 16,
-    paddingTop: 50,
     borderBottomWidth: 1,
+    paddingTop: 50,
   },
   backButton: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   chatHeaderInfo: {
     alignItems: 'center',
@@ -654,7 +460,7 @@ const styles = StyleSheet.create({
   },
   chatHeaderStatus: {
     fontSize: 12,
-    marginTop: 4,
+    marginTop: 2,
   },
   messagesContainer: {
     flex: 1,
@@ -662,12 +468,12 @@ const styles = StyleSheet.create({
   },
   emptyChat: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 100,
+    alignItems: 'center',
+    marginTop: 60,
   },
   emptyChatText: {
-    fontSize: 14,
+    fontSize: 16,
   },
   messageBubble: {
     maxWidth: '75%',
@@ -711,45 +517,5 @@ const styles = StyleSheet.create({
   },
   sendButtonText: {
     fontSize: 20,
-  },
-  webMapView: {
-    flex: 1,
-    padding: 16,
-    alignItems: 'center',
-  },
-  webMapTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  webMapCoords: {
-    fontSize: 13,
-    marginBottom: 16,
-  },
-  vesselListWeb: {
-    width: '100%',
-  },
-  vesselCardWeb: {
-    flexDirection: 'row',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 8,
-    alignItems: 'center',
-  },
-  vesselIconWeb: {
-    fontSize: 28,
-    marginRight: 12,
-  },
-  vesselInfoWeb: {
-    flex: 1,
-  },
-  vesselNameWeb: {
-    fontSize: 15,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  vesselDetailsWeb: {
-    fontSize: 12,
   },
 });

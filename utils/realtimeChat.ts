@@ -35,31 +35,84 @@ export const sendMessage = async (
     timestamp: new Date().toISOString(),
   };
 
-  // Store message locally
-  const stored = await AsyncStorage.getItem(MESSAGES_KEY);
-  const messages: ChatMessage[] = stored ? JSON.parse(stored) : [];
-  messages.push(message);
-  await AsyncStorage.setItem(MESSAGES_KEY, JSON.stringify(messages));
+  try {
+    // Send to backend server
+    const { getBackendUrl } = await import('../config');
+    const backendUrl = getBackendUrl();
+    
+    const response = await fetch(`${backendUrl}/api/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(message)
+    });
 
-  // Update chat room
-  await updateChatRoom(chatId, message);
+    if (!response.ok) {
+      throw new Error(`Backend responded with status: ${response.status}`);
+    }
 
-  // In production, send to backend:
-  // await fetch('https://your-backend/api/messages', {
-  //   method: 'POST',
-  //   body: JSON.stringify(message)
-  // });
+    const result = await response.json();
+    
+    // Also store locally as backup
+    const stored = await AsyncStorage.getItem(MESSAGES_KEY);
+    const messages: ChatMessage[] = stored ? JSON.parse(stored) : [];
+    messages.push(message);
+    await AsyncStorage.setItem(MESSAGES_KEY, JSON.stringify(messages));
 
-  return message;
+    // Update chat room
+    await updateChatRoom(chatId, message);
+
+    return result.message || message;
+  } catch (error) {
+    console.error('Error sending message to backend:', error);
+    
+    // Fallback to local storage only
+    const stored = await AsyncStorage.getItem(MESSAGES_KEY);
+    const messages: ChatMessage[] = stored ? JSON.parse(stored) : [];
+    messages.push(message);
+    await AsyncStorage.setItem(MESSAGES_KEY, JSON.stringify(messages));
+    
+    await updateChatRoom(chatId, message);
+    return message;
+  }
 };
 
 // Get messages for a chat
 export const getChatMessages = async (chatId: string): Promise<ChatMessage[]> => {
-  const stored = await AsyncStorage.getItem(MESSAGES_KEY);
-  const messages: ChatMessage[] = stored ? JSON.parse(stored) : [];
-  return messages.filter(m => m.chatId === chatId).sort((a, b) => 
-    new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-  );
+  try {
+    // Try to fetch from backend server first
+    const { getBackendUrl } = await import('../config');
+    const backendUrl = getBackendUrl();
+    
+    const response = await fetch(`${backendUrl}/api/messages`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Backend responded with status: ${response.status}`);
+    }
+
+    const allMessages: ChatMessage[] = await response.json();
+    
+    // Filter messages for this chat room
+    const chatMessages = allMessages.filter(m => m.chatId === chatId).sort((a, b) => 
+      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+    
+    // Store locally as backup
+    await AsyncStorage.setItem(MESSAGES_KEY, JSON.stringify(allMessages));
+    
+    return chatMessages;
+  } catch (error) {
+    console.error('Error fetching messages from backend:', error);
+    
+    // Fallback to local storage
+    const stored = await AsyncStorage.getItem(MESSAGES_KEY);
+    const messages: ChatMessage[] = stored ? JSON.parse(stored) : [];
+    return messages.filter(m => m.chatId === chatId).sort((a, b) => 
+      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+  }
 };
 
 // Create or get chat room between two users
@@ -95,19 +148,35 @@ const updateChatRoom = async (chatId: string, message: ChatMessage): Promise<voi
   }
 };
 
-// Subscribe to new messages (polling simulation)
+// Subscribe to new messages (polling from backend every 2 seconds)
 export const subscribeToMessages = (
   chatId: string,
   callback: (message: ChatMessage) => void
 ): { unsubscribe: () => void } => {
-  let lastCheck = new Date();
+  let lastMessageTimestamp: string | null = null;
   
   const interval = setInterval(async () => {
-    const messages = await getChatMessages(chatId);
-    const newMessages = messages.filter(m => new Date(m.timestamp) > lastCheck);
-    
-    newMessages.forEach(callback);
-    lastCheck = new Date();
+    try {
+      // Fetch from backend to get real-time messages from other devices
+      const messages = await getChatMessages(chatId);
+      
+      // Filter messages based on the last seen message timestamp, not local clock
+      let newMessages: ChatMessage[] = [];
+      if (lastMessageTimestamp) {
+        const lastTimestamp = new Date(lastMessageTimestamp);
+        newMessages = messages.filter(m => new Date(m.timestamp) > lastTimestamp);
+      }
+      
+      newMessages.forEach(callback);
+      
+      // Update last message timestamp if we have messages
+      if (messages.length > 0) {
+        const latestMessage = messages[messages.length - 1];
+        lastMessageTimestamp = latestMessage.timestamp;
+      }
+    } catch (error) {
+      // Silently fail - will retry on next poll
+    }
   }, 2000); // Check every 2 seconds
 
   return {

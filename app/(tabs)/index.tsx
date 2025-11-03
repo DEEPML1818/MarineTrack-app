@@ -6,7 +6,7 @@ import { NEARBY_VESSELS, MAJOR_PORTS, getVesselIcon } from '@/utils/marineData';
 import { fetchStormGlassWeather, getMockWeatherData } from '@/utils/weatherApi';
 import { getNearbyTrackedVessels } from '@/utils/trackingService';
 import * as Location from 'expo-location';
-import LiveMap from '@/components/LiveMap';
+import OpenStreetMap from '@/components/OpenStreetMap';
 
 export default function DashboardScreen() {
   const colorScheme = useColorScheme();
@@ -211,9 +211,17 @@ export default function DashboardScreen() {
 
       {/* Map Section with improved styling */}
       <View style={[styles.weatherCard, { backgroundColor: colors.card }]}>
-        {/* LiveMap component should be configured to accept props like userLocation for centering */}
-        {/* Ensure LiveMap is correctly implemented to handle map display on mobile */}
-        <LiveMap userLocation={userLocation} /> 
+        {/* OpenStreetMap with user location and nearby vessels */}
+        <OpenStreetMap 
+          userLocation={userLocation} 
+          vessels={trackedVessels.map(v => ({
+            id: v.id,
+            name: v.vesselInfo.vesselName,
+            latitude: v.location.latitude,
+            longitude: v.location.longitude
+          }))}
+          height={350}
+        /> 
       </View>
 
       {/* Weather Bar with improved styling */}

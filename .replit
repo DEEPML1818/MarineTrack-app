@@ -1,8 +1,12 @@
 entrypoint = "README.md"
-modules = ["nodejs-22"]
+modules = ["nix", "nodejs-22"]
 
 [nix]
-channel = "stable-24_05"
+channel = "stable-25_05"
+
+[[ports]]
+localPort = 3000
+externalPort = 3003
 
 [[ports]]
 localPort = 5000
@@ -72,6 +76,10 @@ author = "agent"
 task = "workflow.run"
 args = "expo-app"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "backend-server"
+
 [[workflows.workflow]]
 name = "expo-app"
 author = "agent"
@@ -83,6 +91,18 @@ waitForPort = 5000
 
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow]]
+name = "backend-server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && node server.js"
+waitForPort = 3000
+
+[workflows.workflow.metadata]
+outputType = "console"
 
 [agent]
 expertMode = true

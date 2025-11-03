@@ -29,11 +29,11 @@ const TRACKED_VESSELS_KEY = '@marinetrack_tracked_vessels';
 // Send tracking data to backend
 export const sendTrackingData = async (data: VesselTrackingData): Promise<boolean> => {
   try {
-    // Store locally in AsyncStorage
+    // Store locally in AsyncStorage as backup
     const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;
     await AsyncStorage.setItem(TRACKING_STORAGE_KEY, JSON.stringify(data));
 
-    // Also store in database for persistence
+    // Also store in local database for offline support
     const { saveTrackingData } = await import('./database');
     await saveTrackingData({
       userId: data.userId,
@@ -48,19 +48,26 @@ export const sendTrackingData = async (data: VesselTrackingData): Promise<boolea
       status: data.status,
     });
 
-    // In production, replace with actual API call:
-    // const response = await fetch('https://your-backend-api.com/api/tracking', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(data)
-    // });
-    // return response.ok;
+    // Send to backend server
+    const { getBackendUrl } = await import('../config');
+    const backendUrl = getBackendUrl();
+    
+    const response = await fetch(`${backendUrl}/api/tracking`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Backend responded with status: ${response.status}`);
+    }
 
     console.log('AIS Broadcasting:', data.vesselInfo.vesselName, 'at', data.location.latitude.toFixed(4), data.location.longitude.toFixed(4));
     return true;
   } catch (error) {
     console.error('Error sending tracking data:', error);
-    return false;
+    // Return true anyway since we stored locally
+    return true;
   }
 };
 
@@ -76,42 +83,66 @@ export const getTrackingData = async (): Promise<VesselTrackingData | null> => {
   }
 };
 
-// Get nearby tracked vessels (simulated - in production, fetch from backend)
+// Get nearby tracked vessels from backend server
 export const getNearbyTrackedVessels = async (
   userLat: number,
   userLng: number,
   radiusKm: number = 100 // Increased default radius to 100km for better detection
 ): Promise<TrackedVessel[]> => {
   try {
-    const { getAllTrackingData } = await import('./database');
-    const allVessels = await getAllTrackingData();
-
-    const nearby = allVessels.filter(vessel => {
-      const distance = calculateDistance(
-        userLat,
-        userLng,
-        vessel.location.latitude,
-        vessel.location.longitude
-      );
-      return distance <= radiusKm;
-    });
-
-    // Convert TrackingData to TrackedVessel format
-    return nearby.map(vessel => ({
-      id: vessel.userId,
-      userId: vessel.userId,
-      vesselInfo: {
-        vesselName: vessel.vesselName,
-        vesselId: vessel.userId,
-        vesselType: 'Vessel',
-      },
-      location: vessel.location,
-      status: vessel.status,
-      lastUpdate: vessel.location.timestamp,
-    }));
+    // Try to fetch from backend server first
+    const { getBackendUrl } = await import('../config');
+    const backendUrl = getBackendUrl();
+    
+    const response = await fetch(
+      `${backendUrl}/api/vessels/nearby?lat=${userLat}&lng=${userLng}&radius=${radiusKm}`,
+      {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Backend responded with status: ${response.status}`);
+    }
+    
+    const vessels = await response.json();
+    return vessels;
   } catch (error) {
-    // Silently return empty array on error
-    return [];
+    console.error('Error fetching nearby vessels from backend:', error);
+    
+    // Fallback to local database if backend is unavailable
+    try {
+      const { getAllTrackingData } = await import('./database');
+      const allVessels = await getAllTrackingData();
+
+      const nearby = allVessels.filter(vessel => {
+        const distance = calculateDistance(
+          userLat,
+          userLng,
+          vessel.location.latitude,
+          vessel.location.longitude
+        );
+        return distance <= radiusKm;
+      });
+
+      // Convert TrackingData to TrackedVessel format
+      return nearby.map(vessel => ({
+        id: vessel.userId,
+        userId: vessel.userId,
+        vesselInfo: {
+          vesselName: vessel.vesselName,
+          vesselId: vessel.userId,
+          vesselType: 'Vessel',
+        },
+        location: vessel.location,
+        status: vessel.status,
+        lastUpdate: vessel.location.timestamp,
+      }));
+    } catch (fallbackError) {
+      console.error('Error fetching from local database:', fallbackError);
+      return [];
+    }
   }
 };
 

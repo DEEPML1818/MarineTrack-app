@@ -1,0 +1,132 @@
+ ERROR  Error fetching nearby vessels: [Error: Failed to fetch nearby vessels]
+
+Call Stack
+  getNearbyTrackedVessels (utils\trackingService.ts)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ ERROR  Error fetching nearby vessels: [Error: Failed to fetch nearby vessels]
+
+Call Stack
+  getNearbyTrackedVessels (utils\trackingService.ts)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ ERROR  Error fetching nearby vessels: [Error: Failed to fetch nearby vessels]
+
+Call Stack
+  getNearbyTrackedVessels (utils\trackingService.ts)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ ERROR  Error fetching nearby vessels: [Error: Failed to fetch nearby vessels]
+
+Call Stack
+  getNearbyTrackedVessels (utils\trackingService.ts)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ ERROR  Error fetching nearby vessels: [Error: Failed to fetch nearby vessels]
+
+Call Stack
+  getNearbyTrackedVessels (utils\trackingService.ts)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ ERROR  Error fetching nearby vessels: [Error: Failed to fetch nearby vessels]
+
+Call Stack
+  getNearbyTrackedVessels (utils\trackingService.ts)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ ERROR  Error fetching nearby vessels: [Error: Failed to fetch nearby vessels]
+
+Call Stack
+  getNearbyTrackedVessels (utils\trackingService.ts)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ ERROR  Error fetching nearby vessels: [Error: Failed to fetch nearby vessels]
+
+Call Stack
+  getNearbyTrackedVessels (utils\trackingService.ts)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ ERROR  Error fetching nearby vessels: [Error: Failed to fetch nearby vessels]
+
+Call Stack
+  getNearbyTrackedVessels (utils\trackingService.ts)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ ERROR  Error fetching nearby vessels: [Error: Failed to fetch nearby vessels]
+
+Call Stack
+  getNearbyTrackedVessels (utils\trackingService.ts)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ LOG  Map centered at: 2.9762 101.5036
+ ERROR  Error fetching nearby vessels: [Error: Failed to fetch nearby vessels]
+
+Call Stack
+  getNearbyTrackedVessels (utils\trackingService.ts)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ ERROR  Error fetching nearby vessels: [Error: Failed to fetch nearby vessels]
+
+Call Stack
+  getNearbyTrackedVessels (utils\trackingService.ts)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ ERROR  Error fetching nearby vessels: [Error: Failed to fetch nearby vessels]
+
+Call Stack
+  getNearbyTrackedVessels (utils\trackingService.ts)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ ERROR  Error fetching nearby vessels: [Error: Failed to fetch nearby vessels]
+
+Call Stack
+  getNearbyTrackedVessels (utils\trackingService.ts)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+
+
+
+
+
