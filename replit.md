@@ -1,6 +1,6 @@
 # MarineTrack Mobile Application
 
-**Last Updated:** October 30, 2025
+**Last Updated:** November 6, 2025
 
 ## Overview
 MarineTrack is a cross-platform mobile application designed for fishermen, seafarers, and small vessel operators to enhance safety, communication, and sustainable fishing at sea. Built with React Native and Expo for web, iOS, and Android platforms.
@@ -18,8 +18,12 @@ This is a **functional prototype** demonstrating the complete UI/UX flow and cor
 - SOS Emergency screen with alert functionality
 - Communication/Chat screen for vessel contacts
 - Settings & Profile screen with sustainable fishing tips
-- Tab-based navigation with 5 main sections
+- Tab-based navigation with 9 main sections
 - Responsive design optimized for mobile and web
+- **NEW:** Comprehensive notification system with all activity types
+- **NEW:** Enhanced map with safe fishing zones, restricted zones, and maritime borders
+- **NEW:** Waze-like navigation features with route planning and hazard warnings
+- **NEW:** Backend support for notifications, likes, comments, and nearby vessel alerts
 
 ## Architecture
 
@@ -74,6 +78,50 @@ app/
 - Message history
 - "Last seen" status
 
+### 5. Live Vessel Map (Enhanced)
+- **Safe Fishing Zones:** Green overlay showing prime fishing areas with abundant fish
+- **Good Fishing Zones:** Light green areas with moderate fishing potential
+- **Restricted Zones:** Red overlay marking naval areas and marine protected zones (NO ENTRY)
+- **Maritime Borders:** Yellow overlay showing international boundaries
+- **Interactive Zone Info:** Tap zones to see details, descriptions, and fishing potential
+- **Real-time Vessel Tracking:** See all nearby vessels on the map
+- **Waze-like Navigation:** Route planning with hazard detection
+  - Calculates optimal routes between points
+  - Detects route crossings through restricted zones
+  - Shows distance, estimated time, and hazard warnings
+  - Alerts if route crosses naval areas or protected zones
+- **Zone Alerts:** Automatic notifications when entering restricted areas
+
+### 6. Comprehensive Notification System
+- **Push Notifications:** Full local notification support with Expo Notifications
+- **Notification Types:**
+  - 💬 Chat messages from other vessels
+  - 🚢 Nearby vessel alerts (within 2km)
+  - ❤️ Boat likes from other users
+  - 💭 Comments on your boat
+  - 🆘 SOS emergency alerts
+  - ⛔ Restricted zone warnings
+  - ✅ Safe fishing zone notifications
+  - ⛈️ Weather warnings
+  - ⛽ Low fuel alerts
+- **Notification Features:**
+  - Notification history with read/unread status
+  - Time-based throttling (5-minute cooldown to prevent spam)
+  - Clear all notifications
+  - Tap to mark as read
+  - Color-coded by type
+  - Pull to refresh
+- **Smart Throttling:** Prevents notification spam while still keeping you informed
+
+### 7. Backend API Features
+- Real-time vessel tracking with Socket.IO
+- Chat message broadcasting
+- Boat likes and comments system
+- Automatic nearby vessel detection (2km radius)
+- Notification broadcasting for all activities
+- JSON-based data persistence
+- Multi-user support
+
 ### 5. Settings & Profile
 - User and vessel information
 - Notification preferences
@@ -81,6 +129,17 @@ app/
 - Sustainable fishing tips and best practices
 
 ## Recent Changes
+**November 6, 2025:**
+- ✅ Added comprehensive notification system with 9 notification types
+- ✅ Created EnhancedVesselMap component with maritime zone overlays
+- ✅ Implemented safe fishing zones, restricted zones, and border markings
+- ✅ Added Waze-like navigation with route planning and hazard detection
+- ✅ Updated backend to support likes, comments, and notification broadcasting
+- ✅ Added notification throttling to prevent spam (5-minute cooldown)
+- ✅ Improved route calculation with 20-point sampling for accurate zone detection
+- ✅ Created notifications tab with full notification history
+- ✅ Added zone legend to map for easy identification
+
 **October 30, 2025:**
 - Created complete app structure with 13 screens
 - Implemented ocean-themed color scheme

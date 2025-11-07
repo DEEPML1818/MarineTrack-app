@@ -19,6 +19,9 @@ const DATA_DIR = path.join(__dirname, 'data');
 const VESSELS_FILE = path.join(DATA_DIR, 'vessels.json');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const MESSAGES_FILE = path.join(DATA_DIR, 'messages.json');
+const NOTIFICATIONS_FILE = path.join(DATA_DIR, 'notifications.json');
+const BOAT_LIKES_FILE = path.join(DATA_DIR, 'boat_likes.json');
+const BOAT_COMMENTS_FILE = path.join(DATA_DIR, 'boat_comments.json');
 
 app.use(cors());
 app.use(express.json());
@@ -47,6 +50,27 @@ async function ensureDataFiles() {
       await fs.access(MESSAGES_FILE);
     } catch {
       await fs.writeFile(MESSAGES_FILE, JSON.stringify([], null, 2));
+    }
+    
+    // Initialize notifications file if it doesn't exist
+    try {
+      await fs.access(NOTIFICATIONS_FILE);
+    } catch {
+      await fs.writeFile(NOTIFICATIONS_FILE, JSON.stringify([], null, 2));
+    }
+    
+    // Initialize boat likes file if it doesn't exist
+    try {
+      await fs.access(BOAT_LIKES_FILE);
+    } catch {
+      await fs.writeFile(BOAT_LIKES_FILE, JSON.stringify([], null, 2));
+    }
+    
+    // Initialize boat comments file if it doesn't exist
+    try {
+      await fs.access(BOAT_COMMENTS_FILE);
+    } catch {
+      await fs.writeFile(BOAT_COMMENTS_FILE, JSON.stringify([], null, 2));
     }
     
     console.log('Data files initialized');
@@ -214,9 +238,113 @@ app.post('/api/messages', async (req, res) => {
     // Broadcast to all connected clients
     io.emit('new_message', newMessage);
     
+    // Send notification to recipient
+    io.emit('notification', {
+      type: 'chat_message',
+      title: 'New Message',
+      message: `${message.senderName} sent you a message`,
+      recipientId: message.recipientId,
+      data: newMessage
+    });
+    
     res.json({ success: true, message: newMessage });
   } catch (error) {
     res.status(500).json({ error: 'Failed to save message' });
+  }
+});
+
+// Like a boat
+app.post('/api/boats/like', async (req, res) => {
+  try {
+    const { userId, boatId, userName } = req.body;
+    const likes = await readJsonFile(BOAT_LIKES_FILE);
+    
+    const existingLike = likes.find(l => l.userId === userId && l.boatId === boatId);
+    
+    if (!existingLike) {
+      const newLike = {
+        id: Date.now().toString(),
+        userId,
+        boatId,
+        userName,
+        timestamp: new Date().toISOString()
+      };
+      
+      likes.push(newLike);
+      await writeJsonFile(BOAT_LIKES_FILE, likes);
+      
+      // Send notification
+      io.emit('notification', {
+        type: 'boat_liked',
+        title: 'Boat Liked',
+        message: `${userName} liked your boat!`,
+        recipientId: boatId,
+        data: newLike
+      });
+      
+      res.json({ success: true, like: newLike });
+    } else {
+      res.json({ success: true, message: 'Already liked' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to like boat' });
+  }
+});
+
+// Comment on a boat
+app.post('/api/boats/comment', async (req, res) => {
+  try {
+    const { userId, boatId, userName, comment } = req.body;
+    const comments = await readJsonFile(BOAT_COMMENTS_FILE);
+    
+    const newComment = {
+      id: Date.now().toString(),
+      userId,
+      boatId,
+      userName,
+      comment,
+      timestamp: new Date().toISOString()
+    };
+    
+    comments.push(newComment);
+    await writeJsonFile(BOAT_COMMENTS_FILE, comments);
+    
+    // Send notification
+    io.emit('notification', {
+      type: 'boat_commented',
+      title: 'New Comment',
+      message: `${userName} commented on your boat: "${comment}"`,
+      recipientId: boatId,
+      data: newComment
+    });
+    
+    res.json({ success: true, comment: newComment });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to comment on boat' });
+  }
+});
+
+// Get boat likes
+app.get('/api/boats/:boatId/likes', async (req, res) => {
+  try {
+    const { boatId } = req.params;
+    const likes = await readJsonFile(BOAT_LIKES_FILE);
+    const boatLikes = likes.filter(l => l.boatId === boatId);
+    res.json(boatLikes);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch boat likes' });
+  }
+});
+
+// Get boat comments
+app.get('/api/boats/:boatId/comments', async (req, res) => {
+  try {
+    const { boatId } = req.params;
+    const comments = await readJsonFile(BOAT_COMMENTS_FILE);
+    const boatComments = comments.filter(c => c.boatId === boatId);
+    res.json(boatComments);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch boat comments' });
   }
 });
 
@@ -256,6 +384,27 @@ io.on('connection', (socket) => {
       }
       
       await writeJsonFile(VESSELS_FILE, vessels);
+      
+      // Check for nearby vessels and send notifications
+      const nearbyVessels = vessels.filter(v => {
+        if (v.userId === data.userId) return false;
+        const distance = calculateDistance(
+          data.location.latitude,
+          data.location.longitude,
+          v.location.latitude,
+          v.location.longitude
+        );
+        return distance <= 2; // Within 2km
+      });
+      
+      if (nearbyVessels.length > 0) {
+        socket.emit('notification', {
+          type: 'vessel_nearby',
+          title: 'Vessel Nearby',
+          message: `${nearbyVessels[0].vesselInfo.vesselName} is within 2km of your location`,
+          data: nearbyVessels[0]
+        });
+      }
       
       // Broadcast to all other clients
       socket.broadcast.emit('vessel_update', vesselData);

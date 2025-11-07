@@ -16,7 +16,8 @@ import { getNearbyTrackedVessels } from '@/utils/trackingService';
 import { getCurrentUser } from '@/utils/auth';
 import { sendMessage, getChatMessages, getChatRoom, subscribeToMessages } from '@/utils/realtimeChat';
 import * as Location from 'expo-location';
-import OpenStreetMap from '@/components/OpenStreetMap';
+import EnhancedVesselMap from '@/components/EnhancedVesselMap';
+import WazeVesselMap from '@/components/WazeVesselMap';
 
 interface Vessel {
   id: string;
@@ -231,26 +232,17 @@ export default function MapScreen() {
       </View>
 
       <View style={styles.mapContainer}>
-        <OpenStreetMap
-          userLocation={userLocation}
+        <WazeVesselMap
+          userLocation={userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null}
           vessels={vessels.map(v => ({
             id: v.id,
             name: v.name,
             latitude: v.latitude,
-            longitude: v.longitude
+            longitude: v.longitude,
+            speed: v.speed
           }))}
           height={500}
         />
-
-        {/* Legend */}
-        <View style={[styles.legend, { backgroundColor: colors.card }]}>
-          <Text style={[styles.legendTitle, { color: colors.text }]}>
-            Active Vessels: {vessels.length + 1}
-          </Text>
-          <Text style={[styles.legendItem, { color: colors.icon }]}>
-            📍 You • 🚢 Others (Tap to chat)
-          </Text>
-        </View>
       </View>
 
       {/* Vessels List */}

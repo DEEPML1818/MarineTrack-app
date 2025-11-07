@@ -1,5 +1,5 @@
 entrypoint = "README.md"
-modules = ["nix", "nodejs-22"]
+modules = ["nodejs-20", "nix", "python-3.11"]
 
 [nix]
 channel = "stable-25_05"
@@ -9,16 +9,12 @@ localPort = 3000
 externalPort = 3003
 
 [[ports]]
+localPort = 3001
+externalPort = 3001
+
+[[ports]]
 localPort = 5000
-externalPort = 5000
-
-[[ports]]
-localPort = 8081
 externalPort = 80
-
-[[ports]]
-localPort = 8082
-externalPort = 3000
 
 [[ports]]
 localPort = 45569
@@ -80,17 +76,21 @@ args = "expo-app"
 task = "workflow.run"
 args = "backend-server"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "maritime-routing"
+
 [[workflows.workflow]]
 name = "expo-app"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm start -- --web --port 5000"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npx expo start --port 5000"
+waitForPort = 5000
 
 [[workflows.workflow]]
 name = "backend-server"
@@ -100,6 +100,18 @@ author = "agent"
 task = "shell.exec"
 args = "cd backend && node server.js"
 waitForPort = 3000
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow]]
+name = "maritime-routing"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python backend/maritime_routing.py"
+waitForPort = 3001
 
 [workflows.workflow.metadata]
 outputType = "console"
