@@ -1,0 +1,281 @@
+[
+  {
+    "id": "USNYC",
+    "name": "Port of New York",
+    "city": "New York",
+    "country": "United States",
+    "lat": 40.6895,
+    "lng": -74.0447,
+    "aliases": ["New York", "NYC", "New York Harbor"]
+  },
+  {
+    "id": "USLAX",
+    "name": "Port of Los Angeles",
+    "city": "Los Angeles",
+    "country": "United States",
+    "lat": 33.7391,
+    "lng": -118.2714,
+    "aliases": ["Los Angeles", "LA", "Long Beach"]
+  },
+  {
+    "id": "SGSIN",
+    "name": "Port of Singapore",
+    "city": "Singapore",
+    "country": "Singapore",
+    "lat": 1.2644,
+    "lng": 103.8220,
+    "aliases": ["Singapore", "Singapore Port"]
+  },
+  {
+    "id": "CNSHA",
+    "name": "Port of Shanghai",
+    "city": "Shanghai",
+    "country": "China",
+    "lat": 31.2304,
+    "lng": 121.4737,
+    "aliases": ["Shanghai", "Shanghai Port"]
+  },
+  {
+    "id": "NLRTM",
+    "name": "Port of Rotterdam",
+    "city": "Rotterdam",
+    "country": "Netherlands",
+    "lat": 51.9244,
+    "lng": 4.4777,
+    "aliases": ["Rotterdam", "Rotterdam Port"]
+  },
+  {
+    "id": "GBLGP",
+    "name": "Port of London",
+    "city": "London",
+    "country": "United Kingdom",
+    "lat": 51.5074,
+    "lng": -0.1278,
+    "aliases": ["London", "Thames", "London Port"]
+  },
+  {
+    "id": "AUHKG",
+    "name": "Port of Hong Kong",
+    "city": "Hong Kong",
+    "country": "China",
+    "lat": 22.3193,
+    "lng": 114.1694,
+    "aliases": ["Hong Kong", "HK", "Hong Kong Port"]
+  },
+  {
+    "id": "USHOU",
+    "name": "Port of Houston",
+    "city": "Houston",
+    "country": "United States",
+    "lat": 29.7604,
+    "lng": -95.3698,
+    "aliases": ["Houston", "Houston Port"]
+  },
+  {
+    "id": "USMIA",
+    "name": "Port of Miami",
+    "city": "Miami",
+    "country": "United States",
+    "lat": 25.7743,
+    "lng": -80.1661,
+    "aliases": ["Miami", "Miami Port", "PortMiami"]
+  },
+  {
+    "id": "USOAK",
+    "name": "Port of Oakland",
+    "city": "Oakland",
+    "country": "United States",
+    "lat": 37.7955,
+    "lng": -122.2801,
+    "aliases": ["Oakland", "Oakland Port"]
+  },
+  {
+    "id": "USSEA",
+    "name": "Port of Seattle",
+    "city": "Seattle",
+    "country": "United States",
+    "lat": 47.6062,
+    "lng": -122.3321,
+    "aliases": ["Seattle", "Seattle Port"]
+  },
+  {
+    "id": "JPTYO",
+    "name": "Port of Tokyo",
+    "city": "Tokyo",
+    "country": "Japan",
+    "lat": 35.6528,
+    "lng": 139.8395,
+    "aliases": ["Tokyo", "Tokyo Port"]
+  },
+  {
+    "id": "DEBHV",
+    "name": "Port of Bremerhaven",
+    "city": "Bremerhaven",
+    "country": "Germany",
+    "lat": 53.5395,
+    "lng": 8.5809,
+    "aliases": ["Bremerhaven", "Bremen"]
+  },
+  {
+    "id": "DEHAM",
+    "name": "Port of Hamburg",
+    "city": "Hamburg",
+    "country": "Germany",
+    "lat": 53.5511,
+    "lng": 9.9937,
+    "aliases": ["Hamburg", "Hamburg Port"]
+  },
+  {
+    "id": "FRLEH",
+    "name": "Port of Le Havre",
+    "city": "Le Havre",
+    "country": "France",
+    "lat": 49.4944,
+    "lng": 0.1079,
+    "aliases": ["Le Havre", "Havre"]
+  },
+  {
+    "id": "AEDXB",
+    "name": "Port of Dubai",
+    "city": "Dubai",
+    "country": "United Arab Emirates",
+    "lat": 25.2048,
+    "lng": 55.2708,
+    "aliases": ["Dubai", "Dubai Port", "Jebel Ali"]
+  },
+  {
+    "id": "USBAL",
+    "name": "Port of Baltimore",
+    "city": "Baltimore",
+    "country": "United States",
+    "lat": 39.2904,
+    "lng": -76.6122,
+    "aliases": ["Baltimore", "Baltimore Port"]
+  },
+  {
+    "id": "USSAN",
+    "name": "Port of San Diego",
+    "city": "San Diego",
+    "country": "United States",
+    "lat": 32.7157,
+    "lng": -117.1611,
+    "aliases": ["San Diego", "San Diego Port"]
+  },
+  {
+    "id": "USSFR",
+    "name": "Port of San Francisco",
+    "city": "San Francisco",
+    "country": "United States",
+    "lat": 37.7749,
+    "lng": -122.4194,
+    "aliases": ["San Francisco", "SF", "San Francisco Port"]
+  },
+  {
+    "id": "CABOS",
+    "name": "Port of Boston",
+    "city": "Boston",
+    "country": "United States",
+    "lat": 42.3601,
+    "lng": -71.0589,
+    "aliases": ["Boston", "Boston Port"]
+  },
+  {
+    "id": "USSAV",
+    "name": "Port of Savannah",
+    "city": "Savannah",
+    "country": "United States",
+    "lat": 32.0809,
+    "lng": -81.0912,
+    "aliases": ["Savannah", "Savannah Port"]
+  },
+  {
+    "id": "USCHS",
+    "name": "Port of Charleston",
+    "city": "Charleston",
+    "country": "United States",
+    "lat": 32.7765,
+    "lng": -79.9311,
+    "aliases": ["Charleston", "Charleston Port"]
+  },
+  {
+    "id": "AUBNE",
+    "name": "Port of Brisbane",
+    "city": "Brisbane",
+    "country": "Australia",
+    "lat": -27.3812,
+    "lng": 153.1163,
+    "aliases": ["Brisbane", "Brisbane Port"]
+  },
+  {
+    "id": "AUSYD",
+    "name": "Port of Sydney",
+    "city": "Sydney",
+    "country": "Australia",
+    "lat": -33.8688,
+    "lng": 151.2093,
+    "aliases": ["Sydney", "Sydney Port"]
+  },
+  {
+    "id": "AUMEL",
+    "name": "Port of Melbourne",
+    "city": "Melbourne",
+    "country": "Australia",
+    "lat": -37.8136,
+    "lng": 144.9631,
+    "aliases": ["Melbourne", "Melbourne Port"]
+  },
+  {
+    "id": "CNNGB",
+    "name": "Port of Ningbo",
+    "city": "Ningbo",
+    "country": "China",
+    "lat": 29.8683,
+    "lng": 121.544,
+    "aliases": ["Ningbo", "Ningbo-Zhoushan"]
+  },
+  {
+    "id": "CNTAO",
+    "name": "Port of Qingdao",
+    "city": "Qingdao",
+    "country": "China",
+    "lat": 36.0671,
+    "lng": 120.3826,
+    "aliases": ["Qingdao", "Tsingtao"]
+  },
+  {
+    "id": "KRPUS",
+    "name": "Port of Busan",
+    "city": "Busan",
+    "country": "South Korea",
+    "lat": 35.1796,
+    "lng": 129.0756,
+    "aliases": ["Busan", "Pusan"]
+  },
+  {
+    "id": "INMUN",
+    "name": "Port of Mumbai",
+    "city": "Mumbai",
+    "country": "India",
+    "lat": 18.9750,
+    "lng": 72.8258,
+    "aliases": ["Mumbai", "Bombay"]
+  },
+  {
+    "id": "BRRIO",
+    "name": "Port of Rio de Janeiro",
+    "city": "Rio de Janeiro",
+    "country": "Brazil",
+    "lat": -22.9068,
+    "lng": -43.1729,
+    "aliases": ["Rio", "Rio de Janeiro"]
+  },
+  {
+    "id": "ESMAD",
+    "name": "Port of Barcelona",
+    "city": "Barcelona",
+    "country": "Spain",
+    "lat": 41.3851,
+    "lng": 2.1734,
+    "aliases": ["Barcelona", "Barcelona Port"]
+  }
+]

@@ -1,14 +1,26 @@
 // Backend API Configuration
-// Update this with your actual backend server URL when running
-export const API_CONFIG = {
-  // For local development on physical device, use your computer's local IP address
-  // Example: 'http://192.168.1.100:3000'
-  // For Android emulator, use: 'http://10.0.2.2:3000'
-  // For iOS simulator, use: 'http://localhost:3000'
-  BACKEND_URL: process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:3000',
+// Automatically detects the correct backend URL based on environment
+
+function getDefaultBackendUrl(): string {
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    
+    if (hostname.includes('replit.dev') || hostname.includes('repl.co')) {
+      const protocol = window.location.protocol;
+      return `${protocol}//${hostname}:3000`;
+    }
+    
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:3000';
+    }
+  }
   
-  // Socket.IO URL (usually same as backend URL)
-  SOCKET_URL: process.env.EXPO_PUBLIC_SOCKET_URL || 'http://localhost:3000',
+  return 'http://localhost:3000';
+}
+
+export const API_CONFIG = {
+  BACKEND_URL: process.env.EXPO_PUBLIC_BACKEND_URL || getDefaultBackendUrl(),
+  SOCKET_URL: process.env.EXPO_PUBLIC_SOCKET_URL || getDefaultBackendUrl(),
 };
 
 // Helper function to get the correct backend URL

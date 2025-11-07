@@ -72,6 +72,11 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
     trafficDensity: 'low' as 'low' | 'medium' | 'high' | 'critical'
   });
 
+  const [inputMode, setInputMode] = useState<'port' | 'coords'>('port');
+  const [portSearchResults, setPortSearchResults] = useState<any[]>([]);
+  const [showPortSuggestions, setShowPortSuggestions] = useState(false);
+  const [selectedPort, setSelectedPort] = useState<any>(null);
+
   const webViewRef = useRef<WebView>(null);
 
   // Load hazards
@@ -87,6 +92,31 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
     return () => clearInterval(interval);
   }, [userLocation]);
 
+  // Search ports when user types
+  useEffect(() => {
+    const searchPorts = async () => {
+      if (inputMode !== 'port' || destinationInput.length < 2) {
+        setPortSearchResults([]);
+        setShowPortSuggestions(false);
+        return;
+      }
+
+      try {
+        const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:3000';
+        const response = await fetch(`${BACKEND_URL}/api/ports/search?query=${encodeURIComponent(destinationInput)}`);
+        const results = await response.json();
+        setPortSearchResults(results);
+        setShowPortSuggestions(results.length > 0);
+      } catch (error) {
+        console.error('Port search error:', error);
+        setPortSearchResults([]);
+      }
+    };
+
+    const debounce = setTimeout(searchPorts, 300);
+    return () => clearTimeout(debounce);
+  }, [destinationInput, inputMode]);
+
   // Update navigation state
   useEffect(() => {
     if (isNavigating && userLocation && currentRoute.length > 0) {
@@ -96,18 +126,6 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
 
   const updateNavigationState = () => {
     if (!userLocation || currentRoute.length === 0) return;
-
-
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); opacity: 0.3; }
-          50% { transform: scale(1.5); opacity: 0; }
-        }
-        @keyframes dash {
-          to { stroke-dashoffset: -100; }
-        }
-        .route-animation {
-          animation: dash 20s linear infinite;
-        }
 
     let closestIndex = 0;
     let minDist = Infinity;
@@ -208,16 +226,36 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
     return directions[index];
   };
 
+  const selectPort = (port: any) => {
+    setSelectedPort(port);
+    setDestinationInput(port.name);
+    setShowPortSuggestions(false);
+  };
+
   const calculateRoute = async () => {
     if (!userLocation || !destinationInput) {
-      Alert.alert('Error', 'Please enter destination coordinates (lat, lng)');
+      Alert.alert('Error', 'Please enter a destination');
       return;
     }
 
-    const dest = parseCoordinates(destinationInput);
-    if (!dest) {
-      Alert.alert('Error', 'Invalid coordinates format. Use: latitude, longitude');
-      return;
+    let dest: { lat: number; lng: number } | null = null;
+
+    if (inputMode === 'port') {
+      if (selectedPort) {
+        dest = { lat: selectedPort.lat, lng: selectedPort.lng };
+      } else if (portSearchResults.length > 0) {
+        dest = { lat: portSearchResults[0].lat, lng: portSearchResults[0].lng };
+        setSelectedPort(portSearchResults[0]);
+      } else {
+        Alert.alert('Error', 'Port not found. Please select a port from the suggestions or switch to coordinates mode.');
+        return;
+      }
+    } else {
+      dest = parseCoordinates(destinationInput);
+      if (!dest) {
+        Alert.alert('Error', 'Invalid coordinates format. Use: latitude, longitude');
+        return;
+      }
     }
 
     setDestination(dest);
@@ -542,13 +580,75 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
             <Text style={[styles.searchTitle, { color: colors.text }]}>Where to?</Text>
           </View>
 
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.background, color: colors.text }]}
-            placeholder="Enter coordinates (lat, lng)"
-            placeholderTextColor={colors.icon}
-            value={destinationInput}
-            onChangeText={setDestinationInput}
-          />
+          <View style={styles.toggleContainer}>
+            <TouchableOpacity
+              style={[styles.toggleBtn, inputMode === 'port' && styles.toggleBtnActive]}
+              onPress={() => {
+                setInputMode('port');
+                setDestinationInput('');
+                setSelectedPort(null);
+              }}
+            >
+              <Text style={[styles.toggleText, inputMode === 'port' && styles.toggleTextActive]}>
+                🏝️ Port Name
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.toggleBtn, inputMode === 'coords' && styles.toggleBtnActive]}
+              onPress={() => {
+                setInputMode('coords');
+                setDestinationInput('');
+                setShowPortSuggestions(false);
+              }}
+            >
+              <Text style={[styles.toggleText, inputMode === 'coords' && styles.toggleTextActive]}>
+                📍 Coordinates
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={{ position: 'relative' }}>
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.background, color: colors.text }]}
+              placeholder={
+                inputMode === 'port' 
+                  ? "Search for a port (e.g., Singapore, New York, Rotterdam)" 
+                  : "Enter coordinates (lat, lng)"
+              }
+              placeholderTextColor={colors.icon}
+              value={destinationInput}
+              onChangeText={(text) => {
+                setDestinationInput(text);
+                if (inputMode === 'port' && selectedPort) {
+                  setSelectedPort(null);
+                }
+              }}
+            />
+
+            {showPortSuggestions && portSearchResults.length > 0 && (
+              <View style={[styles.suggestionsContainer, { backgroundColor: colors.card }]}>
+                <ScrollView style={styles.suggestionsList} keyboardShouldPersistTaps="handled">
+                  {portSearchResults.map((port) => (
+                    <TouchableOpacity
+                      key={port.id}
+                      style={[styles.suggestionItem, { borderBottomColor: colors.border }]}
+                      onPress={() => selectPort(port)}
+                    >
+                      <Text style={styles.suggestionIcon}>⚓</Text>
+                      <View style={styles.suggestionInfo}>
+                        <Text style={[styles.suggestionName, { color: colors.text }]}>
+                          {port.name}
+                        </Text>
+                        <Text style={[styles.suggestionDetails, { color: colors.icon }]}>
+                          {port.city}, {port.country}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+          </View>
 
           <TouchableOpacity
             style={[styles.goButton, { backgroundColor: '#0ea5e9' }]}
@@ -572,6 +672,14 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
             >
               <Text style={styles.quickActionIcon}>🚦</Text>
               <Text style={[styles.quickActionText, { color: colors.text }]}>Traffic</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.quickActionBtn, { backgroundColor: colors.background }]}
+              onPress={() => setShowRouteOptions(true)}
+            >
+              <Text style={styles.quickActionIcon}>🛣️</Text>
+              <Text style={[styles.quickActionText, { color: colors.text }]}>Routes</Text>
             </TouchableOpacity>
           </View>
 
@@ -702,6 +810,68 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: 16,
     marginBottom: 12,
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  toggleBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: '#e5e7eb',
+  },
+  toggleBtnActive: {
+    backgroundColor: '#0ea5e9',
+  },
+  toggleText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6b7280',
+  },
+  toggleTextActive: {
+    color: '#ffffff',
+  },
+  suggestionsContainer: {
+    position: 'absolute',
+    top: 52,
+    left: 0,
+    right: 0,
+    maxHeight: 200,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    zIndex: 2000,
+  },
+  suggestionsList: {
+    borderRadius: 12,
+  },
+  suggestionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+    gap: 12,
+  },
+  suggestionIcon: {
+    fontSize: 24,
+  },
+  suggestionInfo: {
+    flex: 1,
+  },
+  suggestionName: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  suggestionDetails: {
+    fontSize: 12,
   },
   goButton: {
     height: 50,

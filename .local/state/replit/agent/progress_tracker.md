@@ -9,3 +9,5 @@
 [x] 9. Add Waze-like navigation features - Completed: Route planning with zone detection and hazard warnings
 [x] 10. Update backend for notifications - Completed: Backend supports likes, comments, and notification broadcasting
 [x] 11. Fix notification spam and route detection issues - Completed: Added throttling and improved route sampling
+[x] 12. Enhanced map with port name search - Completed: Added port database with 30+ major ports, search autocomplete, and toggle between port name/coordinates input
+[x] 13. Upgraded Node.js to v22 - Completed: Fixed dependency issues by upgrading from Node.js 20.19.3 to 22.17.0

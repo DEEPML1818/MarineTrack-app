@@ -22,6 +22,7 @@ const MESSAGES_FILE = path.join(DATA_DIR, 'messages.json');
 const NOTIFICATIONS_FILE = path.join(DATA_DIR, 'notifications.json');
 const BOAT_LIKES_FILE = path.join(DATA_DIR, 'boat_likes.json');
 const BOAT_COMMENTS_FILE = path.join(DATA_DIR, 'boat_comments.json');
+const PORTS_FILE = path.join(DATA_DIR, 'ports.json');
 
 app.use(cors());
 app.use(express.json());
@@ -345,6 +346,52 @@ app.get('/api/boats/:boatId/comments', async (req, res) => {
     res.json(boatComments);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch boat comments' });
+  }
+});
+
+// Search ports by name
+app.get('/api/ports/search', async (req, res) => {
+  try {
+    const { query } = req.query;
+    
+    if (!query || query.length < 2) {
+      return res.json([]);
+    }
+    
+    const ports = await readJsonFile(PORTS_FILE);
+    const searchTerm = query.toLowerCase();
+    
+    const results = ports.filter(port => {
+      return (
+        port.name.toLowerCase().includes(searchTerm) ||
+        port.city.toLowerCase().includes(searchTerm) ||
+        port.country.toLowerCase().includes(searchTerm) ||
+        port.id.toLowerCase().includes(searchTerm) ||
+        port.aliases.some(alias => alias.toLowerCase().includes(searchTerm))
+      );
+    }).slice(0, 10);
+    
+    res.json(results);
+  } catch (error) {
+    console.error('Port search error:', error);
+    res.status(500).json({ error: 'Failed to search ports' });
+  }
+});
+
+// Get port by ID
+app.get('/api/ports/:portId', async (req, res) => {
+  try {
+    const { portId } = req.params;
+    const ports = await readJsonFile(PORTS_FILE);
+    const port = ports.find(p => p.id === portId);
+    
+    if (!port) {
+      return res.status(404).json({ error: 'Port not found' });
+    }
+    
+    res.json(port);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch port' });
   }
 });
 

@@ -1,8 +1,9 @@
 entrypoint = "README.md"
-modules = ["nodejs-20", "nix", "python-3.11"]
+modules = ["python-3.11", "nix", "nodejs-22"]
 
 [nix]
 channel = "stable-25_05"
+packages = ["openssl", "postgresql"]
 
 [[ports]]
 localPort = 3000
@@ -15,10 +16,6 @@ externalPort = 3001
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 45569
-externalPort = 3001
 
 [workflows]
 runButton = "Project"
@@ -89,7 +86,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npx expo start --port 5000"
+args = "npx expo start --web --port 5000"
 waitForPort = 5000
 
 [[workflows.workflow]]
@@ -118,3 +115,7 @@ outputType = "console"
 
 [agent]
 expertMode = true
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
