@@ -67,27 +67,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "expo-app"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
 args = "backend-server"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
 args = "maritime-routing"
 
-[[workflows.workflow]]
-name = "expo-app"
-author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
-
 [[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npx expo start --web --port 5000"
-waitForPort = 5000
+task = "workflow.run"
+args = "frontend"
 
 [[workflows.workflow]]
 name = "backend-server"
@@ -112,6 +100,18 @@ waitForPort = 3001
 
 [workflows.workflow.metadata]
 outputType = "console"
+
+[[workflows.workflow]]
+name = "frontend"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./node_modules/.bin/expo start --web --port 5000"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [agent]
 expertMode = true

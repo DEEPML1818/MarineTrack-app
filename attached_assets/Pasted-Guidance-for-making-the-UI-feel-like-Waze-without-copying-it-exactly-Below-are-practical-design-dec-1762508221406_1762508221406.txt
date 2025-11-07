@@ -1,0 +1,44 @@
+Guidance for making the UI feel like Waze without copying it exactly
+Below are practical design decisions and implementation tips that capture Waze’s look-and-feel (immediacy, bold colors, simplified map clarity, friendly microcopy) while avoiding a direct copy of Waze’s exact visual identity.
+
+Visual language (color, typography, shapes)
+• 	Use a saturated, high-contrast accent color for primary actions and alerts (e.g., bright orange or teal) paired with a dark map background for night mode and a muted light map for day mode.
+• 	Choose a friendly geometric sans-serif (medium weight for UI, bold for headings). Keep type scale large for critical nav info and smaller for secondary details.
+• 	Favor rounded rects and pill-shaped UI containers for buttons, cards, and turn prompts. Use slightly larger corner radii than Waze to create a distinct look.
+• 	Use a simplified icon set with a consistent stroke width; avoid copying Waze’s unique icons. Opt for playful but distinct metaphors (e.g., wave instead of car glyph for vessels).
+
+Map styling and clarity
+• 	Prioritize contrast and legibility: de-emphasize minor map clutter (small labels, minor bathymetry lines) and emphasize navigable corridors, buoys, ports, and hazards.
+• 	Use bold, colored tracks for the active route with subtle glow; show alternative routes as dashed or muted tracks.
+• 	Layering: heatmap for traffic density; separate layer toggles for tides, bathymetry, and notices. Use translucency to avoid visual noise.
+• 	Vessel markers: use a clear directional chevron with a colored halo indicating status (green = on-route, amber = delayed, red = hazard).
+
+Navigation HUD and micro-interactions
+• 	Top HUD: concise ETA, distance-to-next-maneuver, and current speed/status in compact pills.
+• 	Bottom card: step-by-step sea instructions (leg name, distance, recommended heading/speed) as swipeable cards.
+• 	Turn/alter prompts: large, single-line instruction with a bold icon and compact secondary detail (e.g., “Pass buoy G3 to starboard — 1.2 nm”).
+• 	Use subtle motion: animated progress along route, smooth pan/rotate to vessel heading, and micro-interactions (tap-to-expand cards, swipe-to-dismiss alerts).
+
+Reports, alerts, and community signals
+• 	Reporting UI: single big + button that opens a concise modal (preset types, one-tap severity, optional photo). Auto-fill location and suggested wording.
+• 	Alerts: toast-style alerts for validated hazards; persistent badges on the map for unconfirmed reports. Color-code by confidence.
+• 	Social cues: small numeric badges for crowd density in an area and quick-reply templates for confirmations (e.g., “Confirm debris at G3”).
+
+Distinguishing details to avoid legal/design conflicts
+• 	Avoid using Waze’s exact icons, mascots, color palette, unique layout proportions, or copy lines.
+• 	Do not replicate their map label styles, exact button placements, or trademarked wording.
+• 	Create your own mascot or visual motif (maritime-inspired) and use original phrasing for prompts and microcopy.
+• 	Make the map water-following behavior and sea-specific phrasing central—this helps differentiate the product functionally and visually.
+
+Implementation checklist (developer-friendly)
+• 	Build map style variants (day/night) and layer toggles.
+• 	Implement vessel marker with heading-follow camera and smooth interpolation between AIS updates.
+• 	Route rendering: main track (solid glowing line), alternatives (dashed), and leg markers (buoys/waypoints).
+• 	HUD components: ETA pill, next-leg card, report button.
+• 	Animations: route progress, toast alerts, swipe gestures.
+• 	Accessibility: large tap targets, high-contrast labels, and scalable text.
+
+Quick copy examples (tone + UI)
+• 	ETA pill: “ETA 14:35 — 3.2 nm”
+• 	Next-leg card: “Fairway Alpha — 12.3 nm; Pass buoy G3 to starboard”
+• 	Report button tooltip: “Report hazard — one tap”

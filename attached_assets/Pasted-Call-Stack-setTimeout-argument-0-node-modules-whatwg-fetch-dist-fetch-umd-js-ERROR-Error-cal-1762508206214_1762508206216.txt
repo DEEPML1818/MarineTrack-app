@@ -1,0 +1,61 @@
+Call Stack
+  setTimeout$argument_0 (node_modules\whatwg-fetch\dist\fetch.umd.js)
+ ERROR  Error calculating intelligent route: [TypeError: Network request failed]
+
+Call Stack
+  setTimeout$argument_0 (node_modules\whatwg-fetch\dist\fetch.umd.js)
+ ERROR  Route calculation error: [Error: Failed to calculate maritime route. Ensure origin and destination are accessible by sea.]
+
+Call Stack
+  calculateRoute (components\WazeVesselMap.tsx)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ ERROR  Error calculating intelligent route: [TypeError: Network request failed]
+
+Call Stack
+  setTimeout$argument_0 (node_modules\whatwg-fetch\dist\fetch.umd.js)
+ ERROR  Route calculation error: [Error: Failed to calculate maritime route. Ensure origin and destination are accessible by sea.]
+
+Call Stack
+  calculateRoute (components\WazeVesselMap.tsx)
+  next (<native>)
+  asyncGeneratorStep (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  _next (node_modules\@babel\runtime\helpers\asyncToGenerator.js)
+  tryCallOne (address at (InternalBytecode.js:1:1180)
+  anonymous (address at (InternalBytecode.js:1:1874)
+ ERROR  Error fetching nearby vessels from backend: [TypeError: Network request failed]
+
+Call Stack
+  setTimeout$argument_0 (node_modules\whatwg-fetch\dist\fetch.umd.js)
+ ERROR  Error fetching hazards: [TypeError: Network request failed]
+
+
+new guide for daily workout guide is must be done daily 
+
+Below are practical design decisions and implementation tips that capture Waze’s look-and-feel (immediacy, bold colors, simplified map clarity, friendly microcopy) while avoiding a direct copy of Waze’s exact visual identity.
+
+Visual language (color, typography, shapes)
+• Use a saturated, high-contrast accent color for primary actions and alerts (e.g., bright orange or teal) paired with a dark map background for night mode and a muted light map for day mode.
+• Choose a friendly geometric sans-serif (medium weight for UI, bold for headings). Keep type scale large for critical nav info and smaller for secondary details.
+• Favor rounded rects and pill-shaped UI containers for buttons, cards, and turn prompts. Use slightly larger corner radii than Waze to create a distinct look.
+• Use a simplified icon set with a consistent stroke width; avoid copying Waze’s unique icons. Opt for playful but distinct metaphors (e.g., wave instead of car glyph for vessels).
+
+Map styling and clarity
+• Prioritize contrast and legibility: de-emphasize minor map clutter (small labels, minor bathymetry lines) and emphasize navigable corridors, buoys, ports, and hazards.
+• Use bold, colored tracks for the active route with subtle glow; show alternative routes as dashed or muted tracks.
+• Layering: heatmap for traffic density; separate layer toggles for tides, bathymetry, and notices. Use translucency to avoid visual noise.
+• Vessel markers: use a clear directional chevron with a colored halo indicating status (green = on-route, amber = delayed, red = hazard).
+
+Call Stack
+calculateRoute (components\WazeVesselMap.tsx)
+next (<native>)
+asyncGeneratorStep (node_modules@babel\runtime\helpers\asyncToGenerator.js)
+_next (node_modules@babel\runtime\helpers\asyncToGenerator.js)
+tryCallOne (address at (InternalBytecode.js:1:1180)
+anonymous (address at (InternalBytecode.js:1:1874)
+ERROR Error fetching nearby vessels from backend: [TypeError: Network request failed]
+
+got this error

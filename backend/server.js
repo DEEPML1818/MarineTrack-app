@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 const fs = require('fs').promises;
 const path = require('path');
 
@@ -15,6 +16,7 @@ const io = new Server(server, {
 });
 
 const PORT = process.env.PORT || 3000;
+const MARITIME_ROUTING_URL = 'http://localhost:3001';
 const DATA_DIR = path.join(__dirname, 'data');
 const VESSELS_FILE = path.join(DATA_DIR, 'vessels.json');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
@@ -26,6 +28,26 @@ const PORTS_FILE = path.join(DATA_DIR, 'ports.json');
 
 app.use(cors());
 app.use(express.json());
+
+// Proxy middleware for maritime routing service
+// Forward /api/hazards, /api/traffic, and /api/route requests to port 3001
+app.use('/api/hazards', createProxyMiddleware({
+  target: MARITIME_ROUTING_URL,
+  changeOrigin: true,
+  pathRewrite: { '^/api/hazards': '/api/hazards' }
+}));
+
+app.use('/api/traffic', createProxyMiddleware({
+  target: MARITIME_ROUTING_URL,
+  changeOrigin: true,
+  pathRewrite: { '^/api/traffic': '/api/traffic' }
+}));
+
+app.use('/api/route', createProxyMiddleware({
+  target: MARITIME_ROUTING_URL,
+  changeOrigin: true,
+  pathRewrite: { '^/api/route': '/api/route' }
+}));
 
 // Ensure data directory and files exist
 async function ensureDataFiles() {

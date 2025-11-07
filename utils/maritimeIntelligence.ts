@@ -1,5 +1,5 @@
 
-import { getBackendUrl } from '../config';
+import { getBackendUrl, getRoutingUrl } from '../config';
 
 export interface MaritimeHazard {
   id: string;
@@ -52,7 +52,10 @@ export interface EnhancedRoute {
   alternativeRoutes: Array<any>;
 }
 
-const ROUTING_API = 'http://0.0.0.0:3001/api';
+// Dynamic routing API that works in both development and production
+function getRoutingAPI(): string {
+  return `${getRoutingUrl()}/api`;
+}
 
 // Report a maritime hazard (crowdsourced)
 export const reportHazard = async (
@@ -66,7 +69,7 @@ export const reportHazard = async (
   expiryHours: number = 24
 ): Promise<MaritimeHazard | null> => {
   try {
-    const response = await fetch(`${ROUTING_API}/hazards/report`, {
+    const response = await fetch(`${getRoutingAPI()}/hazards/report`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -99,7 +102,7 @@ export const getNearbyHazards = async (
 ): Promise<MaritimeHazard[]> => {
   try {
     const response = await fetch(
-      `${ROUTING_API}/hazards/nearby?lat=${lat}&lng=${lng}&radius=${radius}`
+      `${getRoutingAPI()}/hazards/nearby?lat=${lat}&lng=${lng}&radius=${radius}`
     );
 
     if (!response.ok) throw new Error('Failed to fetch hazards');
@@ -118,7 +121,7 @@ export const voteHazard = async (
   vote: 'up' | 'down'
 ): Promise<boolean> => {
   try {
-    const response = await fetch(`${ROUTING_API}/hazards/${hazardId}/vote`, {
+    const response = await fetch(`${getRoutingAPI()}/hazards/${hazardId}/vote`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ vote })
@@ -141,7 +144,7 @@ export const reportTraffic = async (
   portCode?: string
 ): Promise<TrafficReport | null> => {
   try {
-    const response = await fetch(`${ROUTING_API}/traffic/report`, {
+    const response = await fetch(`${getRoutingAPI()}/traffic/report`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -167,7 +170,7 @@ export const reportTraffic = async (
 // Get traffic heatmap data
 export const getTrafficHeatmap = async (): Promise<TrafficReport[]> => {
   try {
-    const response = await fetch(`${ROUTING_API}/traffic/heatmap`);
+    const response = await fetch(`${getRoutingAPI()}/traffic/heatmap`);
 
     if (!response.ok) throw new Error('Failed to fetch traffic data');
     
@@ -189,7 +192,7 @@ export const calculateIntelligentRoute = async (
   }
 ): Promise<EnhancedRoute | null> => {
   try {
-    const response = await fetch(`${ROUTING_API}/route/calculate`, {
+    const response = await fetch(`${getRoutingAPI()}/route/calculate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

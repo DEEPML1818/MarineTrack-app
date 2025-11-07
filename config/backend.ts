@@ -1,14 +1,16 @@
+
 // 🌐 Backend Configuration
-// Update this with your backend server's IP or domain.
+// Update this with your local machine's IP address
 // Example for LAN testing: 'http://192.168.1.100:3000'
 // ⚠️ Make sure this IP is reachable from your mobile device if using Expo!
 
-export const BACKEND_CONFIG = {
-  // Local LAN IP (adjust this for your environment)
-  URL: "http://192.168.0.194:3000",
+// IMPORTANT: Replace this with your actual local IP address
+// Find it by running: ipconfig (Windows) or ifconfig (Mac/Linux)
+const LOCAL_IP = '192.168.1.100'; // <<< CHANGE THIS TO YOUR ACTUAL IP
 
-  // Alternate localhost option (for same-device web testing)
-  // URL: 'http://localhost:3000',
+export const BACKEND_CONFIG = {
+  // Local machine IP
+  URL: `http://${LOCAL_IP}:3000`,
 
   // WebSocket URL (automatically derived from the HTTP URL)
   get WS_URL() {
@@ -18,7 +20,7 @@ export const BACKEND_CONFIG = {
 
 // ✅ Helper: Check if backend server is reachable
 export const checkBackendConnection = async (): Promise<boolean> => {
-  const healthUrl = `${BACKEND_CONFIG.URL}/health`;
+  const healthUrl = `${BACKEND_CONFIG.URL}/api/health`;
 
   try {
     console.log("🔍 Checking backend connectivity at:", healthUrl);
