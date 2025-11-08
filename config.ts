@@ -34,3 +34,10 @@ export function getSocketUrl(): string {
   console.log('Socket URL configured:', url);
   return url;
 }
+
+export function getRoutingUrl(): string {
+  // Maritime routing is handled by the backend server
+  const url = API_CONFIG.BACKEND_URL;
+  console.log('Routing URL configured:', url);
+  return url;
+}

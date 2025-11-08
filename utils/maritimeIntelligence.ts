@@ -87,7 +87,8 @@ export const reportHazard = async (
     if (!response.ok) throw new Error('Failed to report hazard');
     
     const data = await response.json();
-    return data.hazard;
+    // Backend returns the hazard directly, not wrapped in an object
+    return data.hazard || data;
   } catch (error) {
     console.error('Error reporting hazard:', error);
     return null;
@@ -108,7 +109,8 @@ export const getNearbyHazards = async (
     if (!response.ok) throw new Error('Failed to fetch hazards');
     
     const data = await response.json();
-    return data.hazards;
+    // Backend returns the hazards array directly, not wrapped in an object
+    return Array.isArray(data) ? data : (data.hazards || []);
   } catch (error) {
     console.error('Error fetching hazards:', error);
     return [];
@@ -160,7 +162,8 @@ export const reportTraffic = async (
     if (!response.ok) throw new Error('Failed to report traffic');
     
     const data = await response.json();
-    return data.report;
+    // Backend returns the report directly, not wrapped in an object
+    return data.report || data;
   } catch (error) {
     console.error('Error reporting traffic:', error);
     return null;
@@ -175,7 +178,8 @@ export const getTrafficHeatmap = async (): Promise<TrafficReport[]> => {
     if (!response.ok) throw new Error('Failed to fetch traffic data');
     
     const data = await response.json();
-    return data.traffic;
+    // Backend returns the traffic array directly, not wrapped in an object
+    return Array.isArray(data) ? data : (data.traffic || []);
   } catch (error) {
     console.error('Error fetching traffic heatmap:', error);
     return [];
@@ -205,7 +209,8 @@ export const calculateIntelligentRoute = async (
     if (!response.ok) throw new Error('Failed to calculate route');
     
     const data = await response.json();
-    return data.route;
+    // Backend returns the route directly, not wrapped in an object
+    return data.route || data;
   } catch (error) {
     console.error('Error calculating intelligent route:', error);
     return null;

@@ -67,13 +67,23 @@ function getCardinalDirection(bearing) {
 // Calculate maritime route
 async function calculateRoute(origin, destination, preferences = {}) {
   try {
-    // Create GeoJSON Point features for searoute-ts
+    // Validate coordinates
+    const originLat = parseFloat(origin.lat);
+    const originLng = parseFloat(origin.lng);
+    const destLat = parseFloat(destination.lat);
+    const destLng = parseFloat(destination.lng);
+
+    if (isNaN(originLat) || isNaN(originLng) || isNaN(destLat) || isNaN(destLng)) {
+      throw new Error('Invalid coordinates provided');
+    }
+
+    // Create GeoJSON Point features for searoute-js
     const originPoint = {
       type: 'Feature',
       properties: {},
       geometry: {
         type: 'Point',
-        coordinates: [parseFloat(origin.lng), parseFloat(origin.lat)]
+        coordinates: [originLng, originLat]
       }
     };
 
@@ -82,12 +92,25 @@ async function calculateRoute(origin, destination, preferences = {}) {
       properties: {},
       geometry: {
         type: 'Point',
-        coordinates: [parseFloat(destination.lng), parseFloat(destination.lat)]
+        coordinates: [destLng, destLat]
       }
     };
 
-    // Calculate route using searoute-ts (returns GeoJSON LineString)
-    const routeResult = seaRoute(originPoint, destinationPoint, 'nm');
+    console.log('Calculating route from:', originPoint.geometry.coordinates, 'to:', destinationPoint.geometry.coordinates);
+
+    // Calculate route using searoute-js (returns GeoJSON LineString)
+    let routeResult;
+    try {
+      routeResult = seaRoute(originPoint, destinationPoint, 'nm');
+      console.log('Searoute result:', routeResult ? 'success' : 'null/undefined');
+    } catch (searouteError) {
+      console.error('Searoute library error:', searouteError);
+      throw new Error('Unable to find a valid sea route between these coordinates. Ensure both points are accessible by water.');
+    }
+
+    if (!routeResult || !routeResult.geometry || !routeResult.geometry.coordinates) {
+      throw new Error('Searoute returned invalid result. Coordinates may not be accessible by sea.');
+    }
 
     // Extract waypoints from GeoJSON
     const waypoints = routeResult.geometry.coordinates;
@@ -195,22 +218,32 @@ async function calculateRoute(origin, destination, preferences = {}) {
     return {
       success: true,
       route: {
-        waypoints: formattedWaypoints,
+        coordinates: formattedWaypoints, // Frontend expects 'coordinates', not 'waypoints'
+        waypoints: formattedWaypoints,   // Keep for backward compatibility
         distance: Math.round(distanceNM * 10) / 10,
         duration: Math.round(durationHours * 10) / 10,
         directions,
+        origin,
+        destination,
         safetyScore,
         trafficDensity,
         hazards: routeHazards,
         prediction,
-        recommendations
+        recommendations,
+        alternativeRoutes: [] // Add empty array for alternatives
       }
     };
   } catch (error) {
     console.error('Error calculating route:', error);
+    console.error('Error details:', {
+      origin,
+      destination,
+      errorMessage: error.message,
+      errorStack: error.stack
+    });
     return {
       success: false,
-      error: error.message
+      error: 'Failed to calculate route. Please ensure coordinates are in ocean/water and accessible by sea.'
     };
   }
 }
