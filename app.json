@@ -3,6 +3,9 @@
     "name": "expo-on-replit",
     "slug": "expo-on-replit",
     "version": "1.0.0",
+    "packagerOpts": {
+      "hostType": "lan"
+    },
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",

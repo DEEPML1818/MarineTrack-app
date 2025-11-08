@@ -1,5 +1,5 @@
 entrypoint = "README.md"
-modules = ["python-3.11", "nix", "nodejs-22"]
+modules = ["nodejs-20", "python-3.11", "nix"]
 
 [nix]
 channel = "stable-25_05"
@@ -7,7 +7,7 @@ packages = ["openssl", "postgresql"]
 
 [[ports]]
 localPort = 3000
-externalPort = 3003
+externalPort = 3000
 
 [[ports]]
 localPort = 3001
@@ -16,6 +16,10 @@ externalPort = 3001
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 5001
+externalPort = 3002
 
 [workflows]
 runButton = "Project"
@@ -67,15 +71,23 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
+args = "frontend"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
 args = "backend-server"
 
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "maritime-routing"
+[[workflows.workflow]]
+name = "frontend"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "frontend"
+task = "shell.exec"
+args = "npx expo start --web --port 5000"
+waitForPort = 5000
 
 [[workflows.workflow]]
 name = "backend-server"
@@ -88,30 +100,6 @@ waitForPort = 3000
 
 [workflows.workflow.metadata]
 outputType = "console"
-
-[[workflows.workflow]]
-name = "maritime-routing"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python backend/maritime_routing.py"
-waitForPort = 3001
-
-[workflows.workflow.metadata]
-outputType = "console"
-
-[[workflows.workflow]]
-name = "frontend"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "./node_modules/.bin/expo start --web --port 5000"
-waitForPort = 5000
-
-[workflows.workflow.metadata]
-outputType = "webview"
 
 [agent]
 expertMode = true

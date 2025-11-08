@@ -6,7 +6,7 @@
 
 // IMPORTANT: Replace this with your actual local IP address
 // Find it by running: ipconfig (Windows) or ifconfig (Mac/Linux)
-const LOCAL_IP = '192.168.1.100'; // <<< CHANGE THIS TO YOUR ACTUAL IP
+const LOCAL_IP = '192.168.0.194'; // <<< CHANGE THIS TO YOUR ACTUAL IP
 
 export const BACKEND_CONFIG = {
   // Local machine IP
