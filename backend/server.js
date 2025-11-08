@@ -2,9 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
-const { createProxyMiddleware } = require('http-proxy-middleware');
 const fs = require('fs').promises;
 const path = require('path');
+const maritimeRoutes = require('./maritime-routes');
 
 const app = express();
 const server = http.createServer(app);
@@ -16,7 +16,6 @@ const io = new Server(server, {
 });
 
 const PORT = process.env.PORT || 3000;
-const MARITIME_ROUTING_URL = 'http://localhost:3001';
 const DATA_DIR = path.join(__dirname, 'data');
 const VESSELS_FILE = path.join(DATA_DIR, 'vessels.json');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
@@ -28,26 +27,6 @@ const PORTS_FILE = path.join(DATA_DIR, 'ports.json');
 
 app.use(cors());
 app.use(express.json());
-
-// Proxy middleware for maritime routing service
-// Forward /api/hazards, /api/traffic, and /api/route requests to port 3001
-app.use('/api/hazards', createProxyMiddleware({
-  target: MARITIME_ROUTING_URL,
-  changeOrigin: true,
-  pathRewrite: { '^/api/hazards': '/api/hazards' }
-}));
-
-app.use('/api/traffic', createProxyMiddleware({
-  target: MARITIME_ROUTING_URL,
-  changeOrigin: true,
-  pathRewrite: { '^/api/traffic': '/api/traffic' }
-}));
-
-app.use('/api/route', createProxyMiddleware({
-  target: MARITIME_ROUTING_URL,
-  changeOrigin: true,
-  pathRewrite: { '^/api/route': '/api/route' }
-}));
 
 // Ensure data directory and files exist
 async function ensureDataFiles() {
@@ -414,6 +393,92 @@ app.get('/api/ports/:portId', async (req, res) => {
     res.json(port);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch port' });
+  }
+});
+
+// Maritime Routing Endpoints (using searoute-ts)
+
+// Calculate maritime route
+app.post('/api/route/calculate', async (req, res) => {
+  try {
+    const { origin, destination, preferences } = req.body;
+    
+    if (!origin || !destination) {
+      return res.status(400).json({ error: 'Origin and destination are required' });
+    }
+    
+    const result = await maritimeRoutes.calculateRoute(origin, destination, preferences);
+    
+    if (result.success) {
+      res.json(result.route);
+    } else {
+      res.status(500).json({ error: result.error });
+    }
+  } catch (error) {
+    console.error('Route calculation error:', error);
+    res.status(500).json({ error: 'Failed to calculate route' });
+  }
+});
+
+// Report a hazard
+app.post('/api/hazards/report', async (req, res) => {
+  try {
+    const result = await maritimeRoutes.reportHazard(req.body);
+    
+    if (result.success) {
+      // Broadcast hazard to all connected clients
+      io.emit('hazard_reported', result.hazard);
+      res.json(result.hazard);
+    } else {
+      res.status(500).json({ error: result.error });
+    }
+  } catch (error) {
+    console.error('Hazard report error:', error);
+    res.status(500).json({ error: 'Failed to report hazard' });
+  }
+});
+
+// Get nearby hazards
+app.get('/api/hazards/nearby', async (req, res) => {
+  try {
+    const { lat, lng, radius } = req.query;
+    
+    if (!lat || !lng) {
+      return res.status(400).json({ error: 'Latitude and longitude are required' });
+    }
+    
+    const result = await maritimeRoutes.getNearbyHazards(
+      parseFloat(lat),
+      parseFloat(lng),
+      radius ? parseFloat(radius) : 50
+    );
+    
+    if (result.success) {
+      res.json(result.hazards);
+    } else {
+      res.status(500).json({ error: result.error });
+    }
+  } catch (error) {
+    console.error('Nearby hazards error:', error);
+    res.status(500).json({ error: 'Failed to get nearby hazards' });
+  }
+});
+
+// Report traffic
+app.post('/api/traffic/report', async (req, res) => {
+  try {
+    const result = await maritimeRoutes.reportTraffic(req.body);
+    
+    if (result.success) {
+      // Broadcast traffic report to all connected clients
+      io.emit('traffic_reported', result.report);
+      res.json(result.report);
+    } else {
+      res.status(500).json({ error: result.error });
+    }
+  } catch (error) {
+    console.error('Traffic report error:', error);
+    res.status(500).json({ error: 'Failed to report traffic' });
   }
 });
 

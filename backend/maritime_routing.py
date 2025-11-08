@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import searoute as sr
+from scgraph.geographs.marnet import marnet_geograph
 import json
 import sys
 from flask import Flask, request, jsonify
@@ -270,17 +270,17 @@ def calculate_route():
         return jsonify({'error': 'Origin and destination are required'}), 400
     
     # Extract coordinates
-    origin_coords = [float(origin['lng']), float(origin['lat'])]
-    destination_coords = [float(destination['lng']), float(destination['lat'])]
+    origin_lat = float(origin['lat'])
+    origin_lng = float(origin['lng'])
+    destination_lat = float(destination['lat'])
+    destination_lng = float(destination['lng'])
     
     try:
-        # Calculate primary maritime route using searoute
-        route = sr.searoute(
-            origin_coords,
-            destination_coords,
-            units="naut",
-            speed_knot=preferences.get('speed', 15),
-            append_orig_dest=True
+        # Calculate primary maritime route using scgraph (10x faster than searoute!)
+        route = marnet_geograph.get_shortest_path(
+            origin_node={"latitude": origin_lat, "longitude": origin_lng},
+            destination_node={"latitude": destination_lat, "longitude": destination_lng},
+            output_units='km'
         )
         
         # Load hazards and traffic data for AI optimization
@@ -290,15 +290,18 @@ def calculate_route():
         recent_traffic = [t for t in traffic_data if 
                          datetime.fromisoformat(t['timestamp']) > datetime.now() - timedelta(hours=6)]
         
-        # Extract waypoints
-        waypoints = route['geometry']['coordinates']
-        distance_nm = route['properties']['length']
-        duration_hours = route['properties']['duration_hours']
+        # Extract waypoints from scgraph output
+        distance_km = route['length']
+        distance_nm = distance_km * 0.539957  # Convert km to nautical miles
+        
+        # Calculate duration based on speed
+        speed_knots = preferences.get('speed', 15)
+        duration_hours = distance_nm / speed_knots if speed_knots > 0 else 0
         
         # Convert waypoints to lat/lng format
         formatted_waypoints = [
-            {'lat': coord[1], 'lng': coord[0]} 
-            for coord in waypoints
+            {'lat': point['latitude'], 'lng': point['longitude']} 
+            for point in route['coordinate_path']
         ]
         
         # AI Route Scoring: Analyze route for hazards and traffic
