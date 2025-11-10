@@ -1,114 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
+  StatusBar,
   ScrollView,
-  Platform,
-  Modal,
-  KeyboardAvoidingView,
 } from 'react-native';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/Colors';
-import { getNearbyTrackedVessels } from '@/utils/trackingService';
-import { getCurrentUser } from '@/utils/auth';
-import { sendMessage, getChatMessages, getChatRoom, subscribeToMessages } from '@/utils/realtimeChat';
+import { Theme } from '@/constants/Theme';
+import { LivePropertyChip, VesselDetailHeader, ActionButton } from '@/components/ui/redesign';
 import * as Location from 'expo-location';
-import EnhancedVesselMap from '@/components/EnhancedVesselMap';
 import WazeVesselMap from '@/components/WazeVesselMap';
 
-interface Vessel {
-  id: string;
-  name: string;
-  type: string;
-  latitude: number;
-  longitude: number;
-  speed: number;
-  heading: number;
-  distance: number;
-  status: string;
-}
-
 export default function MapScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [vessels, setVessels] = useState<Vessel[]>([]);
-  const [selectedVessel, setSelectedVessel] = useState<Vessel | null>(null);
-  const [showChatModal, setShowChatModal] = useState(false);
-  const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<any[]>([]);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [chatId, setChatId] = useState<string>('');
-
-  const chatUnsubscribeRef = useRef<(() => void) | null>(null);
-  const isMountedRef = useRef<boolean>(true);
+  const [showDetails, setShowDetails] = useState(true);
 
   useEffect(() => {
-    isMountedRef.current = true;
-    loadCurrentUser();
     setupLocation();
-
-    return () => {
-      isMountedRef.current = false;
-      if (chatUnsubscribeRef.current) {
-        chatUnsubscribeRef.current();
-      }
-    };
   }, []);
-
-  useEffect(() => {
-    if (userLocation) {
-      loadVessels();
-      const interval = setInterval(loadVessels, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [userLocation]);
-
-  useEffect(() => {
-    if (!selectedVessel || !currentUser) return;
-
-    let isActive = true;
-
-    const setupChat = async () => {
-      const roomId = await getChatRoom(currentUser.id, selectedVessel.id);
-      if (!isActive) return;
-
-      setChatId(roomId);
-
-      const chatMessages = await getChatMessages(roomId);
-      if (!isActive) return;
-
-      setMessages(chatMessages);
-
-      const subscription = subscribeToMessages(roomId, (newMessage) => {
-        if (isActive && newMessage.senderId !== currentUser.id) {
-          setMessages(prev => [...prev, newMessage]);
-        }
-      });
-
-      chatUnsubscribeRef.current = () => subscription.unsubscribe();
-    };
-
-    setupChat();
-
-    return () => {
-      isActive = false;
-      if (chatUnsubscribeRef.current) {
-        chatUnsubscribeRef.current();
-        chatUnsubscribeRef.current = null;
-      }
-    };
-  }, [selectedVessel, currentUser]);
-
-  const loadCurrentUser = async () => {
-    const user = await getCurrentUser();
-    if (isMountedRef.current) {
-      setCurrentUser(user);
-    }
-  };
 
   const setupLocation = async () => {
     try {
@@ -122,239 +32,82 @@ export default function MapScreen() {
         accuracy: Location.Accuracy.Balanced,
       });
 
-      if (isMountedRef.current) {
-        setUserLocation({
-          lat: location.coords.latitude,
-          lng: location.coords.longitude,
-        });
-      }
-
-      Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.High,
-          timeInterval: 10000,
-          distanceInterval: 50,
-        },
-        (location) => {
-          if (isMountedRef.current) {
-            setUserLocation({
-              lat: location.coords.latitude,
-              lng: location.coords.longitude,
-            });
-          }
-        }
-      );
+      setUserLocation({
+        lat: location.coords.latitude,
+        lng: location.coords.longitude,
+      });
     } catch (error) {
-      console.error('Error setting up location:', error);
-    }
-  };
-
-  const loadVessels = async () => {
-    if (!userLocation) return;
-
-    try {
-      const trackedVessels = await getNearbyTrackedVessels(userLocation.lat, userLocation.lng, 50);
-      
-      if (!isMountedRef.current) return;
-
-      const vesselsWithDistance = trackedVessels.map(v => ({
-        id: v.userId,
-        name: v.vesselInfo.vesselName,
-        type: v.vesselInfo.vesselType,
-        latitude: v.location.latitude,
-        longitude: v.location.longitude,
-        speed: v.location.speed || 0,
-        heading: v.location.heading || 0,
-        distance: calculateDistance(
-          userLocation.lat,
-          userLocation.lng,
-          v.location.latitude,
-          v.location.longitude
-        ),
-        status: v.status,
-      }));
-
-      setVessels(vesselsWithDistance);
-    } catch (error) {
-      console.error('Error loading vessels:', error);
-      setVessels([]);
-    }
-  };
-
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
-
-  const handleVesselPress = (vessel: Vessel) => {
-    setSelectedVessel(vessel);
-    setShowChatModal(true);
-  };
-
-  const closeChat = () => {
-    setShowChatModal(false);
-    setSelectedVessel(null);
-    setMessages([]);
-    if (chatUnsubscribeRef.current) {
-      chatUnsubscribeRef.current();
-      chatUnsubscribeRef.current = null;
-    }
-  };
-
-  const handleSendMessage = async () => {
-    if (!message.trim() || !currentUser || !chatId) return;
-
-    const newMessage = await sendMessage(
-      chatId,
-      currentUser.id,
-      currentUser.name,
-      message.trim()
-    );
-
-    if (isMountedRef.current) {
-      setMessages(prev => [...prev, newMessage]);
-      setMessage('');
+      console.error('Error getting location:', error);
     }
   };
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { backgroundColor: colors.primary }]}>
-        <Text style={styles.headerTitle}>Live Vessel Map</Text>
-        <Text style={styles.headerSubtitle}>Tap vessels to communicate • {vessels.length} vessels online</Text>
-      </View>
-
+      <StatusBar barStyle="light-content" />
+      
       <View style={styles.mapContainer}>
-        <WazeVesselMap
-          userLocation={userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null}
-          vessels={vessels.map(v => ({
-            id: v.id,
-            name: v.name,
-            latitude: v.latitude,
-            longitude: v.longitude,
-            speed: v.speed
-          }))}
-          height={500}
-        />
+        <WazeVesselMap />
+        
+        <View style={styles.headerOverlay}>
+          <View style={styles.locationBadge}>
+            <Text style={styles.locationIcon}>📍</Text>
+            <Text style={styles.locationText}>Coastal City</Text>
+          </View>
+          <TouchableOpacity style={styles.settingsButton}>
+            <Text style={styles.settingsIcon}>⚙️</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Vessels List */}
-      <ScrollView style={styles.vesselsList}>
-        {vessels.map((vessel) => (
-          <TouchableOpacity
-            key={vessel.id}
-            style={[styles.vesselCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-            onPress={() => handleVesselPress(vessel)}
-          >
-            <Text style={styles.vesselIcon}>🚢</Text>
-            <View style={styles.vesselInfo}>
-              <Text style={[styles.vesselName, { color: colors.text }]}>{vessel.name}</Text>
-              <Text style={[styles.vesselDetails, { color: colors.icon }]}>
-                {vessel.type} • {vessel.distance.toFixed(1)} km • {vessel.speed.toFixed(1)} kn
-              </Text>
+      {showDetails && (
+        <View style={styles.detailsPanel}>
+          <VesselDetailHeader
+            vesselName="MT Golden Frigga"
+            vesselType="OIL/CHEM (IMO 9315085)"
+            status="COLLECTING.LEAD"
+            timestamp="15 miles ago • 15 minutes ago"
+            onClose={() => setShowDetails(false)}
+          />
+
+          <ScrollView style={styles.detailsScroll}>
+            <View style={styles.detailsSection}>
+              <Text style={styles.sectionTitle}>Live properties</Text>
+              
+              <View style={styles.propertiesGrid}>
+                <LivePropertyChip
+                  icon="⛵"
+                  value="4.3 knots"
+                  label="Save or skip"
+                />
+                <LivePropertyChip
+                  icon="🌊"
+                  value="4 m"
+                  label="Very rough"
+                />
+              </View>
+              
+              <ActionButton
+                label="Avoid choppy waters"
+                onPress={() => {}}
+                variant="danger"
+                fullWidth
+                icon={<Text>⚠️</Text>}
+              />
             </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
 
-      {/* Chat Modal */}
-      <Modal
-        visible={showChatModal}
-        animationType="slide"
-        onRequestClose={closeChat}
-      >
-        <KeyboardAvoidingView 
-          style={[styles.modalContainer, { backgroundColor: colors.background }]}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-          <View style={[styles.chatHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-            <TouchableOpacity onPress={closeChat}>
-              <Text style={[styles.backButton, { color: colors.primary }]}>← Back to Map</Text>
-            </TouchableOpacity>
-            {selectedVessel && (
-              <View style={styles.chatHeaderInfo}>
-                <Text style={[styles.chatHeaderName, { color: colors.text }]}>
-                  🚢 {selectedVessel.name}
-                </Text>
-                <Text style={[styles.chatHeaderStatus, { color: colors.icon }]}>
-                  {selectedVessel.type} • {selectedVessel.distance.toFixed(1)} km away
-                </Text>
-              </View>
-            )}
-          </View>
+            <View style={styles.divider} />
 
-          <ScrollView style={styles.messagesContainer}>
-            {messages.length === 0 ? (
-              <View style={styles.emptyChat}>
-                <Text style={[styles.emptyChatText, { color: colors.icon }]}>
-                  No messages yet. Start a conversation!
-                </Text>
-              </View>
-            ) : (
-              messages.map((msg) => (
-                <View
-                  key={msg.id}
-                  style={[
-                    styles.messageBubble,
-                    {
-                      backgroundColor: msg.senderId === currentUser?.id ? colors.primary : colors.card,
-                      alignSelf: msg.senderId === currentUser?.id ? 'flex-end' : 'flex-start',
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.messageSender,
-                      { color: msg.senderId === currentUser?.id ? '#fff' : colors.icon },
-                    ]}
-                  >
-                    {msg.senderName}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.messageText,
-                      { color: msg.senderId === currentUser?.id ? '#fff' : colors.text },
-                    ]}
-                  >
-                    {msg.text}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.messageTime,
-                      { color: msg.senderId === currentUser?.id ? '#fff' : colors.icon },
-                    ]}
-                  >
-                    {new Date(msg.timestamp).toLocaleTimeString()}
-                  </Text>
-                </View>
-              ))
-            )}
+            <View style={styles.detailsSection}>
+              <ActionButton
+                label="Update port information"
+                onPress={() => {}}
+                variant="primary"
+                fullWidth
+              />
+            </View>
           </ScrollView>
-
-          <View style={[styles.inputContainer, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
-            <TextInput
-              style={[styles.input, { backgroundColor: colors.background, color: colors.text }]}
-              placeholder="Type a message..."
-              placeholderTextColor={colors.icon}
-              value={message}
-              onChangeText={setMessage}
-            />
-            <TouchableOpacity
-              style={[styles.sendButton, { backgroundColor: colors.primary }]}
-              onPress={handleSendMessage}
-            >
-              <Text style={styles.sendButtonText}>📤</Text>
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+        </View>
+      )}
     </View>
   );
 }
@@ -362,152 +115,86 @@ export default function MapScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    paddingTop: 50,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#fff',
-    opacity: 0.9,
-    marginTop: 4,
+    backgroundColor: Theme.colors.navy,
   },
   mapContainer: {
-    height: 500,
+    flex: 1,
     position: 'relative',
   },
-  legend: {
+  headerOverlay: {
     position: 'absolute',
-    bottom: 16,
-    right: 16,
-    padding: 12,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  legendTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  legendItem: {
-    fontSize: 12,
-  },
-  vesselsList: {
-    flex: 1,
-    padding: 16,
-  },
-  vesselCard: {
+    top: 50,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 12,
+    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: Theme.spacing.base,
   },
-  vesselIcon: {
-    fontSize: 32,
-    marginRight: 12,
-  },
-  vesselInfo: {
-    flex: 1,
-  },
-  vesselName: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  vesselDetails: {
-    fontSize: 12,
-    marginTop: 4,
-  },
-  modalContainer: {
-    flex: 1,
-  },
-  chatHeader: {
-    padding: 16,
-    borderBottomWidth: 1,
-    paddingTop: 50,
-  },
-  backButton: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  chatHeaderInfo: {
+  locationBadge: {
+    flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: Theme.colors.white,
+    paddingHorizontal: Theme.spacing.md,
+    paddingVertical: Theme.spacing.sm,
+    borderRadius: Theme.radius.full,
+    opacity: 0.95,
+    ...Theme.shadows.md,
   },
-  chatHeaderName: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  locationIcon: {
+    fontSize: Theme.fonts.sizes.base,
+    marginRight: Theme.spacing.xs,
   },
-  chatHeaderStatus: {
-    fontSize: 12,
-    marginTop: 2,
+  locationText: {
+    color: Theme.colors.navy,
+    fontSize: Theme.fonts.sizes.md,
+    fontWeight: Theme.fonts.weights.medium,
   },
-  messagesContainer: {
-    flex: 1,
-    padding: 16,
-  },
-  emptyChat: {
-    flex: 1,
+  settingsButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: Theme.colors.white,
+    borderRadius: Theme.radius.full,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 60,
+    opacity: 0.95,
+    ...Theme.shadows.md,
   },
-  emptyChatText: {
-    fontSize: 16,
+  settingsIcon: {
+    fontSize: Theme.fonts.sizes.lg,
   },
-  messageBubble: {
-    maxWidth: '75%',
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 12,
+  detailsPanel: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    maxHeight: '60%',
+    backgroundColor: Theme.colors.white,
+    borderTopLeftRadius: Theme.radius.xl,
+    borderTopRightRadius: Theme.radius.xl,
+    ...Theme.shadows.xl,
   },
-  messageSender: {
-    fontSize: 11,
-    fontWeight: '600',
-    marginBottom: 4,
-    opacity: 0.8,
+  detailsScroll: {
+    maxHeight: 400,
   },
-  messageText: {
-    fontSize: 15,
+  detailsSection: {
+    padding: Theme.spacing.base,
   },
-  messageTime: {
-    fontSize: 11,
-    marginTop: 4,
-    opacity: 0.7,
+  sectionTitle: {
+    fontSize: Theme.fonts.sizes.lg,
+    fontWeight: Theme.fonts.weights.bold,
+    color: Theme.colors.navy,
+    marginBottom: Theme.spacing.md,
   },
-  inputContainer: {
+  propertiesGrid: {
     flexDirection: 'row',
-    padding: 12,
-    borderTopWidth: 1,
-    gap: 8,
+    gap: Theme.spacing.md,
+    marginBottom: Theme.spacing.base,
   },
-  input: {
-    flex: 1,
-    height: 44,
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    fontSize: 15,
-  },
-  sendButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sendButtonText: {
-    fontSize: 20,
+  divider: {
+    height: 1,
+    backgroundColor: Theme.colors.mutedGray,
+    marginHorizontal: Theme.spacing.base,
+    opacity: 0.1,
   },
 });

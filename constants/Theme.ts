@@ -1,44 +1,45 @@
 
-// MarineTrack Theme - Based on design-system/tokens.css
-// ZUS Coffee-Inspired Maritime Aesthetic
+// MarineTrack Theme - ZUS Coffee-Inspired Maritime Aesthetic
+// Delivery-first design with warm, purposeful interactions
 
 export const Theme = {
   // Primary Colors
   colors: {
-    teal: '#0F9AA7',
-    navy: '#082837',
-    coral: '#FF6B61',
-    sand: '#F6EBD9',
-    offWhite: '#FBFAF8',
-    mutedGray: '#6B7785',
+    teal: '#0F9AA7',        // Primary action color
+    navy: '#082837',        // Deep navy for headers and emphasis
+    coral: '#FF6B61',       // Alert and attention states
+    sand: '#F6EBD9',        // Warm backgrounds and highlights
+    offWhite: '#FBFAF8',    // Main background
+    mutedGray: '#6B7785',   // Secondary text and borders
     white: '#FFFFFF',
     black: '#0A0E12',
     
     // Semantic Colors
-    success: '#00C896',
+    success: '#0F9AA7',     // Use teal for success
     warning: '#FFA726',
-    danger: '#FF5252',
+    danger: '#FF6B61',      // Use coral for danger
     info: '#0F9AA7',
     
-    // Status Colors
-    statusLive: '#00E676',
-    statusDocked: '#6B7785',
-    statusDelayed: '#FFA726',
-    statusAttention: '#FF6B61',
+    // Status Colors (high contrast for glanceability)
+    statusLive: '#0F9AA7',      // Teal for live/active
+    statusDocked: '#6B7785',    // Muted for docked
+    statusDelayed: '#FFA726',   // Warning orange
+    statusAttention: '#FF6B61', // Coral for attention
   },
   
-  // Typography
+  // Typography - Geometric sans with clear hierarchy
   fonts: {
-    base: 'Inter',
-    heading: 'Poppins',
+    base: 'Inter',          // Body and general text
+    heading: 'Poppins',     // Headers and emphasis
     sizes: {
-      xs: 10,
-      sm: 12,
-      md: 14,
-      base: 16,
-      lg: 20,
-      xl: 24,
-      xxl: 28,
+      xs: 10,      // Helper text, labels
+      sm: 12,      // Secondary text, timestamps
+      md: 14,      // Body text
+      base: 16,    // Primary body, inputs
+      lg: 20,      // Section headers
+      xl: 24,      // Screen titles
+      xxl: 28,     // Hero headings
+      xxxl: 32,    // Large hero text
     },
     weights: {
       regular: '400' as const,
@@ -47,22 +48,23 @@ export const Theme = {
       bold: '700' as const,
     },
     lineHeights: {
-      tight: 1.2,
-      normal: 1.5,
-      relaxed: 1.75,
+      tight: 1.2,     // Headings
+      normal: 1.5,    // Body text
+      relaxed: 1.75,  // Long-form content
     },
   },
   
-  // Spacing (4px baseline)
+  // Spacing (4px baseline grid)
   spacing: {
-    xs: 4,
-    sm: 8,
-    md: 12,
-    base: 16,
-    lg: 20,
-    xl: 24,
-    xxl: 32,
-    xxxl: 40,
+    xs: 4,       // Tight spacing
+    sm: 8,       // Small gaps
+    md: 12,      // Medium spacing
+    base: 16,    // Base unit
+    lg: 20,      // Large spacing
+    xl: 24,      // Extra large
+    xxl: 32,     // Double extra large
+    xxxl: 40,    // Hero spacing
+    huge: 48,    // Section spacing
   },
   
   // Border Radius
@@ -122,9 +124,44 @@ export const Theme = {
     },
   },
   
-  // Touch Targets
+  // Touch Targets (44x44 minimum for maritime use)
   touchTarget: {
     min: 44,
+    comfortable: 48,
+  },
+  
+  // Motion - Fast and purposeful
+  motion: {
+    duration: {
+      fast: 120,      // Quick transitions
+      base: 180,      // Standard transitions
+      slow: 220,      // Deliberate animations
+      slower: 300,    // Complex transitions
+    },
+    easing: {
+      natural: 'cubic-bezier(0.4, 0, 0.2, 1)',     // Natural motion
+      easeOut: 'cubic-bezier(0, 0, 0.2, 1)',       // Exit animations
+      easeIn: 'cubic-bezier(0.4, 0, 1, 1)',        // Enter animations
+      spring: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)', // Bouncy
+    },
+  },
+  
+  // Component-specific tokens
+  cards: {
+    borderRadius: 16,
+    elevation: 4,
+  },
+  
+  chips: {
+    borderRadius: 999,  // Full pill shape
+    height: 44,
+  },
+  
+  buttons: {
+    borderRadius: 12,
+    heightSmall: 36,
+    heightMedium: 44,
+    heightLarge: 52,
   },
 };
 

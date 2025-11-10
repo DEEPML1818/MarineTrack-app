@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/Colors';
-import { fetchWeatherAPIData, getMockHourlyForecast, getMockWeatherData } from '@/utils/weatherApi';
+import { View, Text, StyleSheet, ScrollView, StatusBar, RefreshControl } from 'react-native';
+import { Theme } from '@/constants/Theme';
+import { WeatherWidget, SectionHeader } from '@/components/ui/redesign';
+import { fetchWeatherAPIData, getMockWeatherData } from '@/utils/weatherApi';
 
 export default function WeatherScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
   const [weatherData, setWeatherData] = useState(getMockWeatherData());
-  const [hourlyForecast, setHourlyForecast] = useState(getMockHourlyForecast());
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const loadWeather = async () => {
@@ -27,227 +25,221 @@ export default function WeatherScreen() {
     loadWeather();
   }, []);
 
-  const alerts = [
-    { id: 1, type: 'warning', message: 'Strong winds expected after 2 PM - up to 25 km/h', severity: 'medium' },
-    { id: 2, type: 'info', message: 'Good fishing conditions in the morning hours', severity: 'low' },
-    { id: 3, type: 'warning', message: 'Wave height increasing to 1.5m in the afternoon', severity: 'medium' },
-    { id: 4, type: 'info', message: 'Visibility excellent for navigation (8+ km)', severity: 'low' },
-  ];
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setRefreshing(false);
+  };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.primary }]}>
-        <Text style={styles.headerTitle}>Weather & Navigation</Text>
-        <Text style={styles.headerSubtitle}>Marine Weather Forecast</Text>
-      </View>
-
-      <View style={[styles.currentWeather, { backgroundColor: colors.card }]}>
-        <Text style={styles.currentIcon}>{weatherData.icon}</Text>
-        <Text style={[styles.currentTemp, { color: colors.text }]}>{weatherData.temperature}°C</Text>
-        <Text style={[styles.currentCondition, { color: colors.icon }]}>{weatherData.condition}</Text>
-        <View style={styles.currentDetails}>
-          <View style={styles.detailItem}>
-            <Text style={styles.detailIcon}>💨</Text>
-            <Text style={[styles.detailText, { color: colors.text }]}>{weatherData.windSpeed} km/h</Text>
-            <Text style={[styles.detailLabel, { color: colors.icon }]}>Wind</Text>
+    <>
+      <StatusBar barStyle="light-content" />
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <View style={styles.locationBadge}>
+            <Text style={styles.locationIcon}>📍</Text>
+            <Text style={styles.locationText}>Coastal City</Text>
           </View>
-          <View style={styles.detailItem}>
-            <Text style={styles.detailIcon}>🌊</Text>
-            <Text style={[styles.detailText, { color: colors.text }]}>{weatherData.waveHeight} m</Text>
-            <Text style={[styles.detailLabel, { color: colors.icon }]}>Waves</Text>
-          </View>
-          <View style={styles.detailItem}>
-            <Text style={styles.detailIcon}>👁️</Text>
-            <Text style={[styles.detailText, { color: colors.text }]}>{weatherData.visibility} km</Text>
-            <Text style={[styles.detailLabel, { color: colors.icon }]}>Visibility</Text>
-          </View>
+          <Text style={styles.menuIcon}>⚙️</Text>
         </View>
       </View>
 
-      {alerts.length > 0 && (
-        <View style={styles.alertsSection}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>⚠️ Alerts</Text>
-          {alerts.map((alert) => (
-            <View
-              key={alert.id}
-              style={[
-                styles.alertCard,
-                {
-                  backgroundColor: alert.severity === 'medium' ? colors.danger : colors.card,
-                  borderColor: colors.border,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.alertText,
-                  { color: alert.severity === 'medium' ? '#fff' : colors.text },
-                ]}
-              >
-                {alert.message}
-              </Text>
+      <ScrollView
+        style={styles.screen}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Theme.colors.teal} />
+        }
+      >
+        <WeatherWidget
+          temperature={weatherData.temperature}
+          condition={weatherData.condition}
+          windSpeed={weatherData.windSpeed}
+          windDirection="N"
+          humidity={65}
+          location="Marine Zone"
+        />
+
+        <SectionHeader title="Port nefo" />
+
+        <View style={styles.portCard}>
+          <View style={styles.portHeader}>
+            <View>
+              <View style={styles.conditionRow}>
+                <Text style={styles.conditionIcon}>☀️</Text>
+                <Text style={styles.conditionText}>Sunny</Text>
+                <Text style={styles.temperatureText}>{weatherData.temperature}°C</Text>
+              </View>
+              <Text style={styles.portName}>Charleston Port</Text>
+              <Text style={styles.portLocation}>Norfolk Terminail</Text>
             </View>
-          ))}
+            <Text style={styles.addIcon}>+</Text>
+          </View>
+
+          <View style={styles.divider} />
+
+          <View style={styles.portDetails}>
+            <Text style={styles.etaLabel}>ETA: 2/172 40gpm</Text>
+          </View>
         </View>
-      )}
 
-      <View style={styles.forecastSection}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Hourly Forecast</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.hourlyScroll}>
-          {hourlyForecast.map((hour, index) => (
-            <View
-              key={index}
-              style={[styles.hourCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-            >
-              <Text style={[styles.hourTime, { color: colors.icon }]}>{hour.time}</Text>
-              <Text style={styles.hourIcon}>{hour.icon}</Text>
-              <Text style={[styles.hourTemp, { color: colors.text }]}>{hour.temp}</Text>
-              <Text style={[styles.hourCondition, { color: colors.icon }]}>{hour.condition}</Text>
-              <Text style={[styles.hourWind, { color: colors.icon }]}>💨 {hour.wind}</Text>
+        <View style={styles.detailsCard}>
+          <Text style={styles.detailsTitle}>Marine Conditions</Text>
+          
+          <View style={styles.detailsGrid}>
+            <View style={styles.detailItem}>
+              <Text style={styles.detailIcon}>🌊</Text>
+              <Text style={styles.detailValue}>{weatherData.waveHeight} m</Text>
+              <Text style={styles.detailLabel}>Wave Height</Text>
             </View>
-          ))}
-        </ScrollView>
-      </View>
+            <View style={styles.detailItem}>
+              <Text style={styles.detailIcon}>👁️</Text>
+              <Text style={styles.detailValue}>{weatherData.visibility} km</Text>
+              <Text style={styles.detailLabel}>Visibility</Text>
+            </View>
+            <View style={styles.detailItem}>
+              <Text style={styles.detailIcon}>💨</Text>
+              <Text style={styles.detailValue}>{weatherData.windSpeed} kts</Text>
+              <Text style={styles.detailLabel}>Wind Speed</Text>
+            </View>
+          </View>
+        </View>
 
-      <View style={[styles.safetyTips, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Text style={[styles.tipsTitle, { color: colors.primary }]}>🧭 Safety Tips</Text>
-        <Text style={[styles.tipText, { color: colors.text }]}>
-          • Check weather updates every 2 hours{'\n'}
-          • Avoid sailing in winds above 25 km/h{'\n'}
-          • Monitor wave heights for safe navigation{'\n'}
-          • Keep emergency contacts ready
-        </Text>
-      </View>
-    </ScrollView>
+        <View style={styles.bottomSpacing} />
+      </ScrollView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
+    backgroundColor: Theme.colors.offWhite,
   },
   header: {
+    backgroundColor: Theme.colors.navy,
     paddingTop: 50,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
+    paddingBottom: Theme.spacing.base,
+    paddingHorizontal: Theme.spacing.base,
   },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#fff',
-    opacity: 0.9,
-    marginTop: 4,
-  },
-  currentWeather: {
-    margin: 16,
-    padding: 24,
-    borderRadius: 16,
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  currentIcon: {
-    fontSize: 80,
-    marginBottom: 12,
-  },
-  currentTemp: {
-    fontSize: 48,
-    fontWeight: 'bold',
-  },
-  currentCondition: {
-    fontSize: 18,
-    marginTop: 8,
-  },
-  currentDetails: {
+  locationBadge: {
     flexDirection: 'row',
-    gap: 32,
-    marginTop: 24,
+    alignItems: 'center',
+    backgroundColor: Theme.colors.white,
+    paddingHorizontal: Theme.spacing.md,
+    paddingVertical: Theme.spacing.xs,
+    borderRadius: Theme.radius.full,
+    opacity: 0.15,
+  },
+  locationIcon: {
+    fontSize: Theme.fonts.sizes.base,
+    marginRight: Theme.spacing.xs,
+  },
+  locationText: {
+    color: Theme.colors.white,
+    fontSize: Theme.fonts.sizes.md,
+    fontWeight: Theme.fonts.weights.medium,
+  },
+  menuIcon: {
+    fontSize: Theme.fonts.sizes.lg,
+  },
+  portCard: {
+    backgroundColor: Theme.colors.white,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.xl,
+    marginHorizontal: Theme.spacing.base,
+    marginBottom: Theme.spacing.xl,
+    ...Theme.shadows.md,
+  },
+  portHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  conditionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Theme.spacing.sm,
+    marginBottom: Theme.spacing.md,
+  },
+  conditionIcon: {
+    fontSize: Theme.fonts.sizes.lg,
+  },
+  conditionText: {
+    fontSize: Theme.fonts.sizes.md,
+    color: Theme.colors.mutedGray,
+  },
+  temperatureText: {
+    fontSize: Theme.fonts.sizes.lg,
+    fontWeight: Theme.fonts.weights.bold,
+    color: Theme.colors.navy,
+  },
+  portName: {
+    fontSize: Theme.fonts.sizes.xl,
+    fontWeight: Theme.fonts.weights.bold,
+    color: Theme.colors.navy,
+    marginBottom: Theme.spacing.xs,
+  },
+  portLocation: {
+    fontSize: Theme.fonts.sizes.md,
+    color: Theme.colors.mutedGray,
+  },
+  addIcon: {
+    fontSize: Theme.fonts.sizes.xxl,
+    color: Theme.colors.mutedGray,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: Theme.colors.mutedGray,
+    marginVertical: Theme.spacing.base,
+    opacity: 0.2,
+  },
+  portDetails: {
+    paddingTop: Theme.spacing.sm,
+  },
+  etaLabel: {
+    fontSize: Theme.fonts.sizes.md,
+    color: Theme.colors.mutedGray,
+  },
+  detailsCard: {
+    backgroundColor: Theme.colors.white,
+    borderRadius: Theme.radius.lg,
+    padding: Theme.spacing.xl,
+    marginHorizontal: Theme.spacing.base,
+    ...Theme.shadows.md,
+  },
+  detailsTitle: {
+    fontSize: Theme.fonts.sizes.lg,
+    fontWeight: Theme.fonts.weights.bold,
+    color: Theme.colors.navy,
+    marginBottom: Theme.spacing.base,
+  },
+  detailsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
   },
   detailItem: {
     alignItems: 'center',
   },
   detailIcon: {
-    fontSize: 28,
-    marginBottom: 4,
+    fontSize: Theme.fonts.sizes.xxl,
+    marginBottom: Theme.spacing.sm,
   },
-  detailText: {
-    fontSize: 16,
-    fontWeight: 'bold',
+  detailValue: {
+    fontSize: Theme.fonts.sizes.lg,
+    fontWeight: Theme.fonts.weights.bold,
+    color: Theme.colors.navy,
+    marginBottom: Theme.spacing.xs,
   },
   detailLabel: {
-    fontSize: 12,
-    marginTop: 4,
+    fontSize: Theme.fonts.sizes.sm,
+    color: Theme.colors.mutedGray,
   },
-  alertsSection: {
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  alertCard: {
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 8,
-  },
-  alertText: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  forecastSection: {
-    paddingLeft: 16,
-    marginBottom: 16,
-  },
-  hourlyScroll: {
-    marginRight: 16,
-  },
-  hourCard: {
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginRight: 12,
-    alignItems: 'center',
-    width: 100,
-  },
-  hourTime: {
-    fontSize: 12,
-    marginBottom: 8,
-  },
-  hourIcon: {
-    fontSize: 32,
-    marginBottom: 8,
-  },
-  hourTemp: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  hourCondition: {
-    fontSize: 10,
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  hourWind: {
-    fontSize: 11,
-  },
-  safetyTips: {
-    margin: 16,
-    padding: 20,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  tipsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  tipText: {
-    fontSize: 14,
-    lineHeight: 24,
+  bottomSpacing: {
+    height: 100,
   },
 });

@@ -1,6 +1,6 @@
 # MarineTrack Mobile Application
 
-**Last Updated:** November 6, 2025
+**Last Updated:** November 10, 2025
 
 ## Overview
 MarineTrack is a cross-platform mobile application designed for fishermen, seafarers, and small vessel operators to enhance safety, communication, and sustainable fishing at sea. Built with React Native and Expo for web, iOS, and Android platforms.
@@ -10,20 +10,23 @@ This is a **functional prototype** demonstrating the complete UI/UX flow and cor
 
 ## Current State
 ✅ **Completed Features:**
-- Ocean-themed UI design (deep navy, ocean blue, seafoam colors)
+- **Modern Nintendo-style UI redesign** with navy blue (#082837) and coral (#FF6B61) color scheme
+- Comprehensive reusable component library (11 components) with proper TypeScript typing
 - Complete onboarding flow (3 slides)
 - Authentication screens (login/register)
-- Main dashboard with map placeholder and vessel tracking UI
-- Weather & Navigation screen with forecast display
+- Redesigned Dashboard with promotional banner, shortcuts, and vessel recommendations
+- Redesigned Fleet Tracking screen with wave alerts and vessel grid
+- Redesigned Weather screen with large weather widget and port information
+- Redesigned Map screen with vessel detail panel and live properties
 - SOS Emergency screen with alert functionality
 - Communication/Chat screen for vessel contacts
 - Settings & Profile screen with sustainable fishing tips
 - Tab-based navigation with 9 main sections
 - Responsive design optimized for mobile and web
-- **NEW:** Comprehensive notification system with all activity types
-- **NEW:** Enhanced map with safe fishing zones, restricted zones, and maritime borders
-- **NEW:** Waze-like navigation features with route planning and hazard warnings
-- **NEW:** Backend support for notifications, likes, comments, and nearby vessel alerts
+- Comprehensive notification system with all activity types
+- Enhanced map with safe fishing zones, restricted zones, and maritime borders
+- Waze-like navigation features with route planning and hazard warnings
+- Backend support for notifications, likes, comments, and nearby vessel alerts
 
 ## Architecture
 
@@ -48,7 +51,9 @@ app/
 ### Tech Stack
 - **Frontend:** React Native + Expo
 - **Navigation:** Expo Router (file-based routing)
-- **Styling:** StyleSheet with themed colors
+- **Design System:** Custom Theme tokens (`constants/Theme.ts`) with navy/teal/coral palette
+- **Components:** Reusable UI library (`components/ui/redesign/`)
+- **Styling:** StyleSheet with Theme tokens (no hard-coded colors)
 - **State:** React Hooks (useState)
 - **Platform:** Web (port 5000), iOS, Android
 
@@ -129,6 +134,17 @@ app/
 - Sustainable fishing tips and best practices
 
 ## Recent Changes
+**November 10, 2025:**
+- ✅ **Completed comprehensive UI redesign** based on Nintendo-style design concept
+- ✅ Created 11 reusable UI components with proper TypeScript typing:
+  - HeroBanner, ShortcutGrid, SectionHeader, VesselCard, WeatherWidget
+  - ActionButton, AlertBanner, TabBar, ForecastCard, LivePropertyChip, VesselDetailHeader
+- ✅ Redesigned 4 major screens (Dashboard, Ports/Fleet, Weather, Map) to match design concept
+- ✅ Replaced all hard-coded colors with Theme tokens for consistent design system
+- ✅ Fixed TypeScript import order issues and component structure
+- ✅ Applied Theme tokens consistently across all components and screens
+- ✅ Architect-reviewed and approved redesign implementation
+
 **November 6, 2025:**
 - ✅ Added comprehensive notification system with 9 notification types
 - ✅ Created EnhancedVesselMap component with maritime zone overlays
@@ -187,8 +203,18 @@ npm run android                   # Run on Android
 npm run ios                       # Run on iOS
 ```
 
+## Design System
+- **Primary Color:** Navy Blue (#082837)
+- **Accent Color:** Teal (#0F9AA7)
+- **Warning/Promo:** Coral/Orange (#FF8C42)
+- **Danger/Alert:** Coral Red (#FF6B61)
+- **Design Tokens:** All defined in `constants/Theme.ts`
+- **Component Library:** `components/ui/redesign/` with 11 reusable components
+- **No hard-coded colors:** All components use Theme tokens exclusively
+
 ## Notes
-- This is a prototype with mock data - backend integration required for production
+- This is a functional prototype with mock data - backend integration required for production
 - All API integrations are placeholder UI flows
-- Map component is a visual placeholder (ready for MapView integration)
-- Colors defined in `constants/Colors.ts` for easy theming
+- Map component uses WazeVesselMap (ready for enhanced MapView integration)
+- Complete design system with Theme tokens ensures consistent styling
+- Reusable component library enables rapid UI development

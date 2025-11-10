@@ -1,406 +1,620 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Image, RefreshControl, Platform } from 'react-native';
-import { Link } from 'expo-router';
-import { Theme } from '../../constants/Theme';
 
-interface Vessel {
-  id: string;
-  name: string;
-  type: string;
-  speed: number;
-  status: 'live' | 'docked' | 'delayed' | 'attention';
-  operator?: string;
-  distance?: number;
-}
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text, ScrollView, RefreshControl, StatusBar, TouchableOpacity, ImageBackground } from 'react-native';
+import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Theme } from '../../constants/Theme';
+import { getNearbyTrackedVessels } from '../../utils/trackingService';
+import { getCurrentWeather } from '../../utils/weatherApi';
+import { getNearbyHazards } from '../../utils/maritimeIntelligence';
+import * as Location from 'expo-location';
+import MaritimeDashboard from '../../components/MaritimeDashboard';
 
 export default function HomeScreen() {
-  const [vessels, setVessels] = useState<Vessel[]>([]);
+  const router = useRouter();
+  const [vessels, setVessels] = useState<any[]>([]);
+  const [weather, setWeather] = useState<any>(null);
+  const [hazards, setHazards] = useState<any[]>([]);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [stats, setStats] = useState({
-    activeVessels: 0,
-    alerts: 0,
-    avgSpeed: 0,
-  });
 
-  const fetchData = async () => {
+  useEffect(() => {
+    requestLocationAndLoadData();
+  }, []);
+
+  const requestLocationAndLoadData = async () => {
     try {
-      // Simulated data - replace with actual API calls
-      const mockVessels: Vessel[] = [
-        { id: '1', name: 'Ocean Explorer', type: 'Fishing Boat', speed: 12.5, status: 'live', operator: 'Marine Co.', distance: 2.3 },
-        { id: '2', name: 'Sea Hawk', type: 'Cargo Ship', speed: 0, status: 'docked', operator: 'Shipping Ltd.', distance: 0.5 },
-        { id: '3', name: 'Wave Runner', type: 'Fishing Boat', speed: 8.2, status: 'live', operator: 'Fisher Co.', distance: 5.1 },
-      ];
-      setVessels(mockVessels);
-      setStats({
-        activeVessels: mockVessels.filter(v => v.status === 'live').length,
-        alerts: mockVessels.filter(v => v.status === 'attention').length,
-        avgSpeed: 8.5,
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Location permission denied');
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
       });
+
+      const coords = {
+        lat: location.coords.latitude,
+        lng: location.coords.longitude,
+      };
+      
+      setUserLocation(coords);
+      await loadData(coords);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error getting location:', error);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const loadData = async (coords: { lat: number; lng: number }) => {
+    try {
+      // Load real nearby vessels
+      const nearbyVessels = await getNearbyTrackedVessels(coords.lat, coords.lng, 10);
+      setVessels(nearbyVessels);
+
+      // Load real weather data
+      const weatherData = await getCurrentWeather(coords.lat, coords.lng);
+      setWeather(weatherData);
+
+      // Load real maritime hazards
+      const hazardData = await getNearbyHazards(coords.lat, coords.lng, 50);
+      setHazards(hazardData);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
+  };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchData();
+    if (userLocation) {
+      await loadData(userLocation);
+    }
     setRefreshing(false);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'live': return Theme.colors.statusLive;
-      case 'docked': return Theme.colors.statusDocked;
-      case 'delayed': return Theme.colors.statusDelayed;
-      case 'attention': return Theme.colors.statusAttention;
-      default: return Theme.colors.mutedGray;
-    }
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 18) return 'Good Afternoon';
+    return 'Good Evening';
   };
 
   return (
-    <ScrollView 
-      style={styles.screen}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Theme.colors.teal} />
-      }
-    >
-      {/* Hero Banner */}
-      <View style={styles.heroBanner}>
-        <View style={styles.heroContent}>
-          <View style={styles.heroTag}>
-            <Text style={styles.heroTagText}>⚓ LIVE TRACKING</Text>
+    <>
+      <StatusBar barStyle="light-content" backgroundColor={Theme.colors.navy} />
+      
+      {/* Header with gradient */}
+      <LinearGradient
+        colors={[Theme.colors.navy, '#0A3847']}
+        style={styles.header}
+      >
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.greeting}>{getGreeting()}</Text>
+            <Text style={styles.headerTitle}>⚓ MarineTrack</Text>
           </View>
-          <Text style={styles.heroTitle}>Marine Traffic</Text>
-          <Text style={styles.heroSubtitle}>Real-time vessel monitoring and navigation</Text>
-          <Link href="/map" asChild>
-            <TouchableOpacity style={styles.heroCta}>
-              <Text style={styles.heroCtaText}>View Full Map</Text>
+          <TouchableOpacity 
+            style={styles.notificationButton}
+            onPress={() => router.push('/notifications')}
+          >
+            <Text style={styles.notificationIcon}>🔔</Text>
+            {hazards.length > 0 && (
+              <View style={styles.notificationBadge}>
+                <Text style={styles.notificationBadgeText}>{hazards.length}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+
+      <ScrollView
+        style={styles.screen}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Theme.colors.teal} />
+        }
+      >
+        {/* Hero Alert Banner - ZUS style */}
+        {hazards.length > 0 && (
+          <ImageBackground
+            source={{ uri: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800' }}
+            style={styles.heroBanner}
+            imageStyle={styles.heroBannerImage}
+          >
+            <LinearGradient
+              colors={['rgba(255, 107, 97, 0.9)', 'rgba(255, 107, 97, 0.7)']}
+              style={styles.heroBannerGradient}
+            >
+              <View style={styles.heroBannerContent}>
+                <Text style={styles.heroBannerTitle}>⚠️ Maritime Advisory</Text>
+                <Text style={styles.heroBannerSubtitle}>
+                  {hazards.length} active {hazards.length === 1 ? 'hazard' : 'hazards'} in your area
+                </Text>
+                <TouchableOpacity style={styles.heroBannerButton}>
+                  <Text style={styles.heroBannerButtonText}>View Details</Text>
+                </TouchableOpacity>
+              </View>
+            </LinearGradient>
+          </ImageBackground>
+        )}
+
+        {/* Quick Stats - Elevated cards */}
+        <View style={styles.statsRow}>
+          <View style={styles.statCard}>
+            <View style={styles.statIconContainer}>
+              <Text style={styles.statIcon}>🚢</Text>
+            </View>
+            <Text style={styles.statValue}>{vessels.length}</Text>
+            <Text style={styles.statLabel}>Nearby Vessels</Text>
+          </View>
+          <View style={styles.statCard}>
+            <View style={[styles.statIconContainer, { backgroundColor: 'rgba(255, 107, 97, 0.1)' }]}>
+              <Text style={styles.statIcon}>⚠️</Text>
+            </View>
+            <Text style={[styles.statValue, { color: Theme.colors.coral }]}>{hazards.length}</Text>
+            <Text style={styles.statLabel}>Hazards</Text>
+          </View>
+          <View style={styles.statCard}>
+            <View style={[styles.statIconContainer, { backgroundColor: 'rgba(246, 235, 217, 0.5)' }]}>
+              <Text style={styles.statIcon}>🌡️</Text>
+            </View>
+            <Text style={styles.statValue}>{weather?.temperature || '--'}°</Text>
+            <Text style={styles.statLabel}>Temperature</Text>
+          </View>
+        </View>
+
+        {/* Weather Card - ZUS rounded elevated card */}
+        {weather && (
+          <View style={styles.weatherCard}>
+            <View style={styles.weatherHeader}>
+              <View style={styles.weatherHeaderLeft}>
+                <Text style={styles.weatherIcon}>⛅</Text>
+                <Text style={styles.weatherTitle}>Current Weather</Text>
+              </View>
+              <TouchableOpacity onPress={() => router.push('/weather')}>
+                <Text style={styles.weatherAction}>Details →</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.weatherContent}>
+              <View style={styles.weatherTempContainer}>
+                <Text style={styles.weatherTemp}>{weather.temperature}</Text>
+                <Text style={styles.weatherTempUnit}>°C</Text>
+              </View>
+              <View style={styles.weatherDetails}>
+                <View style={styles.weatherDetailItem}>
+                  <Text style={styles.weatherDetailIcon}>💨</Text>
+                  <Text style={styles.weatherDetail}>Wind {weather.windSpeed} kn</Text>
+                </View>
+                <View style={styles.weatherDetailItem}>
+                  <Text style={styles.weatherDetailIcon}>🌊</Text>
+                  <Text style={styles.weatherDetail}>Waves {weather.waveHeight}m</Text>
+                </View>
+                <View style={styles.weatherDetailItem}>
+                  <Text style={styles.weatherDetailIcon}>☁️</Text>
+                  <Text style={styles.weatherDetail}>{weather.description}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* Quick Actions - Horizontal chips style */}
+        <View style={styles.actionsContainer}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.actionsGrid}>
+            <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/tracker')}>
+              <View style={styles.actionIconContainer}>
+                <Text style={styles.actionIcon}>📍</Text>
+              </View>
+              <Text style={styles.actionLabel}>Start Tracking</Text>
             </TouchableOpacity>
-          </Link>
-        </View>
-      </View>
-
-      {/* Quick Stats */}
-      <View style={styles.quickStats}>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{stats.activeVessels}</Text>
-          <Text style={styles.statLabel}>ACTIVE</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{stats.alerts}</Text>
-          <Text style={styles.statLabel}>ALERTS</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{stats.avgSpeed.toFixed(1)}</Text>
-          <Text style={styles.statLabel}>AVG SPEED</Text>
-        </View>
-      </View>
-
-      {/* Section Header */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Nearby Vessels</Text>
-        <Link href="/tracker" asChild>
-          <TouchableOpacity>
-            <Text style={styles.sectionAction}>View All →</Text>
-          </TouchableOpacity>
-        </Link>
-      </View>
-
-      {/* Vessel Feed */}
-      <View style={styles.vesselFeed}>
-        {vessels.map((vessel) => (
-          <View key={vessel.id} style={styles.vesselCard}>
-            <View style={styles.vesselCardMedia}>
-              <View style={[styles.vesselBadge, { backgroundColor: getStatusColor(vessel.status) }]}>
-                <Text style={styles.vesselBadgeText}>{vessel.status.toUpperCase()}</Text>
+            <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/map')}>
+              <View style={styles.actionIconContainer}>
+                <Text style={styles.actionIcon}>🗺️</Text>
               </View>
-              {vessel.status === 'live' && (
-                <View style={styles.vesselSpeed}>
-                  <Text style={styles.vesselSpeedText}>{vessel.speed} kn</Text>
-                </View>
-              )}
-            </View>
-            <View style={styles.vesselCardContent}>
-              <Text style={styles.vesselName}>{vessel.name}</Text>
-              <Text style={styles.vesselRoute}>{vessel.operator || 'Unknown Operator'}</Text>
-              <View style={styles.vesselMeta}>
-                <View style={styles.metaItem}>
-                  <Text style={styles.metaText}>🚢 {vessel.type}</Text>
-                </View>
-                {vessel.distance && (
-                  <View style={styles.metaItem}>
-                    <Text style={styles.metaText}>📍 {vessel.distance} km</Text>
-                  </View>
-                )}
+              <Text style={styles.actionLabel}>View Map</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/sos')}>
+              <View style={[styles.actionIconContainer, { backgroundColor: 'rgba(255, 107, 97, 0.1)' }]}>
+                <Text style={styles.actionIcon}>🆘</Text>
               </View>
-            </View>
-            <View style={styles.vesselCardActions}>
-              <TouchableOpacity style={styles.btnSecondary}>
-                <Text style={styles.btnSecondaryText}>Track</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.btnIcon}>
-                <Text>ℹ️</Text>
-              </TouchableOpacity>
-            </View>
+              <Text style={styles.actionLabel}>Emergency</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/chat')}>
+              <View style={styles.actionIconContainer}>
+                <Text style={styles.actionIcon}>💬</Text>
+              </View>
+              <Text style={styles.actionLabel}>Messages</Text>
+            </TouchableOpacity>
           </View>
-        ))}
-      </View>
+        </View>
 
-      {/* Quick Access */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Quick Access</Text>
-      </View>
-      <View style={styles.quickAccess}>
-        <Link href="/weather" asChild>
-          <TouchableOpacity style={styles.quickAccessCard}>
-            <Text style={styles.quickAccessIcon}>🌊</Text>
-            <Text style={styles.quickAccessLabel}>Weather</Text>
-          </TouchableOpacity>
-        </Link>
-        <Link href="/ports" asChild>
-          <TouchableOpacity style={styles.quickAccessCard}>
-            <Text style={styles.quickAccessIcon}>⚓</Text>
-            <Text style={styles.quickAccessLabel}>Ports</Text>
-          </TouchableOpacity>
-        </Link>
-        <Link href="/chat" asChild>
-          <TouchableOpacity style={styles.quickAccessCard}>
-            <Text style={styles.quickAccessIcon}>💬</Text>
-            <Text style={styles.quickAccessLabel}>Chat</Text>
-          </TouchableOpacity>
-        </Link>
-        <Link href="/sos" asChild>
-          <TouchableOpacity style={[styles.quickAccessCard, styles.quickAccessCardDanger]}>
-            <Text style={styles.quickAccessIcon}>🚨</Text>
-            <Text style={styles.quickAccessLabel}>SOS</Text>
-          </TouchableOpacity>
-        </Link>
-      </View>
-    </ScrollView>
+        {/* Nearby Vessels - Elevated cards with imagery */}
+        {vessels.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Nearby Vessels</Text>
+              <TouchableOpacity onPress={() => router.push('/tracker')}>
+                <Text style={styles.sectionAction}>View All →</Text>
+              </TouchableOpacity>
+            </View>
+            {vessels.slice(0, 5).map((vessel, index) => (
+              <View key={index} style={styles.vesselCard}>
+                <View style={styles.vesselBadge}>
+                  <Text style={styles.vesselBadgeText}>{vessel.status || 'LIVE'}</Text>
+                </View>
+                <View style={styles.vesselHeader}>
+                  <Text style={styles.vesselName}>{vessel.vesselInfo?.vesselName || 'Unknown Vessel'}</Text>
+                </View>
+                <Text style={styles.vesselType}>{vessel.vesselInfo?.vesselType || 'Vessel'}</Text>
+                <View style={styles.vesselMeta}>
+                  <View style={styles.vesselMetaItem}>
+                    <Text style={styles.vesselMetaIcon}>📍</Text>
+                    <Text style={styles.vesselMetaText}>
+                      {vessel.distance ? `${vessel.distance.toFixed(1)} km` : 'Nearby'}
+                    </Text>
+                  </View>
+                  <View style={styles.vesselMetaItem}>
+                    <Text style={styles.vesselMetaIcon}>💨</Text>
+                    <Text style={styles.vesselMetaText}>
+                      {vessel.location?.speed?.toFixed(1) || '0'} kn
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity style={styles.vesselTrackButton}>
+                  <Text style={styles.vesselTrackButtonText}>Track Now</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Maritime Intelligence Dashboard */}
+        <MaritimeDashboard userLocation={userLocation} />
+
+        <View style={styles.bottomSpacing} />
+      </ScrollView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
-    backgroundColor: Theme.colors.offWhite,
     flex: 1,
+    backgroundColor: Theme.colors.offWhite,
   },
-  heroBanner: {
-    height: 200,
-    backgroundColor: Theme.colors.teal,
-    marginBottom: Theme.spacing.base,
+  header: {
+    paddingTop: 50,
+    paddingBottom: Theme.spacing.xl,
+    paddingHorizontal: Theme.spacing.base,
   },
-  heroContent: {
-    height: '100%',
-    justifyContent: 'flex-end',
-    padding: Theme.spacing.xl,
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  heroTag: {
-    alignSelf: 'flex-start',
-    backgroundColor: Theme.colors.coral,
-    paddingHorizontal: Theme.spacing.md,
-    paddingVertical: Theme.spacing.xs,
-    borderRadius: Theme.radius.full,
-    marginBottom: Theme.spacing.md,
-  },
-  heroTagText: {
-    color: Theme.colors.white,
+  greeting: {
+    color: 'rgba(255, 255, 255, 0.85)',
     fontSize: Theme.fonts.sizes.sm,
-    fontWeight: Theme.fonts.weights.semibold,
+    marginBottom: 4,
     letterSpacing: 0.5,
   },
-  heroTitle: {
+  headerTitle: {
+    color: Theme.colors.white,
+    fontSize: Theme.fonts.sizes.xxl,
+    fontWeight: Theme.fonts.weights.bold,
+    fontFamily: Theme.fonts.heading,
+  },
+  notificationButton: {
+    width: Theme.touchTarget.min,
+    height: Theme.touchTarget.min,
+    borderRadius: Theme.radius.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notificationIcon: {
+    fontSize: 20,
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    backgroundColor: Theme.colors.coral,
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: Theme.colors.white,
+  },
+  notificationBadgeText: {
+    color: Theme.colors.white,
+    fontSize: 10,
+    fontWeight: Theme.fonts.weights.bold,
+  },
+  // Hero Banner
+  heroBanner: {
+    marginHorizontal: Theme.spacing.base,
+    marginTop: -Theme.spacing.lg,
+    marginBottom: Theme.spacing.lg,
+    borderRadius: Theme.radius.lg,
+    overflow: 'hidden',
+    height: 140,
+  },
+  heroBannerImage: {
+    borderRadius: Theme.radius.lg,
+  },
+  heroBannerGradient: {
+    flex: 1,
+    padding: Theme.spacing.lg,
+    justifyContent: 'center',
+  },
+  heroBannerContent: {
+    gap: Theme.spacing.xs,
+  },
+  heroBannerTitle: {
     fontSize: Theme.fonts.sizes.xl,
     fontWeight: Theme.fonts.weights.bold,
     color: Theme.colors.white,
+    fontFamily: Theme.fonts.heading,
+  },
+  heroBannerSubtitle: {
+    fontSize: Theme.fonts.sizes.md,
+    color: 'rgba(255, 255, 255, 0.95)',
     marginBottom: Theme.spacing.sm,
   },
-  heroSubtitle: {
-    fontSize: Theme.fonts.sizes.md,
-    color: Theme.colors.white,
-    opacity: 0.9,
-    marginBottom: Theme.spacing.base,
-  },
-  heroCta: {
+  heroBannerButton: {
     alignSelf: 'flex-start',
     backgroundColor: Theme.colors.white,
-    paddingHorizontal: Theme.spacing.xl,
-    paddingVertical: Theme.spacing.md,
-    borderRadius: Theme.radius.md,
+    paddingHorizontal: Theme.spacing.lg,
+    paddingVertical: Theme.spacing.sm,
+    borderRadius: Theme.radius.full,
   },
-  heroCtaText: {
-    color: Theme.colors.teal,
-    fontSize: Theme.fonts.sizes.base,
-    fontWeight: Theme.fonts.weights.semibold,
+  heroBannerButtonText: {
+    color: Theme.colors.coral,
+    fontSize: Theme.fonts.sizes.md,
+    fontWeight: Theme.fonts.weights.bold,
   },
-  quickStats: {
+  // Stats Cards
+  statsRow: {
     flexDirection: 'row',
-    gap: Theme.spacing.base,
     paddingHorizontal: Theme.spacing.base,
-    marginBottom: Theme.spacing.xl,
+    gap: Theme.spacing.md,
+    marginBottom: Theme.spacing.lg,
   },
   statCard: {
     flex: 1,
     backgroundColor: Theme.colors.white,
-    borderRadius: Theme.radius.lg,
     padding: Theme.spacing.base,
+    borderRadius: Theme.radius.lg,
     alignItems: 'center',
-    ...(Platform.OS === 'web' ? Theme.webShadows.sm : Theme.shadows.sm),
+    ...Theme.shadows.md,
+  },
+  statIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: Theme.radius.md,
+    backgroundColor: 'rgba(15, 154, 167, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Theme.spacing.sm,
+  },
+  statIcon: {
+    fontSize: 24,
   },
   statValue: {
-    fontSize: Theme.fonts.sizes.xl,
+    fontSize: Theme.fonts.sizes.xxl,
     fontWeight: Theme.fonts.weights.bold,
     color: Theme.colors.teal,
+    fontFamily: Theme.fonts.heading,
   },
   statLabel: {
     fontSize: Theme.fonts.sizes.xs,
     color: Theme.colors.mutedGray,
-    marginTop: Theme.spacing.xs,
-    letterSpacing: 0.5,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  // Weather Card
+  weatherCard: {
+    backgroundColor: Theme.colors.white,
+    marginHorizontal: Theme.spacing.base,
+    marginBottom: Theme.spacing.lg,
+    padding: Theme.spacing.lg,
+    borderRadius: Theme.radius.lg,
+    ...Theme.shadows.md,
+  },
+  weatherHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Theme.spacing.lg,
+  },
+  weatherHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Theme.spacing.sm,
+  },
+  weatherIcon: {
+    fontSize: 28,
+  },
+  weatherTitle: {
+    fontSize: Theme.fonts.sizes.lg,
+    fontWeight: Theme.fonts.weights.bold,
+    color: Theme.colors.navy,
+    fontFamily: Theme.fonts.heading,
+  },
+  weatherAction: {
+    fontSize: Theme.fonts.sizes.md,
+    fontWeight: Theme.fonts.weights.semibold,
+    color: Theme.colors.teal,
+  },
+  weatherContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Theme.spacing.xl,
+  },
+  weatherTempContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  weatherTemp: {
+    fontSize: 56,
+    fontWeight: Theme.fonts.weights.bold,
+    color: Theme.colors.teal,
+    fontFamily: Theme.fonts.heading,
+    lineHeight: 56,
+  },
+  weatherTempUnit: {
+    fontSize: Theme.fonts.sizes.xl,
+    color: Theme.colors.teal,
+    fontWeight: Theme.fonts.weights.semibold,
+    marginTop: 8,
+  },
+  weatherDetails: {
+    flex: 1,
+    gap: Theme.spacing.sm,
+  },
+  weatherDetailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Theme.spacing.sm,
+  },
+  weatherDetailIcon: {
+    fontSize: 16,
+  },
+  weatherDetail: {
+    fontSize: Theme.fonts.sizes.md,
+    color: Theme.colors.mutedGray,
+  },
+  // Actions
+  actionsContainer: {
+    paddingHorizontal: Theme.spacing.base,
+    marginBottom: Theme.spacing.lg,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Theme.spacing.md,
+    marginTop: Theme.spacing.md,
+  },
+  actionCard: {
+    width: '47%',
+    backgroundColor: Theme.colors.white,
+    padding: Theme.spacing.lg,
+    borderRadius: Theme.radius.lg,
+    alignItems: 'center',
+    ...Theme.shadows.sm,
+  },
+  actionIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: Theme.radius.md,
+    backgroundColor: 'rgba(15, 154, 167, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Theme.spacing.md,
+  },
+  actionIcon: {
+    fontSize: 28,
+  },
+  actionLabel: {
+    fontSize: Theme.fonts.sizes.md,
+    fontWeight: Theme.fonts.weights.semibold,
+    color: Theme.colors.navy,
+    textAlign: 'center',
+  },
+  // Section
+  section: {
+    paddingHorizontal: Theme.spacing.base,
+    marginBottom: Theme.spacing.lg,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: Theme.spacing.base,
     marginBottom: Theme.spacing.base,
   },
   sectionTitle: {
     fontSize: Theme.fonts.sizes.lg,
     fontWeight: Theme.fonts.weights.bold,
     color: Theme.colors.navy,
+    fontFamily: Theme.fonts.heading,
   },
   sectionAction: {
     fontSize: Theme.fonts.sizes.md,
-    color: Theme.colors.teal,
     fontWeight: Theme.fonts.weights.semibold,
+    color: Theme.colors.teal,
   },
-  vesselFeed: {
-    gap: Theme.spacing.base,
-    paddingHorizontal: Theme.spacing.base,
-    marginBottom: Theme.spacing.xl,
-  },
+  // Vessel Cards
   vesselCard: {
     backgroundColor: Theme.colors.white,
+    padding: Theme.spacing.lg,
     borderRadius: Theme.radius.lg,
-    overflow: 'hidden',
-    ...(Platform.OS === 'web' ? Theme.webShadows.md : Theme.shadows.md),
-  },
-  vesselCardMedia: {
-    height: 120,
-    backgroundColor: Theme.colors.navy,
-    justifyContent: 'space-between',
-    padding: Theme.spacing.md,
+    marginBottom: Theme.spacing.md,
+    ...Theme.shadows.md,
+    position: 'relative',
   },
   vesselBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: Theme.spacing.md,
-    paddingVertical: Theme.spacing.xs,
+    position: 'absolute',
+    top: Theme.spacing.base,
+    right: Theme.spacing.base,
+    backgroundColor: Theme.colors.teal,
+    paddingHorizontal: Theme.spacing.sm,
+    paddingVertical: 4,
     borderRadius: Theme.radius.full,
   },
   vesselBadgeText: {
     color: Theme.colors.white,
-    fontSize: Theme.fonts.sizes.sm,
-    fontWeight: Theme.fonts.weights.semibold,
+    fontSize: 10,
+    fontWeight: Theme.fonts.weights.bold,
     letterSpacing: 0.5,
   },
-  vesselSpeed: {
-    alignSelf: 'flex-end',
-    backgroundColor: 'rgba(8, 40, 55, 0.8)',
-    paddingHorizontal: Theme.spacing.md,
-    paddingVertical: Theme.spacing.xs,
-    borderRadius: Theme.radius.full,
-  },
-  vesselSpeedText: {
-    color: Theme.colors.white,
-    fontSize: Theme.fonts.sizes.sm,
-    fontWeight: Theme.fonts.weights.bold,
-  },
-  vesselCardContent: {
-    padding: Theme.spacing.base,
+  vesselHeader: {
+    marginBottom: Theme.spacing.xs,
   },
   vesselName: {
     fontSize: Theme.fonts.sizes.lg,
     fontWeight: Theme.fonts.weights.bold,
     color: Theme.colors.navy,
-    marginBottom: Theme.spacing.xs,
+    fontFamily: Theme.fonts.heading,
+    paddingRight: 60,
   },
-  vesselRoute: {
-    fontSize: Theme.fonts.sizes.md,
+  vesselType: {
+    fontSize: Theme.fonts.sizes.sm,
     color: Theme.colors.mutedGray,
     marginBottom: Theme.spacing.md,
   },
   vesselMeta: {
     flexDirection: 'row',
-    gap: Theme.spacing.base,
+    gap: Theme.spacing.lg,
+    marginBottom: Theme.spacing.md,
   },
-  metaItem: {
+  vesselMetaItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: Theme.spacing.xs,
   },
-  metaText: {
+  vesselMetaIcon: {
+    fontSize: 14,
+  },
+  vesselMetaText: {
     fontSize: Theme.fonts.sizes.sm,
     color: Theme.colors.mutedGray,
+    fontWeight: Theme.fonts.weights.medium,
   },
-  vesselCardActions: {
-    flexDirection: 'row',
-    gap: Theme.spacing.sm,
-    padding: Theme.spacing.base,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(107, 119, 133, 0.1)',
-  },
-  btnSecondary: {
-    flex: 1,
+  vesselTrackButton: {
+    backgroundColor: Theme.colors.teal,
     paddingVertical: Theme.spacing.md,
-    paddingHorizontal: Theme.spacing.xl,
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: Theme.colors.teal,
     borderRadius: Theme.radius.md,
     alignItems: 'center',
   },
-  btnSecondaryText: {
-    color: Theme.colors.teal,
+  vesselTrackButtonText: {
+    color: Theme.colors.white,
     fontSize: Theme.fonts.sizes.base,
-    fontWeight: Theme.fonts.weights.semibold,
+    fontWeight: Theme.fonts.weights.bold,
   },
-  btnIcon: {
-    width: Theme.touchTarget.min,
-    height: Theme.touchTarget.min,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(107, 119, 133, 0.2)',
-    borderRadius: Theme.radius.md,
-  },
-  quickAccess: {
-    flexDirection: 'row',
-    gap: Theme.spacing.sm,
-    paddingHorizontal: Theme.spacing.base,
-    marginBottom: Theme.spacing.xxxl,
-  },
-  quickAccessCard: {
-    flex: 1,
-    backgroundColor: Theme.colors.white,
-    borderRadius: Theme.radius.lg,
-    padding: Theme.spacing.base,
-    alignItems: 'center',
-    ...(Platform.OS === 'web' ? Theme.webShadows.sm : Theme.shadows.sm),
-  },
-  quickAccessCardDanger: {
-    backgroundColor: Theme.colors.coral,
-  },
-  quickAccessIcon: {
-    fontSize: 32,
-    marginBottom: Theme.spacing.sm,
-  },
-  quickAccessLabel: {
-    fontSize: Theme.fonts.sizes.sm,
-    fontWeight: Theme.fonts.weights.semibold,
-    color: Theme.colors.navy,
+  bottomSpacing: {
+    height: 100,
   },
 });

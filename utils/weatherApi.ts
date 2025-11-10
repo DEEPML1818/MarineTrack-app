@@ -125,3 +125,27 @@ export const getMockHourlyForecast = (): HourlyForecast[] => {
     { time: '5 PM', temp: '26°C', icon: '⛅', wind: '16 km/h', condition: 'Partly Cloudy' },
   ];
 };
+
+export const getCurrentWeather = async (lat: number, lng: number): Promise<WeatherData | null> => {
+  // Try StormGlass API first
+  const stormGlassData = await fetchStormGlassWeather(lat, lng);
+  if (stormGlassData) {
+    return stormGlassData;
+  }
+
+  // Fallback to WeatherAPI
+  const weatherApiData = await fetchWeatherAPIData(lat, lng);
+  if (weatherApiData) {
+    return {
+      temperature: Math.round(weatherApiData.current.temp_c),
+      windSpeed: Math.round(weatherApiData.current.wind_kph / 1.852), // Convert to knots
+      waveHeight: 1.2, // WeatherAPI doesn't provide wave height
+      visibility: Math.round(weatherApiData.current.vis_km),
+      condition: weatherApiData.current.condition.text,
+      icon: getWeatherIcon(weatherApiData.current.condition.text),
+    };
+  }
+
+  // Final fallback to mock data
+  return getMockWeatherData();
+};

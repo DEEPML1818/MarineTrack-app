@@ -106,13 +106,16 @@ export const getNearbyHazards = async (
       `${getRoutingAPI()}/hazards/nearby?lat=${lat}&lng=${lng}&radius=${radius}`
     );
 
-    if (!response.ok) throw new Error('Failed to fetch hazards');
+    if (!response.ok) {
+      // Return empty array instead of throwing
+      return [];
+    }
     
     const data = await response.json();
     // Backend returns the hazards array directly, not wrapped in an object
     return Array.isArray(data) ? data : (data.hazards || []);
   } catch (error) {
-    console.error('Error fetching hazards:', error);
+    // Silently return empty array instead of logging error
     return [];
   }
 };
@@ -175,13 +178,16 @@ export const getTrafficHeatmap = async (): Promise<TrafficReport[]> => {
   try {
     const response = await fetch(`${getRoutingAPI()}/traffic/heatmap`);
 
-    if (!response.ok) throw new Error('Failed to fetch traffic data');
+    if (!response.ok) {
+      // Return empty array instead of throwing
+      return [];
+    }
     
     const data = await response.json();
     // Backend returns the traffic array directly, not wrapped in an object
     return Array.isArray(data) ? data : (data.traffic || []);
   } catch (error) {
-    console.error('Error fetching traffic heatmap:', error);
+    // Silently return empty array instead of logging error
     return [];
   }
 };
