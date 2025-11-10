@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MarineTrack Design System - ZUS Coffee-Inspired Maritime UI</title>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .intro-section {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: var(--space-8);
+      margin-bottom: var(--space-8);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: var(--space-4);
+      margin-top: var(--space-6);
+    }
+    
+    .color-swatch {
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .color-box {
+      height: 100px;
+      width: 100%;
+    }
+    
+    .color-info {
+      padding: var(--space-3);
+      background: white;
+    }
+    
+    .color-name {
+      font-weight: var(--font-weight-semibold);
+      font-size: var(--font-size-14);
+      color: var(--color-navy);
+      margin-bottom: var(--space-1);
+    }
+    
+    .color-value {
+      font-family: 'Courier New', monospace;
+      font-size: var(--font-size-12);
+      color: var(--color-muted-gray);
+    }
+    
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--space-4);
+      margin-top: var(--space-6);
+    }
+    
+    .quick-link-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-md);
+      transition: all var(--duration-base) var(--easing-natural);
+      text-decoration: none;
+      color: inherit;
+      border: 2px solid transparent;
+    }
+    
+    .quick-link-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-xl);
+      border-color: var(--color-teal);
+    }
+    
+    .quick-link-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--color-teal), var(--color-coral));
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--font-size-24);
+      margin-bottom: var(--space-4);
+    }
+    
+    .quick-link-title {
+      font-family: var(--font-family-heading);
+      font-size: var(--font-size-20);
+      font-weight: var(--font-weight-bold);
+      margin-bottom: var(--space-2);
+    }
+    
+    .quick-link-desc {
+      font-size: var(--font-size-14);
+      color: var(--color-muted-gray);
+      line-height: var(--line-height-relaxed);
+    }
+  </style>
+</head>
+<body>
+  <div class="viewer-container">
+    <header class="viewer-header">
+      <h1 class="viewer-title">⚓ MarineTrack Design System</h1>
+      <p class="viewer-subtitle">ZUS Coffee-Inspired Maritime UI for Vessel Tracking & Dispatch</p>
+    </header>
+
+    <nav class="viewer-nav">
+      <a href="index.html" class="nav-button active">Overview</a>
+      <a href="guide.html" class="nav-button">Style Guide</a>
+      <a href="components.html" class="nav-button">Components</a>
+      <a href="screens/home.html" class="nav-button">Screens</a>
+    </nav>
+
+    <section class="intro-section">
+      <h2 style="font-family: var(--font-family-heading); font-size: var(--font-size-24); margin-bottom: var(--space-4);">
+        About This Design System
+      </h2>
+      <p style="font-size: var(--font-size-16); color: var(--color-muted-gray); line-height: var(--line-height-relaxed); margin-bottom: var(--space-4);">
+        MarineTrack is a fast, glanceable maritime navigation and dispatch UX designed for small vessel and fishing boat operators. 
+        The design system emphasizes safety, real-time telemetry, and one-tap actions with a delivery-first aesthetic inspired by ZUS Coffee's 
+        modern, warm, and inviting interface patterns.
+      </p>
+      
+      <h3 style="font-family: var(--font-family-heading); font-size: var(--font-size-20); margin: var(--space-6) 0 var(--space-3);">
+        Design Philosophy
+      </h3>
+      <ul style="list-style: none; font-size: var(--font-size-14); color: var(--color-muted-gray); line-height: var(--line-height-relaxed);">
+        <li style="padding-left: var(--space-5); position: relative; margin-bottom: var(--space-2);">
+          <span style="position: absolute; left: 0; color: var(--color-teal); font-weight: var(--font-weight-bold);">🎨</span>
+          Teal and deep navy primary palette with coral and sand accents for warmth
+        </li>
+        <li style="padding-left: var(--space-5); position: relative; margin-bottom: var(--space-2);">
+          <span style="position: absolute; left: 0; color: var(--color-coral); font-weight: var(--font-weight-bold);">📱</span>
+          Large hero banners, rounded elevated cards, and horizontal filtering chips
+        </li>
+        <li style="padding-left: var(--space-5); position: relative; margin-bottom: var(--space-2);">
+          <span style="position: absolute; left: 0; color: var(--color-navy); font-weight: var(--font-weight-bold);">⚡</span>
+          Live telemetry microinteractions with purposeful motion (120-220ms transitions)
+        </li>
+        <li style="padding-left: var(--space-5); position: relative; margin-bottom: var(--space-2);">
+          <span style="position: absolute; left: 0; color: var(--color-sand); font-weight: var(--font-weight-bold);">♿</span>
+          44×44px touch targets and 4.5:1 contrast ratio for at-sea usability
+        </li>
+      </ul>
+
+      <h3 style="font-family: var(--font-family-heading); font-size: var(--font-size-20); margin: var(--space-6) 0 var(--space-3);">
+        Primary Color Palette
+      </h3>
+      
+      <div class="color-grid">
+        <div class="color-swatch">
+          <div class="color-box" style="background: #0F9AA7;"></div>
+          <div class="color-info">
+            <div class="color-name">Teal</div>
+            <div class="color-value">#0F9AA7</div>
+          </div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background: #082837;"></div>
+          <div class="color-info">
+            <div class="color-name">Deep Navy</div>
+            <div class="color-value">#082837</div>
+          </div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background: #FF6B61;"></div>
+          <div class="color-info">
+            <div class="color-name">Coral</div>
+            <div class="color-value">#FF6B61</div>
+          </div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background: #F6EBD9;"></div>
+          <div class="color-info">
+            <div class="color-name">Sand</div>
+            <div class="color-value">#F6EBD9</div>
+          </div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background: #FBFAF8;"></div>
+          <div class="color-info">
+            <div class="color-name">Off-White</div>
+            <div class="color-value">#FBFAF8</div>
+          </div>
+        </div>
+        
+        <div class="color-swatch">
+          <div class="color-box" style="background: #6B7785;"></div>
+          <div class="color-info">
+            <div class="color-name">Muted Gray</div>
+            <div class="color-value">#6B7785</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="quick-links">
+      <a href="guide.html" class="quick-link-card">
+        <div class="quick-link-icon">📘</div>
+        <h3 class="quick-link-title">Style Guide</h3>
+        <p class="quick-link-desc">
+          Complete design tokens including colors, typography scale, spacing baseline (4/8/16), elevation, and motion principles.
+        </p>
+      </a>
+      
+      <a href="components.html" class="quick-link-card">
+        <div class="quick-link-icon">🧩</div>
+        <h3 class="quick-link-title">Component Library</h3>
+        <p class="quick-link-desc">
+          Reusable UI components: cards, chips, CTAs, badges, modals, bottom sheets with state variations and usage examples.
+        </p>
+      </a>
+      
+      <a href="screens/home.html" class="quick-link-card">
+        <div class="quick-link-icon">📱</div>
+        <h3 class="quick-link-title">Mobile Screens</h3>
+        <p class="quick-link-desc">
+          6 annotated iPhone 13 screens: Home Dashboard, Vessel Listing, Vessel Detail, Task Creation, Dispatch Queue, Timeline.
+        </p>
+      </a>
+    </section>
+
+    <footer style="margin-top: var(--space-12); padding: var(--space-6); text-align: center; color: var(--color-muted-gray); font-size: var(--font-size-12);">
+      <p>MarineTrack Design System v1.0 • Created for fast, glanceable maritime navigation • iPhone 13 (390×844) optimized</p>
+    </footer>
+  </div>
+</body>
+</html>

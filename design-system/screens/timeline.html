@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tracking Timeline - MarineTrack</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../css/screens.css">
+  <link rel="stylesheet" href="../components.css">
+</head>
+<body>
+  <div class="viewer-container">
+    <header class="viewer-header">
+      <h1 class="viewer-title">📱 Screen 6: Tracking Timeline</h1>
+      <p class="viewer-subtitle">Vertical stepper with timestamps, map thumbnails, contact quick actions, photo attachments</p>
+    </header>
+
+    <nav class="viewer-nav">
+      <a href="../index.html" class="nav-button">Overview</a>
+      <a href="../guide.html" class="nav-button">Style Guide</a>
+      <a href="../components.html" class="nav-button">Components</a>
+      <a href="home.html" class="nav-button active">Screens</a>
+    </nav>
+
+    <div class="screen-annotation">
+      <h3 class="annotation-title">Screen Purpose</h3>
+      <p class="annotation-description">
+        Visual journey of vessel tracking from assignment to completion. Shows historical progress with evidence and contact points.
+      </p>
+      <ul class="annotation-list">
+        <li>Vertical timeline stepper showing task lifecycle</li>
+        <li>Stages: Assigned → En Route → Approaching → Completed</li>
+        <li>Each step: timestamp, mini map thumbnail, status description</li>
+        <li>Contact/agent quick actions on each step</li>
+        <li>Ability to attach notes/photos to timeline events</li>
+        <li>Completed steps show checkmark, active step pulsing, pending steps grayed</li>
+        <li>Back navigation to vessel detail or task queue</li>
+      </ul>
+    </div>
+
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div class="screen">
+          <!-- Screen Header -->
+          <div class="screen-header">
+            <button class="back-button">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <h1 class="screen-header-title">Tracking History</h1>
+            <button class="btn-icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10 3v4M10 13v4M3 10h4M13 10h4"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Vessel Summary -->
+          <div style="background: linear-gradient(135deg, var(--color-teal), var(--color-navy)); padding: var(--space-6) var(--space-4); margin-bottom: var(--space-4);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-4);">
+              <div>
+                <h2 style="font-family: var(--font-family-heading); font-size: var(--font-size-24); font-weight: var(--font-weight-bold); color: white; margin-bottom: var(--space-1);">Pacific Mariner</h2>
+                <p style="font-size: var(--font-size-14); color: rgba(255, 255, 255, 0.9);">Engine Inspection Task</p>
+              </div>
+              <span style="background: var(--color-success); color: white; padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); font-size: var(--font-size-12); font-weight: var(--font-weight-bold);">Completed</span>
+            </div>
+            <div style="display: flex; gap: var(--space-6); color: white; font-size: var(--font-size-14);">
+              <div>
+                <div style="opacity: 0.7; font-size: var(--font-size-12); margin-bottom: 2px;">Started</div>
+                <div style="font-weight: var(--font-weight-semibold);">10:20 AM</div>
+              </div>
+              <div>
+                <div style="opacity: 0.7; font-size: var(--font-size-12); margin-bottom: 2px;">Completed</div>
+                <div style="font-weight: var(--font-weight-semibold);">12:35 PM</div>
+              </div>
+              <div>
+                <div style="opacity: 0.7; font-size: var(--font-size-12); margin-bottom: 2px;">Duration</div>
+                <div style="font-weight: var(--font-weight-semibold);">2h 15m</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Timeline -->
+          <div class="timeline">
+            <!-- Step 1: Assigned (Completed) -->
+            <div class="timeline-item">
+              <div class="timeline-marker completed">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 8l4 4 6-8"/>
+                </svg>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <div>
+                    <h3 class="timeline-step-title">Task Assigned</h3>
+                    <p class="timeline-timestamp">Today, 10:20 AM</p>
+                  </div>
+                  <span style="background: var(--color-success); color: white; padding: 4px 12px; border-radius: var(--radius-full); font-size: var(--font-size-10); font-weight: var(--font-weight-bold); text-transform: uppercase;">Done</span>
+                </div>
+                <p style="font-size: var(--font-size-14); color: var(--color-muted-gray); margin-bottom: var(--space-3);">Engine inspection assigned to Captain John Lee. High priority task for Pacific Mariner.</p>
+                <div style="background: var(--color-sand); padding: var(--space-3); border-radius: var(--radius-md); margin-bottom: var(--space-3);">
+                  <div style="font-size: var(--font-size-12); color: var(--color-navy); font-weight: var(--font-weight-semibold); margin-bottom: 4px;">📋 Task Details</div>
+                  <div style="font-size: var(--font-size-12); color: var(--color-muted-gray);">Estimated duration: 2 hours • Priority: High</div>
+                </div>
+                <div class="timeline-actions">
+                  <button class="btn-icon">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 6A8 8 0 1 0 2 10l-2 4 4-1a8 8 0 0 0 10-7z"/>
+                    </svg>
+                  </button>
+                  <button class="btn-icon">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="2" y="5" width="12" height="10" rx="2"/><path d="M6 2v4M10 2v4M2 9h12"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: En Route (Completed) -->
+            <div class="timeline-item">
+              <div class="timeline-marker completed">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 8l4 4 6-8"/>
+                </svg>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <div>
+                    <h3 class="timeline-step-title">En Route</h3>
+                    <p class="timeline-timestamp">Today, 10:35 AM</p>
+                  </div>
+                  <span style="background: var(--color-success); color: white; padding: 4px 12px; border-radius: var(--radius-full); font-size: var(--font-size-10); font-weight: var(--font-weight-bold); text-transform: uppercase;">Done</span>
+                </div>
+                <p style="font-size: var(--font-size-14); color: var(--color-muted-gray); margin-bottom: var(--space-3);">Captain John Lee departed for Pacific Mariner. Estimated arrival in 15 minutes.</p>
+                <div class="timeline-map-thumb">
+                  <img src="../assets/hero/Maritime_control_room_interior_b47baa28.png" alt="Route map">
+                </div>
+                <div style="background: var(--color-sand); padding: var(--space-3); border-radius: var(--radius-md); margin-bottom: var(--space-3);">
+                  <div style="font-size: var(--font-size-12); color: var(--color-navy); font-weight: var(--font-weight-semibold); margin-bottom: 4px;">📍 Location Update</div>
+                  <div style="font-size: var(--font-size-12); color: var(--color-muted-gray);">5.2 km from vessel • Speed: 18 km/h</div>
+                </div>
+                <div class="timeline-actions">
+                  <button class="btn-secondary" style="flex: 1; font-size: var(--font-size-12); padding: var(--space-2) var(--space-3);">Call Captain</button>
+                  <button class="btn-icon">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="8,2 14,14 8,11 2,14"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3: Approaching (Completed) -->
+            <div class="timeline-item">
+              <div class="timeline-marker completed">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 8l4 4 6-8"/>
+                </svg>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <div>
+                    <h3 class="timeline-step-title">Approaching Vessel</h3>
+                    <p class="timeline-timestamp">Today, 10:50 AM</p>
+                  </div>
+                  <span style="background: var(--color-success); color: white; padding: 4px 12px; border-radius: var(--radius-full); font-size: var(--font-size-10); font-weight: var(--font-weight-bold); text-transform: uppercase;">Done</span>
+                </div>
+                <p style="font-size: var(--font-size-14); color: var(--color-muted-gray); margin-bottom: var(--space-3);">Captain arrived at Pacific Mariner. Beginning inspection procedure.</p>
+                <div class="timeline-map-thumb">
+                  <img src="../assets/hero/Fishing_vessel_aerial_view_75193c9d.png" alt="Vessel location">
+                </div>
+                <div style="background: var(--color-sand); padding: var(--space-3); border-radius: var(--radius-md); margin-bottom: var(--space-3);">
+                  <div style="font-size: var(--font-size-12); color: var(--color-navy); font-weight: var(--font-weight-semibold); margin-bottom: 4px;">✅ Arrival Confirmed</div>
+                  <div style="font-size: var(--font-size-12); color: var(--color-muted-gray);">Logged at vessel location • Inspection started</div>
+                </div>
+                <div class="timeline-actions">
+                  <button class="btn-icon">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="2" y="2" width="12" height="12" rx="2"/><circle cx="8" cy="8" r="2"/>
+                    </svg>
+                  </button>
+                  <button class="btn-icon">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M8 2v12M2 8h12"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 4: Completed (Completed) -->
+            <div class="timeline-item">
+              <div class="timeline-marker completed">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 8l4 4 6-8"/>
+                </svg>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <div>
+                    <h3 class="timeline-step-title">Task Completed</h3>
+                    <p class="timeline-timestamp">Today, 12:35 PM</p>
+                  </div>
+                  <span style="background: var(--color-success); color: white; padding: 4px 12px; border-radius: var(--radius-full); font-size: var(--font-size-10); font-weight: var(--font-weight-bold); text-transform: uppercase;">Done</span>
+                </div>
+                <p style="font-size: var(--font-size-14); color: var(--color-muted-gray); margin-bottom: var(--space-3);">Engine inspection completed successfully. All systems operational. Report submitted.</p>
+                <div style="background: linear-gradient(135deg, rgba(0, 200, 150, 0.1), rgba(15, 154, 167, 0.1)); border: 2px solid var(--color-success); padding: var(--space-4); border-radius: var(--radius-md); margin-bottom: var(--space-3);">
+                  <div style="font-size: var(--font-size-14); color: var(--color-navy); font-weight: var(--font-weight-bold); margin-bottom: var(--space-2);">✅ Inspection Report</div>
+                  <div style="font-size: var(--font-size-12); color: var(--color-muted-gray); line-height: var(--line-height-relaxed);">
+                    Engine running smoothly. No issues detected. Oil levels normal. Recommended next inspection in 30 days.
+                  </div>
+                  <div style="display: flex; gap: var(--space-2); margin-top: var(--space-3);">
+                    <div style="width: 60px; height: 60px; background: var(--color-sand); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--color-teal);">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+                      </svg>
+                    </div>
+                    <div style="width: 60px; height: 60px; background: var(--color-sand); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--color-teal);">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+                      </svg>
+                    </div>
+                    <div style="width: 60px; height: 60px; background: var(--color-sand); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--color-muted-gray); font-size: var(--font-size-12);">
+                      +2
+                    </div>
+                  </div>
+                </div>
+                <div class="timeline-actions">
+                  <button class="btn-primary" style="flex: 1; font-size: var(--font-size-14); padding: var(--space-2) var(--space-4);">View Full Report</button>
+                  <button class="btn-icon">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M8 2v12M2 8h12"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: var(--space-8);">
+      <h3 style="font-family: var(--font-family-heading); font-size: var(--font-size-20); margin-bottom: var(--space-4);">Interaction Notes</h3>
+      <div style="background: var(--color-sand); border-radius: var(--radius-md); padding: var(--space-4); margin-bottom: var(--space-4);">
+        <p style="font-size: var(--font-size-14); line-height: var(--line-height-relaxed); margin-bottom: var(--space-2);"><strong>Stepper Visual:</strong> Completed steps show checkmark (teal), active step pulses, pending steps grayed</p>
+        <p style="font-size: var(--font-size-14); line-height: var(--line-height-relaxed); margin-bottom: var(--space-2);"><strong>Map Thumbnails:</strong> Tap to expand full-screen map view at that timestamp</p>
+        <p style="font-size: var(--font-size-14); line-height: var(--line-height-relaxed); margin-bottom: var(--space-2);"><strong>Photo Attachments:</strong> Shows first 2 photos, "+N" for additional (tap to view gallery)</p>
+        <p style="font-size: var(--font-size-14); line-height: var(--line-height-relaxed);"><strong>Contact Actions:</strong> Quick buttons for calling agent or viewing contact details</p>
+      </div>
+
+      <h3 style="font-family: var(--font-family-heading); font-size: var(--font-size-20); margin-bottom: var(--space-4);">Navigation</h3>
+      <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+        <a href="home.html" class="nav-button">Home</a>
+        <a href="listing.html" class="nav-button">Vessel Listing</a>
+        <a href="detail.html" class="nav-button">Vessel Detail</a>
+        <a href="task.html" class="nav-button">Task Creation</a>
+        <a href="queue.html" class="nav-button">Dispatch Queue</a>
+        <a href="timeline.html" class="nav-button active">Tracking Timeline</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/components.js"></script>
+</body>
+</html>

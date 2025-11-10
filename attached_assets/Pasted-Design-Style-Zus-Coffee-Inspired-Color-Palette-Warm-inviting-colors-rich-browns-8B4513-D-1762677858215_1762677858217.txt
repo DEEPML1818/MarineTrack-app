@@ -1,0 +1,55 @@
+Design Style (Zus Coffee Inspired):
+Color Palette:
+Warm, inviting colors: rich browns (#8B4513, #D2691E), creamy beiges (#F5E6D3, #FFF8DC), and vibrant orange/amber accents (#FF8C00, #FFA500).
+Interface:
+Modern, clean design with rounded corners (use rounded-2xl and rounded-xl).
+Gradient backgrounds transitioning from amber to orange and cream to beige.
+Bold typography that is easy to read.
+A card-based layout featuring subtle shadows for depth.
+Nautical Adaptation:
+Integrate a coffee-warm aesthetic tailored to a marine context.
+Core Features Required:
+Navigation Dashboard:
+
+Display real-time GPS position, current speed, heading, distance to waypoint, estimated time of arrival, and an interactive compass rose.
+Weather Information:
+
+Show current temperature, wind speed/direction, wave height, visibility range, weather forecast, and tide information.
+Vessel Tracking (AIS):
+
+List nearby vessels with distance/bearing, vessel type identification, a collision warning system, and real-time position updates.
+Map View:
+
+Incorporate an interactive marine chart showing current position, nearby vessels, navigation routes, fishing zones, and port locations.
+Safety Alerts:
+
+Alert users of weather warnings, proximity to other vessels, shallow water warnings, and provide quick access to emergency contacts.
+Communication Hub:
+
+Include VHF radio channel references, emergency contact numbers, and a prominent distress signal button.
+Fishing Tools:
+
+Features such as fishing zone boundaries, catch logs, best fishing spots, fish species identification, and tidal fishing times.
+Trip Logger:
+
+Track trip history, distance traveled, fuel consumption, and maintenance reminders.
+UI Components:
+Header: Use a Zus Coffee brown/orange gradient with the app logo, hamburger menu, and notification bell.
+Bottom Navigation: Include 4-5 main tabs (Home/Navigation, Map, Vessels, Weather, More) with icons and a warm orange active state.
+Cards: Use white/cream backgrounds with subtle shadows and warm border accents.
+Buttons: Design primary buttons with an orange gradient, secondary with cream/brown borders, and emergencies in bold red.
+Status Indicators: Color-code indicators (green=safe, yellow=caution, red=danger) with smooth transitions.
+Data Widgets: Create clean cards showing key metrics with large, readable numbers.
+Technical Requirements:
+Ensure a responsive design for mobile/tablet use.
+Implement a dark mode for night navigation and offline functionality for core features.
+Integrate GPS for real-time updates, a low battery mode, and quick access to emergency features.
+Design for users who may be wearing gloves, including large touch targets (min 44x44px).
+Additional Features:
+Support multiple languages, especially for fishing communities, and provide toggles for distance/speed units.
+Enable community features for sharing fishing spots and warnings, and allow photo attachments for catch logs.
+User Experience:
+Optimize for one-handed operation and keep critical information always visible.
+Minimize taps needed to access emergency features and establish a clear visual hierarchy.
+Implement haptic feedback for important alerts and provide an audio alert option.
+The overall design should evoke a premium, warm, and inviting feel akin to Zus Coffee's branding, while maintaining functionality and reliability for maritime use. Imagine fusing a premium coffee shop experience with a professional navigation tool.

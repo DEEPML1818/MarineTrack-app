@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Creation - MarineTrack</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../css/screens.css">
+  <link rel="stylesheet" href="../components.css">
+</head>
+<body>
+  <div class="viewer-container">
+    <header class="viewer-header">
+      <h1 class="viewer-title">📱 Screen 4: Task Creation Bottom Sheet</h1>
+      <p class="viewer-subtitle">Swipeable bottom sheet with segmented controls, pill toggles, live validation, sticky CTA</p>
+    </header>
+
+    <nav class="viewer-nav">
+      <a href="../index.html" class="nav-button">Overview</a>
+      <a href="../guide.html" class="nav-button">Style Guide</a>
+      <a href="../components.html" class="nav-button">Components</a>
+      <a href="home.html" class="nav-button active">Screens</a>
+    </nav>
+
+    <div class="screen-annotation">
+      <h3 class="annotation-title">Screen Purpose</h3>
+      <p class="annotation-description">
+        Modal form for creating and assigning tasks to vessels. Bottom sheet design for quick task entry with intelligent defaults.
+      </p>
+      <ul class="annotation-list">
+        <li>Bottom sheet modal (swipe to dismiss, dimmed background overlay)</li>
+        <li>Segmented controls for task type (Inspection, Repair, Resupply, etc.)</li>
+        <li>Pill toggles for priority (Low, Medium, High)</li>
+        <li>Form inputs with live validation and helper text</li>
+        <li>Sticky footer with updated ETA/cost summary</li>
+        <li>CTA: "Assign Task" button always visible during scroll</li>
+        <li>Swipe handle at top for dismissal gesture</li>
+      </ul>
+    </div>
+
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div class="screen">
+          <!-- Background Content (Dimmed) -->
+          <div style="filter: brightness(0.7); pointer-events: none;">
+            <div class="status-bar">
+              <span>9:41</span>
+              <span>⚡️📶</span>
+            </div>
+            <div class="screen-header">
+              <button class="back-button">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+              </button>
+              <h1 class="screen-header-title">Pacific Mariner</h1>
+            </div>
+          </div>
+
+          <!-- Bottom Sheet Overlay -->
+          <div style="position: absolute; inset: 0; background: rgba(8, 40, 55, 0.4); z-index: 100;"></div>
+
+          <!-- Bottom Sheet -->
+          <div style="position: absolute; bottom: 0; left: 0; right: 0; background: white; border-radius: var(--radius-xl) var(--radius-xl) 0 0; box-shadow: var(--shadow-xl); z-index: 101; max-height: 75%;">
+            <!-- Swipe Handle -->
+            <div style="width: 40px; height: 4px; background: var(--color-muted-gray); border-radius: 2px; margin: var(--space-3) auto;"></div>
+
+            <!-- Sheet Header -->
+            <div style="padding: var(--space-4) var(--space-6); border-bottom: 1px solid rgba(107, 119, 133, 0.1); display: flex; justify-content: space-between; align-items: center;">
+              <h3 style="font-family: var(--font-family-heading); font-size: var(--font-size-24); font-weight: var(--font-weight-bold); margin: 0;">Create New Task</h3>
+              <button class="btn-icon">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4l12 12M16 4L4 16"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Sheet Body -->
+            <div style="padding: var(--space-6); overflow-y: auto; max-height: 400px;">
+              <!-- Vessel Info -->
+              <div style="background: var(--color-sand); border-radius: var(--radius-md); padding: var(--space-4); margin-bottom: var(--space-6); display: flex; align-items: center; gap: var(--space-3);">
+                <div style="width: 48px; height: 48px; background: var(--color-teal); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 8l8-5 8 5v10a2 2 0 01-2 2H6a2 2 0 01-2-2V8z"/>
+                  </svg>
+                </div>
+                <div>
+                  <div style="font-weight: var(--font-weight-semibold); color: var(--color-navy);">Pacific Mariner</div>
+                  <div style="font-size: var(--font-size-12); color: var(--color-muted-gray);">Currently en route • ETA 09:40</div>
+                </div>
+              </div>
+
+              <!-- Task Type -->
+              <div class="form-group">
+                <label class="form-label">Task Type</label>
+                <div class="segmented-control">
+                  <button class="segment active">Inspection</button>
+                  <button class="segment">Repair</button>
+                  <button class="segment">Resupply</button>
+                </div>
+              </div>
+
+              <!-- Priority -->
+              <div class="form-group">
+                <label class="form-label">Priority</label>
+                <div class="pill-toggle-group">
+                  <button class="pill-toggle">Low</button>
+                  <button class="pill-toggle active">Medium</button>
+                  <button class="pill-toggle">High</button>
+                </div>
+              </div>
+
+              <!-- Estimated Time -->
+              <div class="form-group">
+                <label class="form-label">Estimated Duration</label>
+                <input type="text" class="form-input" placeholder="e.g., 2 hours" value="2 hours">
+                <span class="form-helper">💡 New ETA will be calculated automatically</span>
+              </div>
+
+              <!-- Assigned To -->
+              <div class="form-group">
+                <label class="form-label">Assign To</label>
+                <select class="form-input" style="cursor: pointer;">
+                  <option>Captain John Lee</option>
+                  <option>Engineer Maria Santos</option>
+                  <option>Deck Officer Ahmed Khan</option>
+                </select>
+              </div>
+
+              <!-- Notes -->
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Notes (optional)</label>
+                <textarea class="form-textarea" placeholder="Add priority note or special instructions..." rows="3"></textarea>
+                <span class="form-helper">Tap to open voice input</span>
+              </div>
+            </div>
+
+            <!-- Sticky Footer -->
+            <div style="padding: var(--space-6); border-top: 1px solid rgba(107, 119, 133, 0.1); background: var(--color-off-white);">
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-4); font-size: var(--font-size-14);">
+                <span style="color: var(--color-muted-gray);">Updated ETA</span>
+                <span style="font-family: var(--font-family-heading); font-weight: var(--font-weight-bold); color: var(--color-teal); font-size: var(--font-size-16);">11:40 AM</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-4); font-size: var(--font-size-14);">
+                <span style="color: var(--color-muted-gray);">Task Duration</span>
+                <span style="font-weight: var(--font-weight-semibold); color: var(--color-navy);">~2 hours</span>
+              </div>
+              <button class="btn-primary btn-block">Assign Task</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: var(--space-8);">
+      <h3 style="font-family: var(--font-family-heading); font-size: var(--font-size-20); margin-bottom: var(--space-4);">Interaction Notes</h3>
+      <div style="background: var(--color-sand); border-radius: var(--radius-md); padding: var(--space-4); margin-bottom: var(--space-4);">
+        <p style="font-size: var(--font-size-14); line-height: var(--line-height-relaxed); margin-bottom: var(--space-2);"><strong>Sheet Animation:</strong> Slides up from bottom with 220ms ease-out transition</p>
+        <p style="font-size: var(--font-size-14); line-height: var(--line-height-relaxed); margin-bottom: var(--space-2);"><strong>Swipe Gesture:</strong> Drag handle downward to dismiss (>100px threshold)</p>
+        <p style="font-size: var(--font-size-14); line-height: var(--line-height-relaxed); margin-bottom: var(--space-2);"><strong>Background:</strong> Dimmed to 40% opacity, tap to dismiss</p>
+        <p style="font-size: var(--font-size-14); line-height: var(--line-height-relaxed);"><strong>Sticky CTA:</strong> Footer remains visible during scroll, shows live ETA updates</p>
+      </div>
+
+      <h3 style="font-family: var(--font-family-heading); font-size: var(--font-size-20); margin-bottom: var(--space-4);">Navigation</h3>
+      <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+        <a href="home.html" class="nav-button">Home</a>
+        <a href="listing.html" class="nav-button">Vessel Listing</a>
+        <a href="detail.html" class="nav-button">Vessel Detail</a>
+        <a href="task.html" class="nav-button active">Task Creation</a>
+        <a href="queue.html" class="nav-button">Dispatch Queue</a>
+        <a href="timeline.html" class="nav-button">Tracking Timeline</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/components.js"></script>
+</body>
+</html>

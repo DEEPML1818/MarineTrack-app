@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vessel Listing - MarineTrack</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../css/screens.css">
+  <link rel="stylesheet" href="../components.css">
+</head>
+<body>
+  <div class="viewer-container">
+    <header class="viewer-header">
+      <h1 class="viewer-title">📱 Screen 2: Vessel Listing</h1>
+      <p class="viewer-subtitle">Filterable list view with compact and expanded card variants, inline quick actions</p>
+    </header>
+
+    <nav class="viewer-nav">
+      <a href="../index.html" class="nav-button">Overview</a>
+      <a href="../guide.html" class="nav-button">Style Guide</a>
+      <a href="../components.html" class="nav-button">Components</a>
+      <a href="home.html" class="nav-button active">Screens</a>
+    </nav>
+
+    <div class="screen-annotation">
+      <h3 class="annotation-title">Screen Purpose</h3>
+      <p class="annotation-description">
+        Comprehensive vessel list with filtering and search. Supports both compact and expanded card views with inline actions.
+      </p>
+      <ul class="annotation-list">
+        <li>Header with back navigation and search</li>
+        <li>Filter chips for status (All, Live, Docked, Delayed, Attention)</li>
+        <li>Sort options (Distance, ETA, Name)</li>
+        <li>Compact list view with essential info and expandable details</li>
+        <li>Telemetry chips: speed, heading, depth inline</li>
+        <li>Quick actions: Track, Message, Assign visible on each card</li>
+        <li>Empty state handling for filtered results</li>
+      </ul>
+    </div>
+
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div class="screen">
+          <!-- Screen Header -->
+          <div class="screen-header">
+            <button class="back-button">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <h1 class="screen-header-title">All Vessels</h1>
+            <button class="btn-icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="8" cy="8" r="6"/><path d="M14 14l4 4"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Filter Chips -->
+          <div class="horizontal-scroll">
+            <button class="chip active">All (23)</button>
+            <button class="chip">
+              <span style="display: inline-block; width: 8px; height: 8px; background: var(--status-live); border-radius: 50%; margin-right: 4px;"></span>
+              Live (12)
+            </button>
+            <button class="chip">
+              <span style="display: inline-block; width: 8px; height: 8px; background: var(--status-docked); border-radius: 50%; margin-right: 4px;"></span>
+              Docked (8)
+            </button>
+            <button class="chip attention">
+              <span style="display: inline-block; width: 8px; height: 8px; background: var(--status-attention); border-radius: 50%; margin-right: 4px;"></span>
+              Attention (3)
+            </button>
+          </div>
+
+          <!-- Sort Bar -->
+          <div style="padding: var(--space-3) var(--space-4); background: var(--color-sand); border-bottom: 1px solid rgba(107, 119, 133, 0.1); display: flex; gap: var(--space-2); align-items: center; font-size: var(--font-size-12);">
+            <span style="color: var(--color-muted-gray);">Sort by:</span>
+            <button style="background: white; border: 1px solid var(--color-teal); color: var(--color-teal); padding: 4px 12px; border-radius: var(--radius-full); font-weight: var(--font-weight-semibold);">Distance</button>
+            <button style="background: transparent; border: 1px solid rgba(107, 119, 133, 0.2); color: var(--color-muted-gray); padding: 4px 12px; border-radius: var(--radius-full);">ETA</button>
+            <button style="background: transparent; border: 1px solid rgba(107, 119, 133, 0.2); color: var(--color-muted-gray); padding: 4px 12px; border-radius: var(--radius-full);">Name</button>
+          </div>
+
+          <!-- Vessel List (Compact) -->
+          <div class="vessel-feed">
+            <!-- Compact Live Card -->
+            <div style="background: white; border-radius: var(--radius-lg); padding: var(--space-4); box-shadow: var(--shadow-sm); border-left: 4px solid var(--status-live);">
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-3);">
+                <div style="flex: 1;">
+                  <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-1);">
+                    <h3 style="font-family: var(--font-family-heading); font-size: var(--font-size-16); font-weight: var(--font-weight-bold); margin: 0;">Pacific Mariner</h3>
+                    <span class="vessel-badge live" style="position: static; padding: 2px 8px; font-size: 10px;">Live</span>
+                  </div>
+                  <p style="font-size: var(--font-size-14); color: var(--color-muted-gray); margin-bottom: var(--space-2);">Singapore → Hong Kong</p>
+                  <div style="display: flex; gap: var(--space-2);">
+                    <span style="background: var(--color-sand); padding: 4px 8px; border-radius: var(--radius-sm); font-size: var(--font-size-12); font-weight: var(--font-weight-medium);">12 kn</span>
+                    <span style="background: var(--color-sand); padding: 4px 8px; border-radius: var(--radius-sm); font-size: var(--font-size-12); font-weight: var(--font-weight-medium);">245° SW</span>
+                    <span style="background: var(--color-sand); padding: 4px 8px; border-radius: var(--radius-sm); font-size: var(--font-size-12); font-weight: var(--font-weight-medium);">42m depth</span>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-2);">
+                  <span style="font-size: var(--font-size-12); color: var(--color-muted-gray);">ETA</span>
+                  <span style="font-family: var(--font-family-heading); font-size: var(--font-size-16); font-weight: var(--font-weight-bold); color: var(--color-teal);">09:40</span>
+                  <span style="font-size: var(--font-size-10); color: var(--color-muted-gray);">2m ago</span>
+                </div>
+              </div>
+              <div style="display: flex; gap: var(--space-2);">
+                <button class="btn-primary" style="flex: 1; font-size: var(--font-size-14); padding: var(--space-2) var(--space-4); min-height: var(--touch-target-min);">Track</button>
+                <button class="btn-icon">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 6A8 8 0 1 0 2 10l-2 4 4-1a8 8 0 0 0 10-7z"/>
+                  </svg>
+                </button>
+                <button class="btn-icon">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M8 2v12M2 8h12"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Compact Docked Card -->
+            <div style="background: white; border-radius: var(--radius-lg); padding: var(--space-4); box-shadow: var(--shadow-sm); border-left: 4px solid var(--status-docked);">
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-3);">
+                <div style="flex: 1;">
+                  <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-1);">
+                    <h3 style="font-family: var(--font-family-heading); font-size: var(--font-size-16); font-weight: var(--font-weight-bold); margin: 0;">Harbor Queen</h3>
+                    <span class="vessel-badge docked" style="position: static; padding: 2px 8px; font-size: 10px;">Docked</span>
+                  </div>
+                  <p style="font-size: var(--font-size-14); color: var(--color-muted-gray); margin-bottom: var(--space-2);">Port of Manila</p>
+                  <div style="display: flex; gap: var(--space-2);">
+                    <span style="background: var(--color-sand); padding: 4px 8px; border-radius: var(--radius-sm); font-size: var(--font-size-12); font-weight: var(--font-weight-medium);">0 kn</span>
+                    <span style="background: var(--color-sand); padding: 4px 8px; border-radius: var(--radius-sm); font-size: var(--font-size-12); font-weight: var(--font-weight-medium);">Stationary</span>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-2);">
+                  <span style="font-size: var(--font-size-12); color: var(--color-muted-gray);">Since</span>
+                  <span style="font-family: var(--font-family-heading); font-size: var(--font-size-16); font-weight: var(--font-weight-bold); color: var(--color-navy);">06:20</span>
+                  <span style="font-size: var(--font-size-10); color: var(--color-muted-gray);">15m ago</span>
+                </div>
+              </div>
+              <div style="display: flex; gap: var(--space-2);">
+                <button class="btn-secondary" style="flex: 1; font-size: var(--font-size-14); padding: var(--space-2) var(--space-4); min-height: var(--touch-target-min);">View Details</button>
+                <button class="btn-icon">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 6A8 8 0 1 0 2 10l-2 4 4-1a8 8 0 0 0 10-7z"/>
+                  </svg>
+                </button>
+                <button class="btn-icon">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="8" cy="8" r="6"/><path d="M8 8v4M8 4h.01"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Compact Attention Card -->
+            <div style="background: white; border-radius: var(--radius-lg); padding: var(--space-4); box-shadow: var(--shadow-sm); border-left: 4px solid var(--status-attention);">
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-3);">
+                <div style="flex: 1;">
+                  <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-1);">
+                    <h3 style="font-family: var(--font-family-heading); font-size: var(--font-size-16); font-weight: var(--font-weight-bold); margin: 0;">Ocean Explorer</h3>
+                    <span class="vessel-badge attention pulse" style="position: static; padding: 2px 8px; font-size: 10px;">Attention</span>
+                  </div>
+                  <p style="font-size: var(--font-size-14); color: var(--color-coral); margin-bottom: var(--space-2);">⚠️ Delayed 45min</p>
+                  <div style="display: flex; gap: var(--space-2);">
+                    <span style="background: rgba(255, 107, 97, 0.1); color: var(--color-coral); padding: 4px 8px; border-radius: var(--radius-sm); font-size: var(--font-size-12); font-weight: var(--font-weight-medium);">8 kn</span>
+                    <span style="background: rgba(255, 107, 97, 0.1); color: var(--color-coral); padding: 4px 8px; border-radius: var(--radius-sm); font-size: var(--font-size-12); font-weight: var(--font-weight-medium);">Tokyo → Osaka</span>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-2);">
+                  <span style="font-size: var(--font-size-12); color: var(--color-muted-gray);">New ETA</span>
+                  <span style="font-family: var(--font-family-heading); font-size: var(--font-size-16); font-weight: var(--font-weight-bold); color: var(--color-coral);">14:25</span>
+                  <span style="font-size: var(--font-size-10); color: var(--color-muted-gray);">Just now</span>
+                </div>
+              </div>
+              <div style="display: flex; gap: var(--space-2);">
+                <button class="btn-primary attention" style="flex: 1; font-size: var(--font-size-14); padding: var(--space-2) var(--space-4); min-height: var(--touch-target-min);">Assign Task</button>
+                <button class="btn-icon">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 6A8 8 0 1 0 2 10l-2 4 4-1a8 8 0 0 0 10-7z"/>
+                  </svg>
+                </button>
+                <button class="btn-icon">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="8" cy="8" r="6"/><path d="M8 4v4M8 11h.01"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: var(--space-8);">
+      <h3 style="font-family: var(--font-family-heading); font-size: var(--font-size-20); margin-bottom: var(--space-4);">Navigation</h3>
+      <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+        <a href="home.html" class="nav-button">Home</a>
+        <a href="listing.html" class="nav-button active">Vessel Listing</a>
+        <a href="detail.html" class="nav-button">Vessel Detail</a>
+        <a href="task.html" class="nav-button">Task Creation</a>
+        <a href="queue.html" class="nav-button">Dispatch Queue</a>
+        <a href="timeline.html" class="nav-button">Tracking Timeline</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/components.js"></script>
+</body>
+</html>

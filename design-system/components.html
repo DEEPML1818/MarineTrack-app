@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Component Library - MarineTrack Design System</title>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="components.css">
+</head>
+<body>
+  <div class="viewer-container">
+    <header class="viewer-header">
+      <h1 class="viewer-title">🧩 Component Library</h1>
+      <p class="viewer-subtitle">Reusable UI components with state variations and usage examples</p>
+    </header>
+
+    <nav class="viewer-nav">
+      <a href="index.html" class="nav-button">Overview</a>
+      <a href="guide.html" class="nav-button">Style Guide</a>
+      <a href="components.html" class="nav-button active">Components</a>
+      <a href="screens/home.html" class="nav-button">Screens</a>
+    </nav>
+
+    <!-- COMPONENT SHOWCASE -->
+    
+    <!-- 1. CARDS -->
+    <section class="component-section">
+      <h2 class="component-heading">Vessel Cards</h2>
+      <p class="component-desc">12-16px radius, subtle shadow, primary info left/top, action bottom/right. States: Live, Docked, Delayed, Attention.</p>
+      
+      <div class="component-grid">
+        <!-- Live State -->
+        <div class="vessel-card" data-state="live">
+          <div class="vessel-card-media">
+            <img src="../assets/hero/Fishing_vessel_aerial_view_75193c9d.png" alt="Vessel" class="vessel-img">
+            <span class="vessel-badge live">Live</span>
+            <span class="vessel-speed">12 kn</span>
+          </div>
+          <div class="vessel-card-content">
+            <h3 class="vessel-name">Pacific Mariner</h3>
+            <p class="vessel-route">Singapore → Hong Kong</p>
+            <div class="vessel-meta">
+              <span class="meta-item">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                  <circle cx="6" cy="6" r="6"/>
+                </svg>
+                ETA 09:40
+              </span>
+              <span class="meta-item">2m ago</span>
+            </div>
+          </div>
+          <div class="vessel-card-actions">
+            <button class="btn-primary">Track Now</button>
+            <button class="btn-icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 5h16M2 10h16M2 15h16"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Docked State -->
+        <div class="vessel-card" data-state="docked">
+          <div class="vessel-card-media">
+            <img src="../assets/hero/Fishing_harbor_sunrise_panorama_a021dc21.png" alt="Vessel" class="vessel-img">
+            <span class="vessel-badge docked">Docked</span>
+          </div>
+          <div class="vessel-card-content">
+            <h3 class="vessel-name">Harbor Queen</h3>
+            <p class="vessel-route">Port of Manila</p>
+            <div class="vessel-meta">
+              <span class="meta-item">Since 06:20</span>
+              <span class="meta-item">15m ago</span>
+            </div>
+          </div>
+          <div class="vessel-card-actions">
+            <button class="btn-secondary">View Details</button>
+            <button class="btn-icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A10 10 0 1 0 2 12l-2 6 6-2a10 10 0 0 0 12-8z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Attention State -->
+        <div class="vessel-card" data-state="attention">
+          <div class="vessel-card-media">
+            <img src="../assets/hero/Maritime_navigation_equipment_closeup_bd88f1da.png" alt="Vessel" class="vessel-img">
+            <span class="vessel-badge attention">Attention</span>
+            <span class="vessel-speed">8 kn</span>
+          </div>
+          <div class="vessel-card-content">
+            <h3 class="vessel-name">Ocean Explorer</h3>
+            <p class="vessel-route">Tokyo Bay → Osaka</p>
+            <div class="vessel-meta">
+              <span class="meta-item">⚠️ Delayed 45min</span>
+              <span class="meta-item">Just now</span>
+            </div>
+          </div>
+          <div class="vessel-card-actions">
+            <button class="btn-primary attention">Assign Task</button>
+            <button class="btn-icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="10" cy="10" r="8"/>
+                <path d="M10 6v4M10 14h.01"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="usage-note">
+        <strong>Usage:</strong> Main container for vessel information. Always includes image/map thumbnail, name, route, status badge, and at least one primary action. Touch target for entire card should be min 44px height.
+      </div>
+    </section>
+
+    <!-- 2. CHIPS / PILLS -->
+    <section class="component-section">
+      <h2 class="component-heading">Filter Chips</h2>
+      <p class="component-desc">Icon + label; active/inactive styles; hit area 44px minimum. Used for horizontal category filtering.</p>
+      
+      <div class="chip-group">
+        <button class="chip active">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <rect x="2" y="4" width="12" height="8" rx="1"/>
+          </svg>
+          All
+        </button>
+        <button class="chip">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M2 6l6-4 6 4v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
+          </svg>
+          Cargo
+        </button>
+        <button class="chip">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <circle cx="8" cy="5" r="2"/><path d="M2 13c0-3 2.5-5 6-5s6 2 6 5"/>
+          </svg>
+          Passenger
+        </button>
+        <button class="chip">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M4 2l8 4-8 4V2z"/>
+          </svg>
+          Fishing
+        </button>
+        <button class="chip attention">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <circle cx="8" cy="8" r="6"/><path d="M8 4v4M8 11h.01"/>
+          </svg>
+          Alerts
+        </button>
+      </div>
+
+      <div class="usage-note">
+        <strong>Microcopy:</strong> Keep labels short (1-2 words). Use icons consistently with label meaning. Active state uses teal background, inactive uses muted gray border.
+      </div>
+    </section>
+
+    <!-- 3. BUTTONS / CTAs -->
+    <section class="component-section">
+      <h2 class="component-heading">Call-to-Action Buttons</h2>
+      <p class="component-desc">Primary (coral on teal or teal on sand), Secondary (outline or muted gray). Min height 44px for touch targets.</p>
+      
+      <div class="component-grid">
+        <div class="button-group">
+          <h4 class="group-label">Primary CTAs</h4>
+          <button class="btn-primary">Track Now</button>
+          <button class="btn-primary">Confirm Dispatch</button>
+          <button class="btn-primary">Start Tracking</button>
+          <button class="btn-primary attention">Assign Task</button>
+          <button class="btn-primary" disabled>Processing...</button>
+        </div>
+
+        <div class="button-group">
+          <h4 class="group-label">Secondary CTAs</h4>
+          <button class="btn-secondary">View Details</button>
+          <button class="btn-secondary">Update Route</button>
+          <button class="btn-secondary">Cancel</button>
+          <button class="btn-secondary" disabled>Unavailable</button>
+        </div>
+
+        <div class="button-group">
+          <h4 class="group-label">Icon Buttons</h4>
+          <button class="btn-icon" title="More options">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="10" cy="5" r="1"/><circle cx="10" cy="10" r="1"/><circle cx="10" cy="15" r="1"/>
+            </svg>
+          </button>
+          <button class="btn-icon" title="Message">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A10 10 0 1 0 2 12l-2 6 6-2a10 10 0 0 0 12-8z"/>
+            </svg>
+          </button>
+          <button class="btn-icon" title="Navigation">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="10,2 18,18 10,14 2,18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="usage-note">
+        <strong>Microcopy:</strong> Use action verbs (Track, Confirm, Assign, Start, Update). Primary for main actions, secondary for alternatives/cancellations. Icon buttons require aria-labels.
+      </div>
+    </section>
+
+    <!-- 4. BADGES -->
+    <section class="component-section">
+      <h2 class="component-heading">Status Badges</h2>
+      <p class="component-desc">Color-coded status indicators with live animation option. Include semantic meaning through color and icon.</p>
+      
+      <div class="badge-group">
+        <span class="vessel-badge live pulse">Live</span>
+        <span class="vessel-badge docked">Docked</span>
+        <span class="vessel-badge delayed">ETA 09:40</span>
+        <span class="vessel-badge attention pulse">Attention</span>
+        <span class="vessel-badge info">En Route</span>
+        <span class="vessel-badge success">Completed</span>
+      </div>
+
+      <div class="usage-note">
+        <strong>States:</strong> Live (green, pulsing), Docked (gray), Delayed (orange), Attention (coral, pulsing), Info (teal), Success (green solid). Pulse animation for real-time updates.
+      </div>
+    </section>
+
+    <!-- 5. BOTTOM SHEET MODAL -->
+    <section class="component-section">
+      <h2 class="component-heading">Bottom Sheet Modal</h2>
+      <p class="component-desc">Animated elevation, swipe to dismiss, persistent sticky CTA. Used for task creation and detailed forms.</p>
+      
+      <div class="modal-demo-container">
+        <button class="btn-primary" onclick="showBottomSheet()">Open Task Creation Sheet</button>
+        
+        <div id="bottomSheet" class="bottom-sheet">
+          <div class="bottom-sheet-overlay" onclick="hideBottomSheet()"></div>
+          <div class="bottom-sheet-content">
+            <div class="bottom-sheet-handle"></div>
+            <div class="bottom-sheet-header">
+              <h3>Create New Task</h3>
+              <button class="btn-icon" onclick="hideBottomSheet()">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4l12 12M16 4L4 16"/>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="bottom-sheet-body">
+              <div class="form-group">
+                <label class="form-label">Task Type</label>
+                <div class="segmented-control">
+                  <button class="segment active">Inspection</button>
+                  <button class="segment">Repair</button>
+                  <button class="segment">Resupply</button>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Priority</label>
+                <div class="pill-toggle-group">
+                  <button class="pill-toggle">Low</button>
+                  <button class="pill-toggle active">Medium</button>
+                  <button class="pill-toggle">High</button>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Estimated Time</label>
+                <input type="text" class="form-input" placeholder="e.g., 2 hours" value="2 hours">
+                <span class="form-helper">Tap to open live map</span>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Notes (optional)</label>
+                <textarea class="form-textarea" placeholder="Add priority note..." rows="3"></textarea>
+              </div>
+            </div>
+            
+            <div class="bottom-sheet-footer">
+              <div class="footer-summary">
+                <span class="summary-label">Updated ETA</span>
+                <span class="summary-value">11:40 AM</span>
+              </div>
+              <button class="btn-primary btn-block">Assign Task</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="usage-note">
+        <strong>Interaction:</strong> Sheet slides up from bottom with 220ms ease-out. Swipe handle for dismiss gesture. Background overlay dims to 40% opacity. Sticky footer always visible during scroll.
+      </div>
+    </section>
+
+    <!-- 6. TELEMETRY TILES -->
+    <section class="component-section">
+      <h2 class="component-heading">Telemetry Tiles</h2>
+      <p class="component-desc">Live data display with microinteractions. Numeric deltas animate on update. Icon + label + value + unit.</p>
+      
+      <div class="telemetry-grid">
+        <div class="telemetry-tile">
+          <div class="telemetry-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/>
+            </svg>
+          </div>
+          <div class="telemetry-info">
+            <span class="telemetry-label">Speed</span>
+            <span class="telemetry-value">12.4 <span class="telemetry-unit">kn</span></span>
+            <span class="telemetry-delta positive">+0.8</span>
+          </div>
+        </div>
+
+        <div class="telemetry-tile">
+          <div class="telemetry-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <div class="telemetry-info">
+            <span class="telemetry-label">Heading</span>
+            <span class="telemetry-value">245° <span class="telemetry-unit">SW</span></span>
+          </div>
+        </div>
+
+        <div class="telemetry-tile">
+          <div class="telemetry-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v20M5 12l7-7 7 7"/>
+            </svg>
+          </div>
+          <div class="telemetry-info">
+            <span class="telemetry-label">Depth</span>
+            <span class="telemetry-value">42 <span class="telemetry-unit">m</span></span>
+            <span class="telemetry-delta negative">-3</span>
+          </div>
+        </div>
+
+        <div class="telemetry-tile">
+          <div class="telemetry-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 6v6"/>
+            </svg>
+          </div>
+          <div class="telemetry-info">
+            <span class="telemetry-label">Last Update</span>
+            <span class="telemetry-value">2m <span class="telemetry-unit">ago</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="usage-note">
+        <strong>Animation:</strong> Value changes trigger 180ms fade + slide. Positive deltas show up arrow (green), negative show down arrow (orange). Update timestamp pulses on live data refresh.
+      </div>
+    </section>
+
+    <!-- 7. TOAST NOTIFICATIONS -->
+    <section class="component-section">
+      <h2 class="component-heading">Toast Notifications</h2>
+      <p class="component-desc">Short motion (120ms in, 180ms out), success (teal) and alerts (coral). Auto-dismiss after 3-5 seconds.</p>
+      
+      <div class="component-grid">
+        <button class="btn-secondary" onclick="showToast('success')">Success Toast</button>
+        <button class="btn-secondary" onclick="showToast('warning')">Warning Toast</button>
+        <button class="btn-secondary" onclick="showToast('error')">Error Toast</button>
+        <button class="btn-secondary" onclick="showToast('info')">Info Toast</button>
+      </div>
+      
+      <div id="toastContainer"></div>
+
+      <div class="usage-note">
+        <strong>Microcopy:</strong> "Vessel tracked successfully", "Route updated", "Connection lost - retrying...", "Task assigned to Ocean Explorer". Keep under 60 characters.
+      </div>
+    </section>
+
+  </div>
+
+  <script src="components.js"></script>
+</body>
+</html>

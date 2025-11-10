@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vessel Detail - MarineTrack</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../css/screens.css">
+  <link rel="stylesheet" href="../components.css">
+</head>
+<body>
+  <div class="viewer-container">
+    <header class="viewer-header">
+      <h1 class="viewer-title">📱 Screen 3: Vessel Detail with Expandable Live Map</h1>
+      <p class="viewer-subtitle">Hero image, live telemetry, expandable map preview, event log, sticky actions</p>
+    </header>
+
+    <nav class="viewer-nav">
+      <a href="../index.html" class="nav-button">Overview</a>
+      <a href="../guide.html" class="nav-button">Style Guide</a>
+      <a href="../components.html" class="nav-button">Components</a>
+      <a href="home.html" class="nav-button active">Screens</a>
+    </nav>
+
+    <div class="screen-annotation">
+      <h3 class="annotation-title">Screen Purpose</h3>
+      <p class="annotation-description">
+        Detailed vessel view with live tracking and expandable map. Emphasizes real-time telemetry and quick actions.
+      </p>
+      <ul class="annotation-list">
+        <li>Hero section with vessel photo/snapshot, name, and operator</li>
+        <li>Expandable live map preview with radar overlay and ETA (tap to expand full-screen)</li>
+        <li>Telemetry row: speed, heading, depth, last update with live microanimations</li>
+        <li>Event log showing recent actions with timestamps</li>
+        <li>Sticky action strip at bottom: Contact, Divert, Create Task</li>
+        <li>Pinch and drag enabled on map for navigation</li>
+      </ul>
+    </div>
+
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div class="screen">
+          <!-- Back Button -->
+          <div style="position: absolute; top: 56px; left: var(--space-4); z-index: 10;">
+            <button style="min-width: var(--touch-target-min); min-height: var(--touch-target-min); background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); cursor: pointer;">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 10H5M10 15l-5-5 5-5"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Vessel Detail Hero -->
+          <div class="detail-hero">
+            <img src="../assets/hero/Fishing_vessel_aerial_view_75193c9d.png" alt="Pacific Mariner" class="detail-hero-image">
+            <div class="detail-hero-info">
+              <span class="vessel-badge live pulse" style="position: static; margin-bottom: var(--space-2);">Live</span>
+              <h1 class="detail-vessel-name">Pacific Mariner</h1>
+              <p class="detail-operator">Operated by Pacific Fleet Co.</p>
+            </div>
+          </div>
+
+          <!-- Live Map Preview (Expandable) -->
+          <div class="map-preview">
+            <img src="../assets/hero/Maritime_control_room_interior_b47baa28.png" alt="Live tracking map" class="map-placeholder">
+            <div style="position: absolute; top: var(--space-3); right: var(--space-3); background: white; padding: var(--space-2) var(--space-3); border-radius: var(--radius-full); font-size: var(--font-size-12); font-weight: var(--font-weight-semibold); display: flex; align-items: center; gap: var(--space-1);">
+              <span style="display: inline-block; width: 8px; height: 8px; background: var(--status-live); border-radius: 50%; animation: pulse 2s ease-in-out infinite;"></span>
+              Live Tracking
+            </div>
+            <div class="map-overlay">
+              <div>
+                <div style="font-size: var(--font-size-12); color: var(--color-muted-gray); margin-bottom: 2px;">Current Route</div>
+                <div style="font-size: var(--font-size-14); font-weight: var(--font-weight-bold); color: var(--color-navy);">Singapore → Hong Kong</div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: var(--font-size-12); color: var(--color-muted-gray); margin-bottom: 2px;">ETA</div>
+                <div style="font-family: var(--font-family-heading); font-size: var(--font-size-16); font-weight: var(--font-weight-bold); color: var(--color-teal);">09:40 AM</div>
+              </div>
+            </div>
+            <div style="position: absolute; bottom: 72px; right: var(--space-4); background: rgba(255, 255, 255, 0.95); padding: var(--space-2); border-radius: var(--radius-md); font-size: var(--font-size-10); color: var(--color-muted-gray);">
+              📍 Tap to expand
+            </div>
+          </div>
+
+          <!-- Telemetry Row -->
+          <div class="telemetry-row">
+            <div class="telemetry-compact">
+              <div style="width: 24px; height: 24px; margin: 0 auto var(--space-1); color: var(--color-teal);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/>
+                </svg>
+              </div>
+              <span class="telemetry-compact-value">12.4</span>
+              <span class="telemetry-compact-label">kn</span>
+            </div>
+            <div class="telemetry-compact">
+              <div style="width: 24px; height: 24px; margin: 0 auto var(--space-1); color: var(--color-teal);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                </svg>
+              </div>
+              <span class="telemetry-compact-value">245°</span>
+              <span class="telemetry-compact-label">SW</span>
+            </div>
+            <div class="telemetry-compact">
+              <div style="width: 24px; height: 24px; margin: 0 auto var(--space-1); color: var(--color-teal);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v20M5 12l7-7 7 7"/>
+                </svg>
+              </div>
+              <span class="telemetry-compact-value">42</span>
+              <span class="telemetry-compact-label">m depth</span>
+            </div>
+            <div class="telemetry-compact">
+              <div style="width: 24px; height: 24px; margin: 0 auto var(--space-1); color: var(--color-muted-gray);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 6v6"/>
+                </svg>
+              </div>
+              <span class="telemetry-compact-value">2m</span>
+              <span class="telemetry-compact-label">ago</span>
+            </div>
+          </div>
+
+          <!-- Section Header -->
+          <div class="section-header">
+            <h2 class="section-title">Recent Activity</h2>
+          </div>
+
+          <!-- Event Log -->
+          <div class="event-log">
+            <div class="event-item">
+              <div class="event-icon">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="10,2 18,18 10,14 2,18"/>
+                </svg>
+              </div>
+              <div class="event-content">
+                <div class="event-title">Route updated</div>
+                <div class="event-time">2 minutes ago</div>
+              </div>
+            </div>
+
+            <div class="event-item">
+              <div class="event-icon">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/>
+                </svg>
+              </div>
+              <div class="event-content">
+                <div class="event-title">ETA updated to 09:40 AM</div>
+                <div class="event-time">15 minutes ago</div>
+              </div>
+            </div>
+
+            <div class="event-item">
+              <div class="event-icon">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 7A9 9 0 1 0 2 11l-2 5 5-2a9 9 0 0 0 13-7z"/>
+                </svg>
+              </div>
+              <div class="event-content">
+                <div class="event-title">Message from captain</div>
+                <div class="event-time">1 hour ago</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sticky Actions -->
+          <div class="sticky-actions">
+            <button class="btn-secondary" style="flex: 1;">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                <path d="M14 6A8 8 0 1 0 2 10l-2 4 4-1a8 8 0 0 0 10-7z"/>
+              </svg>
+              Contact
+            </button>
+            <button class="btn-secondary" style="flex: 1;">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                <path d="M8 2v12M2 8h12"/>
+              </svg>
+              Divert
+            </button>
+            <button class="btn-primary" style="flex: 1;">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                <path d="M12 2L5 9 2 6"/>
+              </svg>
+              Create Task
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: var(--space-8);">
+      <h3 style="font-family: var(--font-family-heading); font-size: var(--font-size-20); margin-bottom: var(--space-4);">Navigation</h3>
+      <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+        <a href="home.html" class="nav-button">Home</a>
+        <a href="listing.html" class="nav-button">Vessel Listing</a>
+        <a href="detail.html" class="nav-button active">Vessel Detail</a>
+        <a href="task.html" class="nav-button">Task Creation</a>
+        <a href="queue.html" class="nav-button">Dispatch Queue</a>
+        <a href="timeline.html" class="nav-button">Tracking Timeline</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/components.js"></script>
+</body>
+</html>
