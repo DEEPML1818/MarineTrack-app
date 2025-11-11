@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ImageSourcePropType } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
 
 interface VesselCardProps {
@@ -31,8 +32,8 @@ export function VesselCard({
   lastUpdate,
   onPress,
   onActionPress,
-  actionLabel = 'View Details',
-  showDetails = false,
+  actionLabel = 'Track Now',
+  showDetails = true,
 }: VesselCardProps) {
   const statusConfig = {
     live: {
@@ -61,86 +62,81 @@ export function VesselCard({
 
   return (
     <TouchableOpacity 
-      style={[
-        styles.card,
-        status === 'attention' && styles.cardAttention,
-      ]} 
+      style={styles.card} 
       onPress={onPress} 
-      activeOpacity={0.8}
+      activeOpacity={0.96}
     >
-      {/* Status Indicator Bar */}
-      <View style={[styles.statusBar, { backgroundColor: config.color }]} />
+      {/* Image with gradient overlay */}
+      {imageSource && (
+        <View style={styles.imageContainer}>
+          <Image source={imageSource} style={styles.image} />
+          <LinearGradient
+            colors={['transparent', 'rgba(44, 24, 16, 0.4)']}
+            style={styles.imageGradient}
+          />
+          
+          {/* Status badge */}
+          <View style={[styles.statusBadge, { backgroundColor: config.color }]}>
+            {config.pulse && <View style={styles.pulseDot} />}
+            <Text style={styles.statusText}>{config.label}</Text>
+          </View>
+        </View>
+      )}
       
       <View style={styles.cardContent}>
-        {/* Header Row */}
+        {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Text style={styles.vesselName}>{vesselName}</Text>
-            <View style={[styles.statusBadge, { backgroundColor: config.color }]}>
-              {config.pulse && <View style={styles.pulseDot} />}
-              <Text style={styles.statusText}>{config.label}</Text>
-            </View>
+            <Text style={styles.vesselName} numberOfLines={1}>{vesselName}</Text>
+            {vesselType && (
+              <Text style={styles.vesselType}>{vesselType}</Text>
+            )}
           </View>
           
           {eta && (
             <View style={styles.etaContainer}>
               <Text style={styles.etaLabel}>ETA</Text>
-              <Text style={[styles.etaValue, status === 'attention' && { color: Theme.colors.coral }]}>
-                {eta}
-              </Text>
+              <Text style={styles.etaValue}>{eta}</Text>
             </View>
           )}
         </View>
 
         {/* Route */}
         {route && (
-          <Text style={styles.route}>{route}</Text>
+          <View style={styles.routeContainer}>
+            <Text style={styles.routeIcon}>📍</Text>
+            <Text style={styles.route} numberOfLines={1}>{route}</Text>
+          </View>
         )}
 
-        {/* Telemetry Chips */}
-        {showDetails && (
+        {/* Telemetry chips */}
+        {showDetails && (speed !== undefined || distance !== undefined) && (
           <View style={styles.telemetryRow}>
             {speed !== undefined && (
               <View style={styles.telemetryChip}>
+                <Text style={styles.telemetryIcon}>💨</Text>
                 <Text style={styles.telemetryValue}>{speed.toFixed(1)}</Text>
                 <Text style={styles.telemetryUnit}>kn</Text>
               </View>
             )}
             {distance !== undefined && (
               <View style={styles.telemetryChip}>
+                <Text style={styles.telemetryIcon}>📏</Text>
                 <Text style={styles.telemetryValue}>{distance.toFixed(1)}</Text>
-                <Text style={styles.telemetryUnit}>nm</Text>
-              </View>
-            )}
-            {lastUpdate && (
-              <View style={styles.telemetryChip}>
-                <Text style={styles.telemetryLabel}>{lastUpdate}</Text>
+                <Text style={styles.telemetryUnit}>km</Text>
               </View>
             )}
           </View>
         )}
 
-        {/* Action Buttons */}
-        <View style={styles.actions}>
-          <TouchableOpacity 
-            style={[
-              styles.actionButton,
-              status === 'attention' ? styles.actionButtonAttention : styles.actionButtonPrimary,
-            ]}
-            onPress={onActionPress}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.actionButtonText}>{actionLabel}</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
-            <Text style={styles.iconButtonText}>💬</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
-            <Text style={styles.iconButtonText}>⋯</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Action button */}
+        <TouchableOpacity 
+          style={styles.actionButton}
+          onPress={onActionPress}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.actionButtonText}>{actionLabel}</Text>
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
@@ -149,44 +145,36 @@ export function VesselCard({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: Theme.colors.white,
-    borderRadius: Theme.cards.borderRadius,
+    borderRadius: 16,
     overflow: 'hidden',
+    marginBottom: Theme.spacing.base,
     ...Theme.shadows.md,
+  },
+  imageContainer: {
     position: 'relative',
+    height: 160,
+    backgroundColor: Theme.colors.cream,
   },
-  cardAttention: {
-    borderWidth: 2,
-    borderColor: Theme.colors.coral,
-  },
-  statusBar: {
-    height: 4,
+  image: {
     width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
-  cardContent: {
-    padding: Theme.spacing.base,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: Theme.spacing.sm,
-  },
-  headerLeft: {
-    flex: 1,
-    gap: Theme.spacing.xs,
-  },
-  vesselName: {
-    fontSize: Theme.fonts.sizes.lg,
-    fontWeight: Theme.fonts.weights.bold,
-    color: Theme.colors.navy,
-    fontFamily: Theme.fonts.heading,
+  imageGradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 80,
   },
   statusBadge: {
+    position: 'absolute',
+    top: Theme.spacing.md,
+    right: Theme.spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start',
-    paddingHorizontal: Theme.spacing.sm,
-    paddingVertical: 4,
+    paddingHorizontal: Theme.spacing.md,
+    paddingVertical: 6,
     borderRadius: Theme.radius.full,
     gap: 6,
   },
@@ -202,6 +190,30 @@ const styles = StyleSheet.create({
     fontWeight: Theme.fonts.weights.bold,
     letterSpacing: 0.5,
   },
+  cardContent: {
+    padding: Theme.spacing.lg,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: Theme.spacing.sm,
+  },
+  headerLeft: {
+    flex: 1,
+    marginRight: Theme.spacing.md,
+  },
+  vesselName: {
+    fontSize: Theme.fonts.sizes.lg,
+    fontWeight: Theme.fonts.weights.bold,
+    color: Theme.colors.espresso,
+    fontFamily: Theme.fonts.heading,
+    marginBottom: 4,
+  },
+  vesselType: {
+    fontSize: Theme.fonts.sizes.sm,
+    color: Theme.colors.mutedGray,
+  },
   etaContainer: {
     alignItems: 'flex-end',
   },
@@ -211,78 +223,62 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   etaValue: {
-    fontSize: Theme.fonts.sizes.lg,
+    fontSize: Theme.fonts.sizes.base,
     fontWeight: Theme.fonts.weights.bold,
-    color: Theme.colors.teal,
-    fontFamily: Theme.fonts.heading,
+    color: Theme.colors.burntOrange,
+  },
+  routeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Theme.spacing.md,
+    gap: Theme.spacing.xs,
+  },
+  routeIcon: {
+    fontSize: 14,
   },
   route: {
+    flex: 1,
     fontSize: Theme.fonts.sizes.md,
     color: Theme.colors.mutedGray,
-    marginBottom: Theme.spacing.md,
   },
   telemetryRow: {
     flexDirection: 'row',
     gap: Theme.spacing.sm,
-    marginBottom: Theme.spacing.md,
-    flexWrap: 'wrap',
+    marginBottom: Theme.spacing.base,
   },
   telemetryChip: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    backgroundColor: Theme.colors.sand,
-    paddingHorizontal: Theme.spacing.sm,
-    paddingVertical: 6,
-    borderRadius: Theme.radius.sm,
-    gap: 4,
+    alignItems: 'center',
+    backgroundColor: Theme.colors.latte,
+    paddingHorizontal: Theme.spacing.md,
+    paddingVertical: 8,
+    borderRadius: 12,
+    gap: 6,
+  },
+  telemetryIcon: {
+    fontSize: 14,
   },
   telemetryValue: {
     fontSize: Theme.fonts.sizes.md,
     fontWeight: Theme.fonts.weights.bold,
-    color: Theme.colors.navy,
+    color: Theme.colors.coffeeBrown,
   },
   telemetryUnit: {
     fontSize: Theme.fonts.sizes.xs,
     color: Theme.colors.mutedGray,
   },
-  telemetryLabel: {
-    fontSize: Theme.fonts.sizes.xs,
-    color: Theme.colors.mutedGray,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: Theme.spacing.sm,
-  },
   actionButton: {
-    flex: 1,
+    backgroundColor: Theme.colors.burntOrange,
     paddingVertical: Theme.spacing.md,
-    borderRadius: Theme.buttons.borderRadius,
+    borderRadius: 12,
     alignItems: 'center',
+    minHeight: 44,
     justifyContent: 'center',
-    minHeight: Theme.touchTarget.min,
-  },
-  actionButtonPrimary: {
-    backgroundColor: Theme.colors.teal,
-  },
-  actionButtonAttention: {
-    backgroundColor: Theme.colors.coral,
   },
   actionButtonText: {
     color: Theme.colors.white,
     fontSize: Theme.fonts.sizes.base,
     fontWeight: Theme.fonts.weights.bold,
     letterSpacing: 0.5,
-  },
-  iconButton: {
-    width: Theme.touchTarget.min,
-    height: Theme.touchTarget.min,
-    borderRadius: Theme.buttons.borderRadius,
-    borderWidth: 2,
-    borderColor: 'rgba(107, 119, 133, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconButtonText: {
-    fontSize: 18,
   },
 });

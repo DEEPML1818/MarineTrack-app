@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Switch, TextInput, ScrollView, Alert, Platform } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/Colors';
+import { Theme } from '@/constants/Theme';
 import * as Location from 'expo-location';
 import { getCurrentUser, updateVesselInfo } from '@/utils/auth';
 import { sendTrackingData, startTracking, getNearbyTrackedVessels } from '@/utils/trackingService';

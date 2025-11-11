@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView, Modal, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/Colors';
+import { Theme } from '@/constants/Theme';
 import { 
   reportHazard, 
   getNearbyHazards, 
@@ -45,8 +44,7 @@ interface NavigationState {
 }
 
 export default function WazeVesselMap({ userLocation, vessels = [], height = 500 }: WazeVesselMapProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colors = Theme.colors;
 
   const [destination, setDestination] = useState<{ lat: number; lng: number } | null>(null);
   const [destinationInput, setDestinationInput] = useState('');
@@ -402,7 +400,7 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
   // Generate map HTML with maritime styling
   const vesselsMarkersHTML = vessels.map(v => {
     const heading = v.heading || 0;
-    const speedColor = v.speed && v.speed > 10 ? '#ef4444' : '#10b981';
+    const speedColor = v.speed && v.speed > 10 ? Theme.colors.danger : Theme.colors.success;
     return `
       L.marker([${v.latitude}, ${v.longitude}], {
         icon: L.divIcon({
@@ -418,10 +416,10 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
   const userMarkerHTML = userLocation ? `
     L.marker([${userLocation.lat}, ${userLocation.lng}], {
       icon: L.divIcon({
-        html: '<div style="position: relative;"><div style="width: 20px; height: 20px; background: #3b82f6; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);"></div><div style="position: absolute; top: -8px; left: -8px; width: 36px; height: 36px; border: 2px solid #3b82f6; border-radius: 50%; opacity: 0.3; animation: pulse 2s infinite;"></div></div>',
+        html: '<div style="position: relative;"><div style="width: 24px; height: 24px; background: #3da9fc; border: 4px solid white; border-radius: 50%; box-shadow: 0 2px 8px rgba(61, 169, 252, 0.8);"></div><div style="position: absolute; top: -10px; left: -10px; width: 44px; height: 44px; border: 3px solid #3da9fc; border-radius: 50%; opacity: 0.4; animation: pulse 2s infinite;"></div></div>',
         className: 'user-marker',
-        iconSize: [20, 20],
-        iconAnchor: [10, 10]
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
       })
     }).addTo(map);
   ` : '';
@@ -451,31 +449,34 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
   const routeHTML = currentRoute.length > 1 ? `
     var routeCoords = [${currentRoute.map(p => `[${p.lat}, ${p.lng}]`).join(',')}];
 
-    // Main route line - thick maritime blue to show sea path clearly
+    // Outer glow for route visibility
     var routeLine = L.polyline(routeCoords, {
-      color: '#0ea5e9',
-      weight: 8,
-      opacity: 0.9,
+      color: '#ff3366',
+      weight: 12,
+      opacity: 0.3,
       lineJoin: 'round',
-      lineCap: 'round'
+      lineCap: 'round',
+      smoothFactor: 1
     }).addTo(map);
 
-    // White border to make route stand out over water
+    // Main route line - bright red/orange like Waze
     L.polyline(routeCoords, {
-      color: '#ffffff',
-      weight: 10,
-      opacity: 0.4,
+      color: '#ff4444',
+      weight: 7,
+      opacity: 1,
       lineJoin: 'round',
-      lineCap: 'round'
+      lineCap: 'round',
+      smoothFactor: 1
     }).addTo(map);
 
-    // Animated overlay showing direction of travel
+    // Inner highlight
     L.polyline(routeCoords, {
-      color: '#38bdf8',
-      weight: 4,
-      opacity: 0.7,
-      dashArray: '15, 20',
-      className: 'route-animation'
+      color: '#ff6666',
+      weight: 3,
+      opacity: 0.8,
+      lineJoin: 'round',
+      lineCap: 'round',
+      smoothFactor: 1
     }).addTo(map);
 
     // Waypoint markers with maneuver icons
@@ -489,7 +490,7 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
       return `
         L.marker([${point.lat}, ${point.lng}], {
           icon: L.divIcon({
-            html: '<div style="background: #0ea5e9; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 14px;">${maneuverIcon}</div>',
+            html: '<div style="background: ${Theme.colors.caramel}; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-size: 14px;">${maneuverIcon}</div>',
             iconSize: [24, 24],
             iconAnchor: [12, 12]
           })
@@ -505,7 +506,7 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
     // Destination marker
     L.marker([${destination?.lat}, ${destination?.lng}], {
       icon: L.divIcon({
-        html: '<div style="display: flex; flex-direction: column; align-items: center;"><div style="width: 40px; height: 40px; background: #10b981; border: 3px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">🎯</div><div style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; margin-top: 4px; font-size: 12px; font-weight: bold;">Destination</div></div>',
+        html: '<div style="display: flex; flex-direction: column; align-items: center;"><div style="width: 40px; height: 40px; background: ${Theme.colors.success}; border: 3px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">🎯</div><div style="background: ${Theme.colors.success}; color: white; padding: 4px 8px; border-radius: 4px; margin-top: 4px; font-size: 12px; font-weight: bold;">Destination</div></div>',
         iconSize: [40, 60],
         iconAnchor: [20, 30]
       })
@@ -522,31 +523,34 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
       <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
       <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
       <style>
-        body { margin: 0; padding: 0; }
-        #map { width: 100%; height: 100vh; }
+        body { margin: 0; padding: 0; background: ${Theme.colors.darkBackground}; }
+        #map { 
+          width: 100%; 
+          height: 100vh;
+          filter: invert(90%) hue-rotate(180deg) brightness(0.9) contrast(1.1);
+        }
+        .leaflet-tile-pane {
+          filter: brightness(0.6) saturate(0.5);
+        }
         @keyframes pulse {
-          0%, 100% { transform: scale(1); opacity: 0.3; }
-          50% { transform: scale(1.5); opacity: 0; }
+          0%, 100% { transform: scale(1); opacity: 0.5; }
+          50% { transform: scale(1.3); opacity: 0.2; }
         }
       </style>
     </head>
     <body>
       <div id="map"></div>
       <script>
-        var map = L.map('map').setView([${defaultLat}, ${defaultLng}], 10);
+        var map = L.map('map', {
+          zoomControl: false,
+          attributionControl: false
+        }).setView([${defaultLat}, ${defaultLng}], 16);
 
-        // Use OpenStreetMap which clearly shows land vs water
-        // This helps visualize that routes stay in water
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          maxZoom: 19
-        }).addTo(map);
-        
-        // Add water overlay to highlight navigable areas
-        L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
-          attribution: 'Map data: &copy; <a href="http://www.openseamap.org">OpenSeaMap</a>',
-          transparent: true,
-          opacity: 0.6
+        // Dark themed map tiles with CartoDB Dark Matter for Waze-like appearance
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          attribution: '',
+          maxZoom: 20,
+          minZoom: 10
         }).addTo(map);
 
         ${userMarkerHTML}
@@ -574,10 +578,10 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
   return (
     <View style={[styles.container, { height }]}>
       {!isNavigating ? (
-        <View style={[styles.searchContainer, { backgroundColor: colors.card }]}>
+        <View style={[styles.searchContainer, { backgroundColor: colors.white }]}>
           <View style={styles.searchHeader}>
             <Text style={styles.searchIcon}>🧭</Text>
-            <Text style={[styles.searchTitle, { color: colors.text }]}>Where to?</Text>
+            <Text style={[styles.searchTitle, { color: colors.espresso }]}>Where to?</Text>
           </View>
 
           <View style={styles.toggleContainer}>
@@ -609,13 +613,13 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
 
           <View style={{ position: 'relative' }}>
             <TextInput
-              style={[styles.input, { backgroundColor: colors.background, color: colors.text }]}
+              style={[styles.input, { backgroundColor: colors.foam, color: colors.espresso }]}
               placeholder={
                 inputMode === 'port' 
                   ? "Search for a port (e.g., Singapore, New York, Rotterdam)" 
                   : "Enter coordinates (lat, lng)"
               }
-              placeholderTextColor={colors.icon}
+              placeholderTextColor={colors.mutedGray}
               value={destinationInput}
               onChangeText={(text) => {
                 setDestinationInput(text);
@@ -626,20 +630,20 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
             />
 
             {showPortSuggestions && portSearchResults.length > 0 && (
-              <View style={[styles.suggestionsContainer, { backgroundColor: colors.card }]}>
+              <View style={[styles.suggestionsContainer, { backgroundColor: colors.white }]}>
                 <ScrollView style={styles.suggestionsList} keyboardShouldPersistTaps="handled">
                   {portSearchResults.map((port) => (
                     <TouchableOpacity
                       key={port.id}
-                      style={[styles.suggestionItem, { borderBottomColor: colors.border }]}
+                      style={[styles.suggestionItem, { borderBottomColor: colors.crema }]}
                       onPress={() => selectPort(port)}
                     >
                       <Text style={styles.suggestionIcon}>⚓</Text>
                       <View style={styles.suggestionInfo}>
-                        <Text style={[styles.suggestionName, { color: colors.text }]}>
+                        <Text style={[styles.suggestionName, { color: colors.espresso }]}>
                           {port.name}
                         </Text>
-                        <Text style={[styles.suggestionDetails, { color: colors.icon }]}>
+                        <Text style={[styles.suggestionDetails, { color: colors.mutedGray }]}>
                           {port.city}, {port.country}
                         </Text>
                       </View>
@@ -651,7 +655,7 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
           </View>
 
           <TouchableOpacity
-            style={[styles.goButton, { backgroundColor: '#0ea5e9' }]}
+            style={[styles.goButton, { backgroundColor: colors.caramel }]}
             onPress={calculateRoute}
           >
             <Text style={styles.goButtonText}>🚀 Calculate Route</Text>
@@ -659,35 +663,35 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
 
           <View style={styles.quickActions}>
             <TouchableOpacity
-              style={[styles.quickActionBtn, { backgroundColor: colors.background }]}
+              style={[styles.quickActionBtn, { backgroundColor: colors.foam }]}
               onPress={() => setShowHazardReport(true)}
             >
               <Text style={styles.quickActionIcon}>⚠️</Text>
-              <Text style={[styles.quickActionText, { color: colors.text }]}>Report</Text>
+              <Text style={[styles.quickActionText, { color: colors.espresso }]}>Report</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.quickActionBtn, { backgroundColor: colors.background }]}
+              style={[styles.quickActionBtn, { backgroundColor: colors.foam }]}
               onPress={() => Alert.alert('Traffic', `${hazards.length} hazards in area`)}
             >
               <Text style={styles.quickActionIcon}>🚦</Text>
-              <Text style={[styles.quickActionText, { color: colors.text }]}>Traffic</Text>
+              <Text style={[styles.quickActionText, { color: colors.espresso }]}>Traffic</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.quickActionBtn, { backgroundColor: colors.background }]}
+              style={[styles.quickActionBtn, { backgroundColor: colors.foam }]}
               onPress={() => setShowRouteOptions(true)}
             >
               <Text style={styles.quickActionIcon}>🛣️</Text>
-              <Text style={[styles.quickActionText, { color: colors.text }]}>Routes</Text>
+              <Text style={[styles.quickActionText, { color: colors.espresso }]}>Routes</Text>
             </TouchableOpacity>
           </View>
 
           {showHazardReport && (
             <Modal visible={showHazardReport} animationType="slide" transparent>
               <View style={styles.modalOverlay}>
-                <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
-                  <Text style={[styles.modalTitle, { color: colors.text }]}>Report Hazard</Text>
+                <View style={[styles.modalContent, { backgroundColor: colors.white }]}>
+                  <Text style={[styles.modalTitle, { color: colors.espresso }]}>Report Hazard</Text>
                   <ScrollView style={styles.hazardOptions}>
                     {[
                       { type: 'debris' as const, icon: '🪵', label: 'Debris' },
@@ -697,16 +701,16 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
                     ].map(item => (
                       <TouchableOpacity
                         key={item.type}
-                        style={[styles.hazardOption, { backgroundColor: colors.background }]}
+                        style={[styles.hazardOption, { backgroundColor: colors.foam }]}
                         onPress={() => reportHazardToSystem(item.type, 'medium', `${item.label} reported`)}
                       >
                         <Text style={styles.hazardOptionIcon}>{item.icon}</Text>
-                        <Text style={[styles.hazardOptionText, { color: colors.text }]}>{item.label}</Text>
+                        <Text style={[styles.hazardOptionText, { color: colors.espresso }]}>{item.label}</Text>
                       </TouchableOpacity>
                     ))}
                   </ScrollView>
                   <TouchableOpacity
-                    style={[styles.closeButton, { backgroundColor: colors.icon }]}
+                    style={[styles.closeButton, { backgroundColor: colors.mutedGray }]}
                     onPress={() => setShowHazardReport(false)}
                   >
                     <Text style={styles.closeButtonText}>Close</Text>
@@ -716,8 +720,10 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
             </Modal>
           )}
         </View>
-      ) : (
-        <View style={[styles.navBar, { backgroundColor: '#0ea5e9' }]}>
+      ) : null}
+
+      {isNavigating ? (
+        <View style={[styles.navBar, { backgroundColor: Theme.colors.caramel }]}>
           <View style={styles.navContent}>
             <View style={styles.navTop}>
               <Text style={styles.navDistance}>
@@ -753,15 +759,29 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
             <Text style={styles.navCloseText}>✕</Text>
           </TouchableOpacity>
         </View>
-      )}
+      ) : null}
 
-      <WebView
-        ref={webViewRef}
-        source={{ html: htmlContent }}
-        style={styles.map}
-        javaScriptEnabled={true}
-        domStorageEnabled={true}
-      />
+      {Platform.OS === 'web' ? (
+        <View style={[styles.map, { backgroundColor: colors.foam, justifyContent: 'center', alignItems: 'center' }]}>
+          <View style={{ padding: 32, alignItems: 'center' }}>
+            <Text style={{ fontSize: 48, marginBottom: 16 }}>🗺️</Text>
+            <Text style={{ fontSize: 18, fontWeight: '600', color: Theme.colors.espresso, textAlign: 'center', marginBottom: 8 }}>
+              Interactive Map
+            </Text>
+            <Text style={{ fontSize: 14, color: Theme.colors.mutedGray, textAlign: 'center', maxWidth: 400 }}>
+              Use the search above to find ports and plan your maritime routes
+            </Text>
+          </View>
+        </View>
+      ) : (
+        <WebView
+          ref={webViewRef}
+          source={{ html: htmlContent }}
+          style={styles.map}
+          javaScriptEnabled={true}
+          domStorageEnabled={true}
+        />
+      )}
 
       {isNavigating && hazards.length > 0 && (
         <View style={[styles.alertsBanner, { backgroundColor: '#fef3c7' }]}>
@@ -779,17 +799,19 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     position: 'absolute',
-    top: 20,
-    left: 16,
-    right: 16,
+    bottom: 0,
+    left: 0,
+    right: 0,
     zIndex: 1000,
     padding: 20,
-    borderRadius: 16,
+    paddingBottom: 40,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 10,
   },
   searchHeader: {
     flexDirection: 'row',
@@ -805,11 +827,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   input: {
-    height: 50,
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    height: 56,
+    borderRadius: 28,
+    paddingHorizontal: 24,
     fontSize: 16,
-    marginBottom: 12,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   toggleContainer: {
     flexDirection: 'row',
@@ -825,7 +852,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#e5e7eb',
   },
   toggleBtnActive: {
-    backgroundColor: '#0ea5e9',
+    backgroundColor: '#C05A2B',
   },
   toggleText: {
     fontSize: 14,
@@ -887,14 +914,16 @@ const styles = StyleSheet.create({
   quickActions: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 16,
+    marginTop: 20,
   },
   quickActionBtn: {
     flex: 1,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 20,
     alignItems: 'center',
     gap: 8,
+    borderWidth: 1.5,
+    borderColor: '#3a3a52',
   },
   quickActionIcon: {
     fontSize: 28,
@@ -910,8 +939,9 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 1000,
     paddingTop: 50,
-    paddingBottom: 20,
-    paddingHorizontal: 16,
+    paddingBottom: 24,
+    paddingHorizontal: 20,
+    background: 'linear-gradient(180deg, rgba(192, 90, 43, 0.98) 0%, rgba(192, 90, 43, 0.85) 100%)',
   },
   navContent: {
     gap: 12,

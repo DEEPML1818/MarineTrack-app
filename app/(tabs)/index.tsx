@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, RefreshControl, StatusBar, TouchableOpacity, ImageBackground } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, RefreshControl, StatusBar, TouchableOpacity, ImageBackground, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '../../constants/Theme';
@@ -20,6 +19,37 @@ export default function HomeScreen() {
 
   useEffect(() => {
     requestLocationAndLoadData();
+    
+    // Set up location watching for real-time updates
+    let locationSubscription: any;
+    const watchLocation = async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        locationSubscription = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.High,
+            timeInterval: 30000, // Update every 30 seconds
+            distanceInterval: 100, // Or when moved 100 meters
+          },
+          (location) => {
+            const coords = {
+              lat: location.coords.latitude,
+              lng: location.coords.longitude,
+            };
+            setUserLocation(coords);
+            loadData(coords);
+          }
+        );
+      }
+    };
+    
+    watchLocation();
+    
+    return () => {
+      if (locationSubscription) {
+        locationSubscription.remove();
+      }
+    };
   }, []);
 
   const requestLocationAndLoadData = async () => {
@@ -27,6 +57,10 @@ export default function HomeScreen() {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         console.log('Location permission denied');
+        Alert.alert(
+          'Location Permission Required',
+          'Please enable location services to see real-time weather and maritime data for your area.'
+        );
         return;
       }
 
@@ -38,11 +72,13 @@ export default function HomeScreen() {
         lat: location.coords.latitude,
         lng: location.coords.longitude,
       };
-      
+
+      console.log('Current location:', coords.lat.toFixed(4), coords.lng.toFixed(4));
       setUserLocation(coords);
       await loadData(coords);
     } catch (error) {
       console.error('Error getting location:', error);
+      Alert.alert('Location Error', 'Could not get your current location. Please try again.');
     }
   };
 
@@ -82,10 +118,10 @@ export default function HomeScreen() {
   return (
     <>
       <StatusBar barStyle="light-content" backgroundColor={Theme.colors.navy} />
-      
+
       {/* Header with gradient */}
       <LinearGradient
-        colors={[Theme.colors.navy, '#0A3847']}
+        colors={[Theme.colors.espresso, Theme.colors.coffeeBrown]}
         style={styles.header}
       >
         <View style={styles.headerTop}>
@@ -93,7 +129,7 @@ export default function HomeScreen() {
             <Text style={styles.greeting}>{getGreeting()}</Text>
             <Text style={styles.headerTitle}>⚓ MarineTrack</Text>
           </View>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.notificationButton}
             onPress={() => router.push('/notifications')}
           >
@@ -121,7 +157,7 @@ export default function HomeScreen() {
             imageStyle={styles.heroBannerImage}
           >
             <LinearGradient
-              colors={['rgba(255, 107, 97, 0.9)', 'rgba(255, 107, 97, 0.7)']}
+              colors={['rgba(217, 151, 87, 0.95)', 'rgba(217, 151, 87, 0.75)']}
               style={styles.heroBannerGradient}
             >
               <View style={styles.heroBannerContent}>
@@ -147,14 +183,14 @@ export default function HomeScreen() {
             <Text style={styles.statLabel}>Nearby Vessels</Text>
           </View>
           <View style={styles.statCard}>
-            <View style={[styles.statIconContainer, { backgroundColor: 'rgba(255, 107, 97, 0.1)' }]}>
+            <View style={[styles.statIconContainer, { backgroundColor: 'rgba(192, 90, 43, 0.1)' }]}>
               <Text style={styles.statIcon}>⚠️</Text>
             </View>
-            <Text style={[styles.statValue, { color: Theme.colors.coral }]}>{hazards.length}</Text>
+            <Text style={[styles.statValue, { color: Theme.colors.caramel }]}>{hazards.length}</Text>
             <Text style={styles.statLabel}>Hazards</Text>
           </View>
           <View style={styles.statCard}>
-            <View style={[styles.statIconContainer, { backgroundColor: 'rgba(246, 235, 217, 0.5)' }]}>
+            <View style={[styles.statIconContainer, { backgroundColor: 'rgba(232, 211, 184, 0.5)' }]}>
               <Text style={styles.statIcon}>🌡️</Text>
             </View>
             <Text style={styles.statValue}>{weather?.temperature || '--'}°</Text>
@@ -214,7 +250,7 @@ export default function HomeScreen() {
               <Text style={styles.actionLabel}>View Map</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/sos')}>
-              <View style={[styles.actionIconContainer, { backgroundColor: 'rgba(255, 107, 97, 0.1)' }]}>
+              <View style={[styles.actionIconContainer, { backgroundColor: 'rgba(192, 90, 43, 0.1)' }]}>
                 <Text style={styles.actionIcon}>🆘</Text>
               </View>
               <Text style={styles.actionLabel}>Emergency</Text>
@@ -280,7 +316,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: Theme.colors.offWhite,
+    backgroundColor: Theme.colors.foam,
   },
   header: {
     paddingTop: 50,
@@ -395,7 +431,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: Theme.radius.md,
-    backgroundColor: 'rgba(15, 154, 167, 0.1)',
+    backgroundColor: 'rgba(122, 111, 79, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Theme.spacing.sm,
@@ -510,7 +546,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: Theme.radius.md,
-    backgroundColor: 'rgba(15, 154, 167, 0.1)',
+    backgroundColor: 'rgba(232, 211, 184, 0.3)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Theme.spacing.md,

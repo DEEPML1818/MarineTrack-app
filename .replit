@@ -1,5 +1,5 @@
 entrypoint = "README.md"
-modules = ["python-3.11", "nix", "nodejs-22"]
+modules = ["web", "python-3.11", "nodejs-22"]
 
 [nix]
 channel = "stable-25_05"
@@ -12,10 +12,6 @@ externalPort = 3000
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 5001
-externalPort = 3001
 
 [workflows]
 runButton = "Project"

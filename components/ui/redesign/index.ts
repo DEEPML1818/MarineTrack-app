@@ -9,3 +9,4 @@ export { TabBar } from './TabBar';
 export { ForecastCard } from './ForecastCard';
 export { LivePropertyChip } from './LivePropertyChip';
 export { VesselDetailHeader } from './VesselDetailHeader';
+export { CustomTabBar } from './CustomTabBar';

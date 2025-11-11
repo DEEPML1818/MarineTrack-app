@@ -1,5 +1,7 @@
+
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Theme } from '@/constants/Theme';
 
 interface WeatherWidgetProps {
@@ -19,47 +21,87 @@ export function WeatherWidget({
   humidity,
   location,
 }: WeatherWidgetProps) {
+  const getWeatherIcon = (condition: string) => {
+    const lowerCondition = condition.toLowerCase();
+    if (lowerCondition.includes('clear') || lowerCondition.includes('sunny')) return '☀️';
+    if (lowerCondition.includes('cloud')) return '☁️';
+    if (lowerCondition.includes('rain')) return '🌧️';
+    if (lowerCondition.includes('storm')) return '⛈️';
+    return '🌤️';
+  };
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        {location && <Text style={styles.location}>{location}</Text>}
-        <Text style={styles.condition}>{condition}</Text>
-      </View>
+    <LinearGradient
+      colors={[Theme.colors.burntOrange, '#E89A6F']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.container}
+    >
+      {/* Glassmorphism overlay */}
+      <View style={styles.glassOverlay} />
       
-      <View style={styles.tempContainer}>
-        <Text style={styles.temperature}>{temperature}°C</Text>
-        <Text style={styles.tempIcon}>☀️</Text>
-      </View>
-      
-      {(windSpeed !== undefined || humidity !== undefined) && (
-        <View style={styles.details}>
-          {windSpeed !== undefined && (
-            <View style={styles.detailItem}>
-              <Text style={styles.detailIcon}>💨</Text>
-              <Text style={styles.detailText}>{windSpeed} kts</Text>
-              {windDirection && <Text style={styles.detailText}>{windDirection}</Text>}
-            </View>
-          )}
-          {humidity !== undefined && (
-            <View style={styles.detailItem}>
-              <Text style={styles.detailIcon}>💧</Text>
-              <Text style={styles.detailText}>{humidity}%</Text>
-            </View>
-          )}
+      <View style={styles.content}>
+        {/* Header */}
+        <View style={styles.header}>
+          {location && <Text style={styles.location}>{location}</Text>}
+          <Text style={styles.condition}>{condition}</Text>
         </View>
-      )}
-    </View>
+        
+        {/* Temperature display */}
+        <View style={styles.tempContainer}>
+          <Text style={styles.temperature}>{temperature}°</Text>
+          <Text style={styles.tempIcon}>{getWeatherIcon(condition)}</Text>
+        </View>
+        
+        {/* Details */}
+        {(windSpeed !== undefined || humidity !== undefined) && (
+          <View style={styles.details}>
+            {windSpeed !== undefined && (
+              <View style={styles.detailItem}>
+                <View style={styles.detailIconContainer}>
+                  <Text style={styles.detailIcon}>💨</Text>
+                </View>
+                <View>
+                  <Text style={styles.detailValue}>{windSpeed} kn</Text>
+                  {windDirection && <Text style={styles.detailLabel}>{windDirection}</Text>}
+                </View>
+              </View>
+            )}
+            {humidity !== undefined && (
+              <View style={styles.detailItem}>
+                <View style={styles.detailIconContainer}>
+                  <Text style={styles.detailIcon}>💧</Text>
+                </View>
+                <View>
+                  <Text style={styles.detailValue}>{humidity}%</Text>
+                  <Text style={styles.detailLabel}>Humidity</Text>
+                </View>
+              </View>
+            )}
+          </View>
+        )}
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Theme.colors.warning,
-    borderRadius: Theme.radius.lg,
+    borderRadius: 16,
     padding: Theme.spacing.xl,
     marginHorizontal: Theme.spacing.base,
     marginVertical: Theme.spacing.md,
+    overflow: 'hidden',
     ...Theme.shadows.md,
+  },
+  glassOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backdropFilter: 'blur(10px)',
+  },
+  content: {
+    position: 'relative',
+    zIndex: 1,
   },
   header: {
     marginBottom: Theme.spacing.md,
@@ -67,8 +109,9 @@ const styles = StyleSheet.create({
   location: {
     fontSize: Theme.fonts.sizes.md,
     color: Theme.colors.white,
-    opacity: 0.9,
+    opacity: 0.95,
     marginBottom: Theme.spacing.xs,
+    fontWeight: Theme.fonts.weights.medium,
   },
   condition: {
     fontSize: Theme.fonts.sizes.base,
@@ -79,37 +122,52 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: Theme.spacing.base,
+    marginBottom: Theme.spacing.lg,
   },
   temperature: {
-    fontSize: 48,
+    fontSize: 64,
     fontWeight: Theme.fonts.weights.bold,
     color: Theme.colors.white,
+    fontFamily: Theme.fonts.heading,
+    lineHeight: 64,
   },
   tempIcon: {
-    fontSize: 64,
+    fontSize: 72,
   },
   details: {
     flexDirection: 'row',
-    gap: Theme.spacing.xl,
-    marginTop: Theme.spacing.md,
+    gap: Theme.spacing.lg,
   },
   detailItem: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Theme.spacing.sm,
-    backgroundColor: Theme.colors.white,
+    gap: Theme.spacing.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
     paddingHorizontal: Theme.spacing.md,
-    paddingVertical: Theme.spacing.sm,
-    borderRadius: Theme.radius.md,
-    opacity: 0.2,
+    paddingVertical: Theme.spacing.md,
+    borderRadius: 12,
+    backdropFilter: 'blur(10px)',
+  },
+  detailIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   detailIcon: {
-    fontSize: Theme.fonts.sizes.lg,
+    fontSize: 18,
   },
-  detailText: {
-    fontSize: Theme.fonts.sizes.md,
-    fontWeight: Theme.fonts.weights.semibold,
+  detailValue: {
+    fontSize: Theme.fonts.sizes.base,
+    fontWeight: Theme.fonts.weights.bold,
     color: Theme.colors.white,
+  },
+  detailLabel: {
+    fontSize: Theme.fonts.sizes.xs,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginTop: 2,
   },
 });

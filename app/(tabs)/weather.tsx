@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, StatusBar, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, StatusBar, RefreshControl, Alert } from 'react-native';
 import { Theme } from '@/constants/Theme';
+import * as Location from 'expo-location';
 import { WeatherWidget, SectionHeader } from '@/components/ui/redesign';
 import { fetchWeatherAPIData, getMockWeatherData } from '@/utils/weatherApi';
 
@@ -10,7 +11,75 @@ export default function WeatherScreen() {
 
   useEffect(() => {
     const loadWeather = async () => {
-      const data = await fetchWeatherAPIData(14.5995, 120.9842);
+      try {
+        // Request location permission
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permission Required', 'Location permission is needed to show weather for your area.');
+          return;
+        }
+
+        // Get current location
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        });
+
+        const lat = location.coords.latitude;
+        const lng = location.coords.longitude;
+
+        console.log('Fetching weather for location:', lat.toFixed(4), lng.toFixed(4));
+
+        // Get location name
+        try {
+          const geocode = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
+          if (geocode && geocode.length > 0) {
+            const place = geocode[0];
+            setLocationName(place.city || place.region || place.country || 'Unknown Location');
+          }
+        } catch (geoError) {
+          console.error('Error geocoding:', geoError);
+          setLocationName('Current Location');
+        }
+
+        // Fetch weather data for current location
+        const data = await fetchWeatherAPIData(lat, lng);
+        if (data && data.current) {
+          setWeatherData({
+            temperature: Math.round(data.current.temp_c),
+            windSpeed: Math.round(data.current.wind_kph),
+            waveHeight: 1.2,
+            visibility: Math.round(data.current.vis_km),
+            condition: data.current.condition.text,
+            icon: '⛅'
+          });
+        }
+      } catch (error) {
+        console.error('Error loading weather:', error);
+        Alert.alert('Weather Error', 'Could not load weather data for your location.');
+      }
+    };
+    loadWeather();
+  }, []);
+
+  const [locationName, setLocationName] = useState('Loading...');
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+      const lat = location.coords.latitude;
+      const lng = location.coords.longitude;
+      
+      // Get location name
+      const geocode = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
+      if (geocode && geocode.length > 0) {
+        const place = geocode[0];
+        setLocationName(place.city || place.region || place.country || 'Unknown Location');
+      }
+
+      const data = await fetchWeatherAPIData(lat, lng);
       if (data && data.current) {
         setWeatherData({
           temperature: Math.round(data.current.temp_c),
@@ -21,13 +90,9 @@ export default function WeatherScreen() {
           icon: '⛅'
         });
       }
-    };
-    loadWeather();
-  }, []);
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error('Error refreshing:', error);
+    }
     setRefreshing(false);
   };
 
@@ -38,7 +103,7 @@ export default function WeatherScreen() {
         <View style={styles.headerTop}>
           <View style={styles.locationBadge}>
             <Text style={styles.locationIcon}>📍</Text>
-            <Text style={styles.locationText}>Coastal City</Text>
+            <Text style={styles.locationText}>{locationName}</Text>
           </View>
           <Text style={styles.menuIcon}>⚙️</Text>
         </View>

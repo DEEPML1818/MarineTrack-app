@@ -1,44 +1,54 @@
 
 // MarineTrack Theme - ZUS Coffee-Inspired Maritime Aesthetic
-// Delivery-first design with warm, purposeful interactions
+// Warm, modern design with coffee-inspired colors and clean interfaces
 
 export const Theme = {
-  // Primary Colors
+  // Primary Colors - Zus Coffee-Inspired Palette
   colors: {
-    teal: '#0F9AA7',        // Primary action color
-    navy: '#082837',        // Deep navy for headers and emphasis
-    coral: '#FF6B61',       // Alert and attention states
-    sand: '#F6EBD9',        // Warm backgrounds and highlights
-    offWhite: '#FBFAF8',    // Main background
-    mutedGray: '#6B7785',   // Secondary text and borders
+    espresso: '#4A2C2A',    // Rich espresso - primary headers and emphasis
+    coffeeBrown: '#6B4423', // Coffee brown - secondary headers
+    latte: '#F5E6D3',       // Latte cream - warm backgrounds
+    cream: '#E8D5C4',       // Cream beige - subtle highlights
+    burntOrange: '#D97757', // Burnt orange - CTAs and accents
+    foam: '#FAF7F2',        // Soft foam - main backgrounds
+    mutedGray: '#8B7E74',   // Warm gray - secondary text
     white: '#FFFFFF',
-    black: '#0A0E12',
+    black: '#2C1810',       // Warm black
+    
+    // Legacy aliases for compatibility
+    teal: '#D97757',        // Maps to burntOrange for actions
+    navy: '#4A2C2A',        // Maps to espresso
+    coral: '#D97757',       // Maps to burntOrange for alerts
+    sand: '#E8D5C4',        // Maps to cream
+    offWhite: '#FAF7F2',    // Maps to foam
+    caramel: '#D97757',     // Alias for burntOrange
+    crema: '#E8D5C4',       // Alias for cream
     
     // Semantic Colors
-    success: '#0F9AA7',     // Use teal for success
-    warning: '#FFA726',
-    danger: '#FF6B61',      // Use coral for danger
-    info: '#0F9AA7',
+    success: '#7A6F4F',     // Warm olive success
+    warning: '#D9953C',     // Amber warning
+    danger: '#B85A3D',      // Warm terracotta danger
+    info: '#8B7355',        // Warm brown info
     
-    // Status Colors (high contrast for glanceability)
-    statusLive: '#0F9AA7',      // Teal for live/active
-    statusDocked: '#6B7785',    // Muted for docked
-    statusDelayed: '#FFA726',   // Warning orange
-    statusAttention: '#FF6B61', // Coral for attention
+    // Status Colors
+    statusLive: '#7A6F4F',      // Olive for live/active
+    statusDocked: '#8B7E74',    // Muted for docked
+    statusDelayed: '#D9953C',   // Amber for delayed
+    statusAttention: '#D97757', // Burnt orange for attention
   },
   
-  // Typography - Geometric sans with clear hierarchy
+  // Typography - Zus Coffee Style
   fonts: {
     base: 'Inter',          // Body and general text
-    heading: 'Poppins',     // Headers and emphasis
+    heading: 'Poppins',     // Headers and emphasis (bold, modern)
     sizes: {
       xs: 10,      // Helper text, labels
       sm: 12,      // Secondary text, timestamps
       md: 14,      // Body text
       base: 16,    // Primary body, inputs
-      lg: 20,      // Section headers
+      lg: 22,      // Section headers (H2)
       xl: 24,      // Screen titles
-      xxl: 28,     // Hero headings
+      xxl: 28,     // Hero headings (H1)
       xxxl: 32,    // Large hero text
     },
     weights: {
@@ -67,43 +77,43 @@ export const Theme = {
     huge: 48,    // Section spacing
   },
   
-  // Border Radius
+  // Border Radius - Larger, softer curves for modern feel
   radius: {
-    sm: 8,
-    md: 12,
-    lg: 16,
-    xl: 20,
+    sm: 12,
+    md: 16,
+    lg: 20,
+    xl: 24,
     full: 999,
   },
   
-  // Shadows
+  // Shadows - Soft, elevated (Zus Coffee style)
   shadows: {
     sm: {
-      shadowColor: '#082837',
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.08,
-      shadowRadius: 3,
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.04,
+      shadowRadius: 4,
       elevation: 2,
     },
     md: {
-      shadowColor: '#082837',
+      shadowColor: '#000000',
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.1,
-      shadowRadius: 6,
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
       elevation: 4,
     },
     lg: {
-      shadowColor: '#082837',
-      shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.15,
-      shadowRadius: 15,
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.12,
+      shadowRadius: 16,
       elevation: 8,
     },
     xl: {
-      shadowColor: '#082837',
-      shadowOffset: { width: 0, height: 20 },
-      shadowOpacity: 0.2,
-      shadowRadius: 25,
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 12 },
+      shadowOpacity: 0.15,
+      shadowRadius: 24,
       elevation: 12,
     },
   },
@@ -111,16 +121,16 @@ export const Theme = {
   // Web-compatible shadows (CSS box-shadow)
   webShadows: {
     sm: {
-      boxShadow: '0 1px 3px rgba(8, 40, 55, 0.08)',
+      boxShadow: '0 2px 4px rgba(75, 46, 27, 0.06)',
     },
     md: {
-      boxShadow: '0 4px 6px rgba(8, 40, 55, 0.1)',
+      boxShadow: '0 4px 8px rgba(75, 46, 27, 0.08)',
     },
     lg: {
-      boxShadow: '0 10px 15px rgba(8, 40, 55, 0.15)',
+      boxShadow: '0 8px 16px rgba(75, 46, 27, 0.1)',
     },
     xl: {
-      boxShadow: '0 20px 25px rgba(8, 40, 55, 0.2)',
+      boxShadow: '0 12px 24px rgba(75, 46, 27, 0.12)',
     },
   },
   

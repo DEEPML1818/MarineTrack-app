@@ -1,0 +1,131 @@
+I want to transform my maritime tracking app into a modern, sleek UI inspired by Zus Coffee's design language. 
+
+**Current App Structure:**
+- React Native/Expo app with tab navigation
+- Features: Vessel tracking, weather, chat, SOS, notifications, ports
+- Backend: Node.js server with JSON data storage
+- Components: Maps (Leaflet, Waze), vessel cards, weather widgets
+
+**Design Requirements (Zus Coffee Style):**
+
+1. **Color Palette & Theme:**
+   - Primary: Warm coffee browns (#4A2C2A, #6B4423)
+   - Secondary: Cream/beige tones (#F5E6D3, #E8D5C4)
+   - Accent: Burnt orange (#D97757) for CTAs
+   - Dark mode: Deep espresso tones with warm undertones
+   - Use gradients subtly (cream to light brown)
+
+2. **Typography:**
+   - Headers: Bold, modern sans-serif (Poppins/Inter Bold)
+   - Body: Clean, readable (Inter Regular, 14-16px)
+   - Hierarchy: Clear size distinction (H1: 28px, H2: 22px, Body: 16px)
+
+3. **UI Components to Redesign:**
+
+   **A. Home Screen (index.tsx):**
+   - Hero section with gradient background
+   - Featured vessel cards with rounded corners (16px radius)
+   - Quick action buttons (circular, icon-based)
+   - Weather widget with glassmorphism effect
+   - Recent activity feed with card-based layout
+
+   **B. Vessel Cards (VesselCard.tsx):**
+   - Image with overlay gradient
+   - Status badge (top-right, pill-shaped)
+   - Info: Name, location, speed in clean grid
+   - Shadow: soft, elevated (0 4px 12px rgba(0,0,0,0.08))
+   - Hover/press: slight scale animation (1.02x)
+
+   **C. Tab Bar (_layout.tsx in tabs):**
+   - Bottom navigation with icons + labels
+   - Active state: filled icon + color change
+   - Inactive: outline icons, muted color
+   - Safe area padding
+   - Subtle separator line on top
+
+   **D. Maps (LeafletMap.tsx, WazeVesselMap.tsx):**
+   - Custom markers with coffee cup icons
+   - Info windows with card-style design
+   - Rounded map container with shadow
+   - Control buttons: floating, circular, shadowed
+
+   **E. Weather Widget (WeatherWidget.tsx):**
+   - Card with gradient background
+   - Large temperature display
+   - Icon + condition in row layout
+   - Forecast chips (horizontal scroll)
+   - Padding: 20px, border-radius: 16px
+
+   **F. Chat Interface (chat.tsx):**
+   - Messages: rounded bubbles
+   - Sent: align right, primary color
+   - Received: align left, light gray
+   - Input: rounded, elevated, with send button
+   - Timestamps: subtle, below messages
+
+   **G. Notifications (notifications.tsx):**
+   - List with card items
+   - Icon on left, colored circle background
+   - Title + description + time
+   - Swipe actions: mark as read/delete
+   - Unread: subtle accent color border
+
+4. **Layout & Spacing:**
+   - Container padding: 16-20px
+   - Card spacing: 12-16px vertical gap
+   - Consistent 8px grid system
+   - White space: generous, not cramped
+   - Max width: 480px (centered on tablets)
+
+5. **Interactions & Animations:**
+   - Button press: scale down to 0.96
+   - Card tap: subtle shadow increase
+   - Loading: skeleton screens with shimmer
+   - Transitions: 200-300ms ease-out
+   - Pull to refresh: custom coffee-themed indicator
+
+6. **Specific Screens to Update:**
+
+   **Onboarding (onboarding.tsx):**
+   - Full-screen slides with illustrations
+   - Progress dots at bottom
+   - Skip button (top-right)
+   - Get Started CTA (bottom, prominent)
+
+   **Auth Screens (login.tsx, register.tsx):**
+   - Centered form with logo
+   - Inputs: rounded, with icons
+   - Social login: outlined buttons with brand colors
+   - Error states: subtle red with icon
+
+   **Settings (settings.tsx):**
+   - Grouped list sections
+   - Toggle switches: custom styled
+   - Profile header: card with avatar
+   - Logout: red, at bottom
+
+7. **Accessibility & Polish:**
+   - Touch targets: minimum 44x44px
+   - Color contrast: WCAG AA compliant
+   - Loading states: consistent
+   - Error handling: friendly messages with retry
+   - Empty states: illustration + helpful text
+
+**Technical Implementation:**
+- Use React Native StyleSheet with shared theme constants
+- Create reusable component library in components/ui/redesign
+- Implement dark mode support using useColorScheme
+- Optimize images: use WebP, lazy loading
+- Add haptic feedback for key interactions
+- Ensure smooth 60fps animations
+
+**Priority Order:**
+1. Home screen & tab bar
+2. Vessel cards & detail view
+3. Maps with custom styling
+4. Auth screens
+5. Weather & notifications
+6. Chat interface
+7. Settings & profile
+
+Please help me create/update the key components with this Zus Coffee-inspired design system, ensuring the app feels premium, cohesive, and delightful to use.
