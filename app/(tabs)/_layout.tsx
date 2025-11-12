@@ -1,96 +1,105 @@
+
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
+import { View } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Theme } from '@/constants/Theme';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Theme.colors.teal,
-        tabBarInactiveTintColor: Theme.colors.mutedGray,
+        tabBarActiveTintColor: '#007AFF',
+        tabBarInactiveTintColor: isDark ? '#8E8E93' : '#C7C7CC',
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute',
-            borderTopColor: 'rgba(107, 119, 133, 0.1)',
-          },
-          default: {
-            borderTopColor: 'rgba(107, 119, 133, 0.1)',
-            backgroundColor: '#FFFFFF',
-          },
-        }),
+        tabBarShowLabel: false,
+        tabBarStyle: {
+          backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
+          borderTopWidth: 0,
+          height: 70,
+          paddingBottom: 10,
+          paddingTop: 10,
+          elevation: 0,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+        },
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Dashboard',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: '',
+          tabBarIcon: ({ color }) => (
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <IconSymbol size={28} name="house.fill" color={color} />
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
-        name="weather"
+        name="add"
         options={{
-          title: 'Weather',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="cloud.fill" color={color} />,
+          title: '',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              width: 60,
+              height: 60,
+              borderRadius: 30,
+              backgroundColor: focused ? '#007AFF' : '#007AFF',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: 25,
+              shadowColor: '#007AFF',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            }}>
+              <IconSymbol size={32} name="plus" color="#FFFFFF" />
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
-        name="sos"
+        name="tasks"
         options={{
-          title: 'SOS',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="exclamationmark.triangle.fill" color={color} />,
+          title: '',
+          tabBarIcon: ({ color }) => (
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <IconSymbol size={28} name="checklist" color={color} />
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
-        name="map"
+        name="navigation"
         options={{
-          title: 'Map',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="map.fill" color={color} />,
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="boats"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          href: null,
         }}
       />
       <Tabs.Screen
         name="chat"
         options={{
-          title: 'Chat',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="bubble.left.and.bubble.right.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="ports"
-        options={{
-          title: 'Ports',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="anchor.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="tracker"
-        options={{
-          title: 'Tracker',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="location.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="notifications"
-        options={{
-          title: 'Notifications',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="bell.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Settings',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="gear" color={color} />,
+          href: null,
         }}
       />
     </Tabs>

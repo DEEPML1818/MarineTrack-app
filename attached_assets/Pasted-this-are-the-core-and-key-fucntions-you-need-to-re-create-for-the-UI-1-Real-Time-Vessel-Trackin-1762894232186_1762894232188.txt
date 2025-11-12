@@ -1,0 +1,61 @@
+this are the core and key fucntions you need to re-create for the UI 
+
+1. Real-Time Vessel Tracking (AIS)
+GPS-based location broadcasting every 5 seconds
+View nearby vessels within 100km radius
+Live position updates with speed and heading
+Vessel information management (Name, ID, Type, MMSI, IMO)
+Automatic tracking data persistence
+2. Maritime Navigation (Waze-Style)
+Intelligent Route Calculation: Uses searoute algorithm for proper sea paths
+Turn-by-turn navigation: Maritime-specific instructions (starboard/port turns)
+AI-optimized routing: Considers safety, weather, and traffic
+Alternative routes: Multiple path options with safety scores
+Port search: Search and navigate to major ports worldwide
+Real-time rerouting: Auto-recalculates if vessel goes off course
+3. Crowdsourced Maritime Intelligence
+Hazard reporting: Debris, shallow water, bad weather, congestion
+Community verification: Upvote/downvote hazard reports
+Traffic density heatmaps: Real-time vessel congestion data
+Safety scores: AI-calculated route safety ratings (0-100)
+Live warnings: Notifications for hazards along your route
+4. Weather Integration
+Current marine conditions (temperature, wind, waves)
+Real-time weather data from StormGlass/WeatherAPI
+Visibility and sea state information
+Weather-based route optimization
+Forecast integration
+5. Communication System
+Real-time chat: Message nearby vessels (within 50km)
+Socket.io integration: Instant message delivery
+Proximity-based contacts: Auto-discover nearby vessels
+Location sharing: See vessel distances in chat
+6. Emergency SOS
+One-tap emergency alert broadcasting
+GPS coordinates shared with:
+Malaysian Maritime Enforcement Agency (MMEA)
+Marine Police
+Nearby vessels
+Emergency contact management
+Quick-dial to coast guard services
+7. Interactive Map Features
+Live vessel markers: Real-time position with icons
+Route visualization: Bright route lines with waypoints
+Hazard overlays: Color-coded severity indicators
+Dark mode maritime tiles: Waze-style map aesthetics
+Port locations: Major ports with details
+8. Notifications System
+Push notifications for:
+Nearby vessels
+Chat messages
+Hazard warnings (weather, restricted zones)
+SOS alerts
+Low fuel warnings
+Notification throttling to prevent spam
+In-app notification history
+9. User Profile & Settings
+Vessel registration and management
+Contact information storage
+Emergency contact setup
+Preferences management
+Sustainable fishing tips

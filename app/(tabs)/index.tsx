@@ -1,656 +1,371 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, RefreshControl, StatusBar, TouchableOpacity, ImageBackground, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Theme } from '../../constants/Theme';
-import { getNearbyTrackedVessels } from '../../utils/trackingService';
-import { getCurrentWeather } from '../../utils/weatherApi';
-import { getNearbyHazards } from '../../utils/maritimeIntelligence';
-import * as Location from 'expo-location';
-import MaritimeDashboard from '../../components/MaritimeDashboard';
+
+import React, { useState } from 'react';
+import { StyleSheet, ScrollView, View, Text, TouchableOpacity, Image } from 'react-native';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { IconSymbol } from '@/components/ui/IconSymbol';
+import { router } from 'expo-router';
 
 export default function HomeScreen() {
-  const router = useRouter();
-  const [vessels, setVessels] = useState<any[]>([]);
-  const [weather, setWeather] = useState<any>(null);
-  const [hazards, setHazards] = useState<any[]>([]);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
-  useEffect(() => {
-    requestLocationAndLoadData();
-    
-    // Set up location watching for real-time updates
-    let locationSubscription: any;
-    const watchLocation = async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        locationSubscription = await Location.watchPositionAsync(
-          {
-            accuracy: Location.Accuracy.High,
-            timeInterval: 30000, // Update every 30 seconds
-            distanceInterval: 100, // Or when moved 100 meters
-          },
-          (location) => {
-            const coords = {
-              lat: location.coords.latitude,
-              lng: location.coords.longitude,
-            };
-            setUserLocation(coords);
-            loadData(coords);
-          }
-        );
-      }
-    };
-    
-    watchLocation();
-    
-    return () => {
-      if (locationSubscription) {
-        locationSubscription.remove();
-      }
-    };
-  }, []);
+  const quickActions = [
+    { id: '1', icon: 'map.fill', label: 'Navigation', color: '#007AFF', route: '/navigation' },
+    { id: '2', icon: 'sailboat.fill', label: 'My Boats', color: '#34C759', route: '/boats' },
+    { id: '3', icon: 'cloud.sun.fill', label: 'Weather', color: '#FF9500', route: null },
+    { id: '4', icon: 'exclamationmark.triangle.fill', label: 'Hazards', color: '#FF3B30', route: null },
+  ];
 
-  const requestLocationAndLoadData = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Location permission denied');
-        Alert.alert(
-          'Location Permission Required',
-          'Please enable location services to see real-time weather and maritime data for your area.'
-        );
-        return;
-      }
-
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
-
-      const coords = {
-        lat: location.coords.latitude,
-        lng: location.coords.longitude,
-      };
-
-      console.log('Current location:', coords.lat.toFixed(4), coords.lng.toFixed(4));
-      setUserLocation(coords);
-      await loadData(coords);
-    } catch (error) {
-      console.error('Error getting location:', error);
-      Alert.alert('Location Error', 'Could not get your current location. Please try again.');
-    }
-  };
-
-  const loadData = async (coords: { lat: number; lng: number }) => {
-    try {
-      // Load real nearby vessels
-      const nearbyVessels = await getNearbyTrackedVessels(coords.lat, coords.lng, 10);
-      setVessels(nearbyVessels);
-
-      // Load real weather data
-      const weatherData = await getCurrentWeather(coords.lat, coords.lng);
-      setWeather(weatherData);
-
-      // Load real maritime hazards
-      const hazardData = await getNearbyHazards(coords.lat, coords.lng, 50);
-      setHazards(hazardData);
-    } catch (error) {
-      console.error('Error loading data:', error);
-    }
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    if (userLocation) {
-      await loadData(userLocation);
-    }
-    setRefreshing(false);
-  };
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 18) return 'Good Afternoon';
-    return 'Good Evening';
-  };
+  const weatherImages = [
+    require('@/assets/images/partial-react-logo.png'),
+    require('@/assets/images/partial-react-logo.png'),
+    require('@/assets/images/partial-react-logo.png'),
+  ];
 
   return (
-    <>
-      <StatusBar barStyle="light-content" backgroundColor={Theme.colors.navy} />
-
-      {/* Header with gradient */}
-      <LinearGradient
-        colors={[Theme.colors.espresso, Theme.colors.coffeeBrown]}
-        style={styles.header}
-      >
-        <View style={styles.headerTop}>
-          <View>
-            <Text style={styles.greeting}>{getGreeting()}</Text>
-            <Text style={styles.headerTitle}>⚓ MarineTrack</Text>
-          </View>
-          <TouchableOpacity
-            style={styles.notificationButton}
-            onPress={() => router.push('/notifications')}
-          >
-            <Text style={styles.notificationIcon}>🔔</Text>
-            {hazards.length > 0 && (
-              <View style={styles.notificationBadge}>
-                <Text style={styles.notificationBadgeText}>{hazards.length}</Text>
-              </View>
-            )}
+    <View style={[styles.container, { backgroundColor: isDark ? '#000' : '#F2F2F7' }]}>
+      {/* Header */}
+      <View style={[styles.header, { backgroundColor: isDark ? '#000' : '#F2F2F7' }]}>
+        <Text style={styles.appName}>Boat Helper</Text>
+        <View style={styles.headerIcons}>
+          <TouchableOpacity style={styles.headerIcon}>
+            <IconSymbol name="bell.fill" size={24} color={isDark ? '#FFF' : '#000'} />
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>12</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.headerIcon} onPress={() => router.push('/chat')}>
+            <IconSymbol name="message.fill" size={24} color={isDark ? '#FFF' : '#000'} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.profileButton} onPress={() => router.push('/profile')}>
+            <IconSymbol name="person.fill" size={20} color="#FFF" />
           </TouchableOpacity>
         </View>
-      </LinearGradient>
+      </View>
 
-      <ScrollView
-        style={styles.screen}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Theme.colors.teal} />
-        }
-      >
-        {/* Hero Alert Banner - ZUS style */}
-        {hazards.length > 0 && (
-          <ImageBackground
-            source={{ uri: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800' }}
-            style={styles.heroBanner}
-            imageStyle={styles.heroBannerImage}
-          >
-            <LinearGradient
-              colors={['rgba(217, 151, 87, 0.95)', 'rgba(217, 151, 87, 0.75)']}
-              style={styles.heroBannerGradient}
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Welcome Section */}
+        <View style={styles.welcomeSection}>
+          <Text style={[styles.welcomeTitle, { color: isDark ? '#FFF' : '#000' }]}>
+            Welcome back, Andrison
+          </Text>
+          <Text style={[styles.welcomeDate, { color: isDark ? '#8E8E93' : '#6C6C70' }]}>
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+          </Text>
+        </View>
+
+        {/* Image Carousel */}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.carouselContainer}
+        >
+          {weatherImages.map((img, index) => (
+            <View key={index} style={styles.carouselCard}>
+              <Image source={img} style={styles.carouselImage} />
+            </View>
+          ))}
+        </ScrollView>
+
+        {/* Weather Card */}
+        <View style={[styles.weatherCard, { backgroundColor: isDark ? '#1C1C1E' : '#E8F4FF' }]}>
+          <View>
+            <Text style={[styles.weatherLabel, { color: isDark ? '#8E8E93' : '#6C6C70' }]}>
+              Today's Weather
+            </Text>
+            <Text style={[styles.weatherValue, { color: isDark ? '#FFF' : '#000' }]}>
+              Sunny, 44°F
+            </Text>
+            <Text style={[styles.weatherSubtext, { color: isDark ? '#8E8E93' : '#6C6C70' }]}>
+              Perfect for Boating !
+            </Text>
+          </View>
+          <Text style={styles.weatherIcon}>☀️</Text>
+        </View>
+
+        {/* Quick Actions */}
+        <Text style={[styles.sectionTitle, { color: isDark ? '#8E8E93' : '#6C6C70' }]}>
+          What would you like to do today ?
+        </Text>
+        <View style={styles.quickActionsGrid}>
+          {quickActions.map((action) => (
+            <TouchableOpacity 
+              key={action.id}
+              style={[styles.quickActionCard, { backgroundColor: isDark ? '#1C1C1E' : '#FFF' }]}
+              onPress={() => action.route && router.push(action.route)}
             >
-              <View style={styles.heroBannerContent}>
-                <Text style={styles.heroBannerTitle}>⚠️ Maritime Advisory</Text>
-                <Text style={styles.heroBannerSubtitle}>
-                  {hazards.length} active {hazards.length === 1 ? 'hazard' : 'hazards'} in your area
-                </Text>
-                <TouchableOpacity style={styles.heroBannerButton}>
-                  <Text style={styles.heroBannerButtonText}>View Details</Text>
-                </TouchableOpacity>
+              <View style={[styles.quickActionIcon, { backgroundColor: `${action.color}20` }]}>
+                <IconSymbol name={action.icon} size={28} color={action.color} />
               </View>
-            </LinearGradient>
-          </ImageBackground>
-        )}
-
-        {/* Quick Stats - Elevated cards */}
-        <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <View style={styles.statIconContainer}>
-              <Text style={styles.statIcon}>🚢</Text>
-            </View>
-            <Text style={styles.statValue}>{vessels.length}</Text>
-            <Text style={styles.statLabel}>Nearby Vessels</Text>
-          </View>
-          <View style={styles.statCard}>
-            <View style={[styles.statIconContainer, { backgroundColor: 'rgba(192, 90, 43, 0.1)' }]}>
-              <Text style={styles.statIcon}>⚠️</Text>
-            </View>
-            <Text style={[styles.statValue, { color: Theme.colors.caramel }]}>{hazards.length}</Text>
-            <Text style={styles.statLabel}>Hazards</Text>
-          </View>
-          <View style={styles.statCard}>
-            <View style={[styles.statIconContainer, { backgroundColor: 'rgba(232, 211, 184, 0.5)' }]}>
-              <Text style={styles.statIcon}>🌡️</Text>
-            </View>
-            <Text style={styles.statValue}>{weather?.temperature || '--'}°</Text>
-            <Text style={styles.statLabel}>Temperature</Text>
-          </View>
+              <Text style={[styles.quickActionLabel, { color: isDark ? '#FFF' : '#000' }]}>
+                {action.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
-        {/* Weather Card - ZUS rounded elevated card */}
-        {weather && (
-          <View style={styles.weatherCard}>
-            <View style={styles.weatherHeader}>
-              <View style={styles.weatherHeaderLeft}>
-                <Text style={styles.weatherIcon}>⛅</Text>
-                <Text style={styles.weatherTitle}>Current Weather</Text>
-              </View>
-              <TouchableOpacity onPress={() => router.push('/weather')}>
-                <Text style={styles.weatherAction}>Details →</Text>
-              </TouchableOpacity>
+        {/* Active Tasks Preview */}
+        <View style={styles.tasksPreview}>
+          <View style={styles.tasksHeader}>
+            <Text style={[styles.sectionTitle, { color: isDark ? '#FFF' : '#000', marginBottom: 0 }]}>
+              Active Tasks
+            </Text>
+            <TouchableOpacity>
+              <Text style={styles.viewAllText}>View All</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={[styles.tasksSummaryCard, { backgroundColor: isDark ? '#1C1C1E' : '#FFF' }]}>
+            <View style={styles.tasksCountBadge}>
+              <Text style={styles.tasksCountText}>3</Text>
             </View>
-            <View style={styles.weatherContent}>
-              <View style={styles.weatherTempContainer}>
-                <Text style={styles.weatherTemp}>{weather.temperature}</Text>
-                <Text style={styles.weatherTempUnit}>°C</Text>
-              </View>
-              <View style={styles.weatherDetails}>
-                <View style={styles.weatherDetailItem}>
-                  <Text style={styles.weatherDetailIcon}>💨</Text>
-                  <Text style={styles.weatherDetail}>Wind {weather.windSpeed} kn</Text>
-                </View>
-                <View style={styles.weatherDetailItem}>
-                  <Text style={styles.weatherDetailIcon}>🌊</Text>
-                  <Text style={styles.weatherDetail}>Waves {weather.waveHeight}m</Text>
-                </View>
-                <View style={styles.weatherDetailItem}>
-                  <Text style={styles.weatherDetailIcon}>☁️</Text>
-                  <Text style={styles.weatherDetail}>{weather.description}</Text>
-                </View>
-              </View>
+            <View style={styles.tasksSummaryContent}>
+              <Text style={[styles.tasksSummaryLabel, { color: isDark ? '#8E8E93' : '#6C6C70' }]}>
+                You have tasks waiting for service
+              </Text>
+              <Text style={[styles.tasksSummaryValue, { color: isDark ? '#FFF' : '#000' }]}>
+                3 Tasks in progress
+              </Text>
             </View>
           </View>
-        )}
 
-        {/* Quick Actions - Horizontal chips style */}
-        <View style={styles.actionsContainer}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.actionsGrid}>
-            <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/tracker')}>
-              <View style={styles.actionIconContainer}>
-                <Text style={styles.actionIcon}>📍</Text>
+          <View style={[styles.taskPreviewCard, { backgroundColor: isDark ? '#1C1C1E' : '#FFF' }]}>
+            <View style={styles.taskPreviewHeader}>
+              <Text style={[styles.taskPreviewTitle, { color: isDark ? '#FFF' : '#000' }]}>
+                Engine Maintenance
+              </Text>
+              <View style={styles.pendingBadge}>
+                <Text style={styles.pendingBadgeText}>Pending</Text>
               </View>
-              <Text style={styles.actionLabel}>Start Tracking</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/map')}>
-              <View style={styles.actionIconContainer}>
-                <Text style={styles.actionIcon}>🗺️</Text>
-              </View>
-              <Text style={styles.actionLabel}>View Map</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/sos')}>
-              <View style={[styles.actionIconContainer, { backgroundColor: 'rgba(192, 90, 43, 0.1)' }]}>
-                <Text style={styles.actionIcon}>🆘</Text>
-              </View>
-              <Text style={styles.actionLabel}>Emergency</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/chat')}>
-              <View style={styles.actionIconContainer}>
-                <Text style={styles.actionIcon}>💬</Text>
-              </View>
-              <Text style={styles.actionLabel}>Messages</Text>
-            </TouchableOpacity>
+            </View>
           </View>
         </View>
-
-        {/* Nearby Vessels - Elevated cards with imagery */}
-        {vessels.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Nearby Vessels</Text>
-              <TouchableOpacity onPress={() => router.push('/tracker')}>
-                <Text style={styles.sectionAction}>View All →</Text>
-              </TouchableOpacity>
-            </View>
-            {vessels.slice(0, 5).map((vessel, index) => (
-              <View key={index} style={styles.vesselCard}>
-                <View style={styles.vesselBadge}>
-                  <Text style={styles.vesselBadgeText}>{vessel.status || 'LIVE'}</Text>
-                </View>
-                <View style={styles.vesselHeader}>
-                  <Text style={styles.vesselName}>{vessel.vesselInfo?.vesselName || 'Unknown Vessel'}</Text>
-                </View>
-                <Text style={styles.vesselType}>{vessel.vesselInfo?.vesselType || 'Vessel'}</Text>
-                <View style={styles.vesselMeta}>
-                  <View style={styles.vesselMetaItem}>
-                    <Text style={styles.vesselMetaIcon}>📍</Text>
-                    <Text style={styles.vesselMetaText}>
-                      {vessel.distance ? `${vessel.distance.toFixed(1)} km` : 'Nearby'}
-                    </Text>
-                  </View>
-                  <View style={styles.vesselMetaItem}>
-                    <Text style={styles.vesselMetaIcon}>💨</Text>
-                    <Text style={styles.vesselMetaText}>
-                      {vessel.location?.speed?.toFixed(1) || '0'} kn
-                    </Text>
-                  </View>
-                </View>
-                <TouchableOpacity style={styles.vesselTrackButton}>
-                  <Text style={styles.vesselTrackButtonText}>Track Now</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* Maritime Intelligence Dashboard */}
-        <MaritimeDashboard userLocation={userLocation} />
-
-        <View style={styles.bottomSpacing} />
       </ScrollView>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  container: {
     flex: 1,
-    backgroundColor: Theme.colors.foam,
   },
   header: {
-    paddingTop: 50,
-    paddingBottom: Theme.spacing.xl,
-    paddingHorizontal: Theme.spacing.base,
-  },
-  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 16,
   },
-  greeting: {
-    color: 'rgba(255, 255, 255, 0.85)',
-    fontSize: Theme.fonts.sizes.sm,
-    marginBottom: 4,
-    letterSpacing: 0.5,
-  },
-  headerTitle: {
-    color: Theme.colors.white,
-    fontSize: Theme.fonts.sizes.xxl,
-    fontWeight: Theme.fonts.weights.bold,
-    fontFamily: Theme.fonts.heading,
-  },
-  notificationButton: {
-    width: Theme.touchTarget.min,
-    height: Theme.touchTarget.min,
-    borderRadius: Theme.radius.lg,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  notificationIcon: {
-    fontSize: 20,
-  },
-  notificationBadge: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    backgroundColor: Theme.colors.coral,
-    borderRadius: 12,
-    width: 24,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: Theme.colors.white,
-  },
-  notificationBadgeText: {
-    color: Theme.colors.white,
-    fontSize: 10,
-    fontWeight: Theme.fonts.weights.bold,
-  },
-  // Hero Banner
-  heroBanner: {
-    marginHorizontal: Theme.spacing.base,
-    marginTop: -Theme.spacing.lg,
-    marginBottom: Theme.spacing.lg,
-    borderRadius: Theme.radius.lg,
-    overflow: 'hidden',
-    height: 140,
-  },
-  heroBannerImage: {
-    borderRadius: Theme.radius.lg,
-  },
-  heroBannerGradient: {
-    flex: 1,
-    padding: Theme.spacing.lg,
-    justifyContent: 'center',
-  },
-  heroBannerContent: {
-    gap: Theme.spacing.xs,
-  },
-  heroBannerTitle: {
-    fontSize: Theme.fonts.sizes.xl,
-    fontWeight: Theme.fonts.weights.bold,
-    color: Theme.colors.white,
-    fontFamily: Theme.fonts.heading,
-  },
-  heroBannerSubtitle: {
-    fontSize: Theme.fonts.sizes.md,
-    color: 'rgba(255, 255, 255, 0.95)',
-    marginBottom: Theme.spacing.sm,
-  },
-  heroBannerButton: {
-    alignSelf: 'flex-start',
-    backgroundColor: Theme.colors.white,
-    paddingHorizontal: Theme.spacing.lg,
-    paddingVertical: Theme.spacing.sm,
-    borderRadius: Theme.radius.full,
-  },
-  heroBannerButtonText: {
-    color: Theme.colors.coral,
-    fontSize: Theme.fonts.sizes.md,
-    fontWeight: Theme.fonts.weights.bold,
-  },
-  // Stats Cards
-  statsRow: {
-    flexDirection: 'row',
-    paddingHorizontal: Theme.spacing.base,
-    gap: Theme.spacing.md,
-    marginBottom: Theme.spacing.lg,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: Theme.colors.white,
-    padding: Theme.spacing.base,
-    borderRadius: Theme.radius.lg,
-    alignItems: 'center',
-    ...Theme.shadows.md,
-  },
-  statIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: Theme.radius.md,
-    backgroundColor: 'rgba(122, 111, 79, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Theme.spacing.sm,
-  },
-  statIcon: {
+  appName: {
     fontSize: 24,
+    fontFamily: 'serif',
+    fontStyle: 'italic',
+    fontWeight: '400',
   },
-  statValue: {
-    fontSize: Theme.fonts.sizes.xxl,
-    fontWeight: Theme.fonts.weights.bold,
-    color: Theme.colors.teal,
-    fontFamily: Theme.fonts.heading,
-  },
-  statLabel: {
-    fontSize: Theme.fonts.sizes.xs,
-    color: Theme.colors.mutedGray,
-    marginTop: 4,
-    textAlign: 'center',
-  },
-  // Weather Card
-  weatherCard: {
-    backgroundColor: Theme.colors.white,
-    marginHorizontal: Theme.spacing.base,
-    marginBottom: Theme.spacing.lg,
-    padding: Theme.spacing.lg,
-    borderRadius: Theme.radius.lg,
-    ...Theme.shadows.md,
-  },
-  weatherHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Theme.spacing.lg,
-  },
-  weatherHeaderLeft: {
+  headerIcons: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Theme.spacing.sm,
+    gap: 16,
   },
-  weatherIcon: {
-    fontSize: 28,
-  },
-  weatherTitle: {
-    fontSize: Theme.fonts.sizes.lg,
-    fontWeight: Theme.fonts.weights.bold,
-    color: Theme.colors.navy,
-    fontFamily: Theme.fonts.heading,
-  },
-  weatherAction: {
-    fontSize: Theme.fonts.sizes.md,
-    fontWeight: Theme.fonts.weights.semibold,
-    color: Theme.colors.teal,
-  },
-  weatherContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Theme.spacing.xl,
-  },
-  weatherTempContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  weatherTemp: {
-    fontSize: 56,
-    fontWeight: Theme.fonts.weights.bold,
-    color: Theme.colors.teal,
-    fontFamily: Theme.fonts.heading,
-    lineHeight: 56,
-  },
-  weatherTempUnit: {
-    fontSize: Theme.fonts.sizes.xl,
-    color: Theme.colors.teal,
-    fontWeight: Theme.fonts.weights.semibold,
-    marginTop: 8,
-  },
-  weatherDetails: {
-    flex: 1,
-    gap: Theme.spacing.sm,
-  },
-  weatherDetailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Theme.spacing.sm,
-  },
-  weatherDetailIcon: {
-    fontSize: 16,
-  },
-  weatherDetail: {
-    fontSize: Theme.fonts.sizes.md,
-    color: Theme.colors.mutedGray,
-  },
-  // Actions
-  actionsContainer: {
-    paddingHorizontal: Theme.spacing.base,
-    marginBottom: Theme.spacing.lg,
-  },
-  actionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Theme.spacing.md,
-    marginTop: Theme.spacing.md,
-  },
-  actionCard: {
-    width: '47%',
-    backgroundColor: Theme.colors.white,
-    padding: Theme.spacing.lg,
-    borderRadius: Theme.radius.lg,
-    alignItems: 'center',
-    ...Theme.shadows.sm,
-  },
-  actionIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: Theme.radius.md,
-    backgroundColor: 'rgba(232, 211, 184, 0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Theme.spacing.md,
-  },
-  actionIcon: {
-    fontSize: 28,
-  },
-  actionLabel: {
-    fontSize: Theme.fonts.sizes.md,
-    fontWeight: Theme.fonts.weights.semibold,
-    color: Theme.colors.navy,
-    textAlign: 'center',
-  },
-  // Section
-  section: {
-    paddingHorizontal: Theme.spacing.base,
-    marginBottom: Theme.spacing.lg,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Theme.spacing.base,
-  },
-  sectionTitle: {
-    fontSize: Theme.fonts.sizes.lg,
-    fontWeight: Theme.fonts.weights.bold,
-    color: Theme.colors.navy,
-    fontFamily: Theme.fonts.heading,
-  },
-  sectionAction: {
-    fontSize: Theme.fonts.sizes.md,
-    fontWeight: Theme.fonts.weights.semibold,
-    color: Theme.colors.teal,
-  },
-  // Vessel Cards
-  vesselCard: {
-    backgroundColor: Theme.colors.white,
-    padding: Theme.spacing.lg,
-    borderRadius: Theme.radius.lg,
-    marginBottom: Theme.spacing.md,
-    ...Theme.shadows.md,
+  headerIcon: {
     position: 'relative',
   },
-  vesselBadge: {
+  badge: {
     position: 'absolute',
-    top: Theme.spacing.base,
-    right: Theme.spacing.base,
-    backgroundColor: Theme.colors.teal,
-    paddingHorizontal: Theme.spacing.sm,
-    paddingVertical: 4,
-    borderRadius: Theme.radius.full,
-  },
-  vesselBadgeText: {
-    color: Theme.colors.white,
-    fontSize: 10,
-    fontWeight: Theme.fonts.weights.bold,
-    letterSpacing: 0.5,
-  },
-  vesselHeader: {
-    marginBottom: Theme.spacing.xs,
-  },
-  vesselName: {
-    fontSize: Theme.fonts.sizes.lg,
-    fontWeight: Theme.fonts.weights.bold,
-    color: Theme.colors.navy,
-    fontFamily: Theme.fonts.heading,
-    paddingRight: 60,
-  },
-  vesselType: {
-    fontSize: Theme.fonts.sizes.sm,
-    color: Theme.colors.mutedGray,
-    marginBottom: Theme.spacing.md,
-  },
-  vesselMeta: {
-    flexDirection: 'row',
-    gap: Theme.spacing.lg,
-    marginBottom: Theme.spacing.md,
-  },
-  vesselMetaItem: {
-    flexDirection: 'row',
+    top: -4,
+    right: -4,
+    backgroundColor: '#007AFF',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: Theme.spacing.xs,
+    paddingHorizontal: 4,
   },
-  vesselMetaIcon: {
+  badgeText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  profileButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#007AFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  welcomeSection: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  welcomeTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  welcomeDate: {
+    fontSize: 16,
+  },
+  carouselContainer: {
+    paddingLeft: 20,
+    marginBottom: 20,
+  },
+  carouselCard: {
+    width: 120,
+    height: 100,
+    borderRadius: 16,
+    marginRight: 12,
+    overflow: 'hidden',
+    backgroundColor: '#E8F4FF',
+  },
+  carouselImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  weatherCard: {
+    marginHorizontal: 20,
+    padding: 20,
+    borderRadius: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  weatherLabel: {
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  weatherValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  weatherSubtext: {
     fontSize: 14,
   },
-  vesselMetaText: {
-    fontSize: Theme.fonts.sizes.sm,
-    color: Theme.colors.mutedGray,
-    fontWeight: Theme.fonts.weights.medium,
+  weatherIcon: {
+    fontSize: 48,
   },
-  vesselTrackButton: {
-    backgroundColor: Theme.colors.teal,
-    paddingVertical: Theme.spacing.md,
-    borderRadius: Theme.radius.md,
+  sectionTitle: {
+    fontSize: 18,
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  quickActionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 20,
+    gap: 12,
+    marginBottom: 32,
+  },
+  quickActionCard: {
+    width: '48%',
+    padding: 20,
+    borderRadius: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  quickActionIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  quickActionLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  tasksPreview: {
+    paddingHorizontal: 20,
+    marginBottom: 40,
+  },
+  tasksHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  viewAllText: {
+    color: '#007AFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  tasksSummaryCard: {
+    flexDirection: 'row',
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  tasksCountBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#E8F4FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  tasksCountText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#007AFF',
+  },
+  tasksSummaryContent: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  tasksSummaryLabel: {
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  tasksSummaryValue: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  taskPreviewCard: {
+    padding: 16,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  taskPreviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  vesselTrackButtonText: {
-    color: Theme.colors.white,
-    fontSize: Theme.fonts.sizes.base,
-    fontWeight: Theme.fonts.weights.bold,
+  taskPreviewTitle: {
+    fontSize: 16,
+    fontWeight: '600',
   },
-  bottomSpacing: {
-    height: 100,
+  pendingBadge: {
+    backgroundColor: '#FFF3E0',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  pendingBadgeText: {
+    color: '#FF9500',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

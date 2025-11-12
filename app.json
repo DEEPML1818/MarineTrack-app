@@ -3,18 +3,11 @@
     "name": "expo-on-replit",
     "slug": "expo-on-replit",
     "version": "1.0.0",
-    "packagerOpts": {
-      "hostType": "lan"
-    },
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "experiments": {
-      "baseUrl": "/",
-      "typedRoutes": true
-    },
     "ios": {
       "supportsTablet": true
     },
@@ -23,18 +16,12 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
-      "package": "com.sr.oauth"
+      "edgeToEdgeEnabled": true
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png",
-      "build": {
-        "babel": {
-          "include": ["**/*"]
-        }
-      }
+      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       "expo-router",
@@ -46,13 +33,10 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ],
-      [
-        "react-native-maps",
-        {
-          "googleMapsApiKey": "AIzaSyD4qoPESiApmu_DY85M9NHkuoVqBwr6xW8"
-        }
       ]
-    ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }

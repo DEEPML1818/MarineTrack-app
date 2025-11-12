@@ -1,0 +1,177 @@
+[
+  {
+    "name": "Mumbai Port",
+    "code": "INMUN",
+    "country": "India",
+    "lat": 18.9388,
+    "lng": 72.8354
+  },
+  {
+    "name": "Chennai Port",
+    "code": "INMAA",
+    "country": "India",
+    "lat": 13.0827,
+    "lng": 80.2707
+  },
+  {
+    "name": "Kochi Port",
+    "code": "INCOK",
+    "country": "India",
+    "lat": 9.9674,
+    "lng": 76.2376
+  },
+  {
+    "name": "Visakhapatnam Port",
+    "code": "INVTZ",
+    "country": "India",
+    "lat": 17.6868,
+    "lng": 83.2185
+  },
+  {
+    "name": "Colombo Port",
+    "code": "LKCMB",
+    "country": "Sri Lanka",
+    "lat": 6.9497,
+    "lng": 79.8528
+  },
+  {
+    "name": "Singapore Port",
+    "code": "SGSIN",
+    "country": "Singapore",
+    "lat": 1.2644,
+    "lng": 103.8270
+  },
+  {
+    "name": "Dubai Port",
+    "code": "AEDXB",
+    "country": "UAE",
+    "lat": 25.2697,
+    "lng": 55.3095
+  },
+  {
+    "name": "Shanghai Port",
+    "code": "CNSHA",
+    "country": "China",
+    "lat": 31.2304,
+    "lng": 121.4737
+  },
+  {
+    "name": "Hong Kong Port",
+    "code": "HKHKG",
+    "country": "Hong Kong",
+    "lat": 22.3193,
+    "lng": 114.1694
+  },
+  {
+    "name": "Rotterdam Port",
+    "code": "NLRTM",
+    "country": "Netherlands",
+    "lat": 51.9225,
+    "lng": 4.4792
+  },
+  {
+    "name": "Hamburg Port",
+    "code": "DEHAM",
+    "country": "Germany",
+    "lat": 53.5511,
+    "lng": 9.9937
+  },
+  {
+    "name": "New York Port",
+    "code": "USNYC",
+    "country": "USA",
+    "lat": 40.6895,
+    "lng": -74.0445
+  },
+  {
+    "name": "Los Angeles Port",
+    "code": "USLAX",
+    "country": "USA",
+    "lat": 33.7405,
+    "lng": -118.2713
+  },
+  {
+    "name": "Tokyo Port",
+    "code": "JPTYO",
+    "country": "Japan",
+    "lat": 35.6286,
+    "lng": 139.7454
+  },
+  {
+    "name": "Sydney Port",
+    "code": "AUSYD",
+    "country": "Australia",
+    "lat": -33.8568,
+    "lng": 151.2153
+  },
+  {
+    "name": "Cape Town Port",
+    "code": "ZACPT",
+    "country": "South Africa",
+    "lat": -33.9079,
+    "lng": 18.4231
+  },
+  {
+    "name": "Rio de Janeiro Port",
+    "code": "BRRIO",
+    "country": "Brazil",
+    "lat": -22.8969,
+    "lng": -43.1732
+  },
+  {
+    "name": "London Port",
+    "code": "GBLON",
+    "country": "UK",
+    "lat": 51.5074,
+    "lng": -0.1278
+  },
+  {
+    "name": "Marseille Port",
+    "code": "FRMRS",
+    "country": "France",
+    "lat": 43.2965,
+    "lng": 5.3698
+  },
+  {
+    "name": "Barcelona Port",
+    "code": "ESBCN",
+    "country": "Spain",
+    "lat": 41.3851,
+    "lng": 2.1734
+  },
+  {
+    "name": "Jeddah Port",
+    "code": "SAJED",
+    "country": "Saudi Arabia",
+    "lat": 21.5433,
+    "lng": 39.1728
+  },
+  {
+    "name": "Karachi Port",
+    "code": "PKKHI",
+    "country": "Pakistan",
+    "lat": 24.8607,
+    "lng": 67.0011
+  },
+  {
+    "name": "Bangkok Port",
+    "code": "THBKK",
+    "country": "Thailand",
+    "lat": 13.7563,
+    "lng": 100.5018
+  },
+  {
+    "name": "Manila Port",
+    "code": "PHMNL",
+    "country": "Philippines",
+    "lat": 14.5995,
+    "lng": 120.9842
+  },
+  {
+    "name": "Jakarta Port",
+    "code": "IDJKT",
+    "country": "Indonesia",
+    "lat": -6.2088,
+    "lng": 106.8456
+  }
+]

@@ -1,39 +1,6 @@
-# MarineTrack - Marine Safety & Tracking App 🚢
+# Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
-
-## 🛰️ AIS Location Tracking Feature
-
-MarineTrack now includes a powerful AIS (Automatic Identification System) tracker that turns your phone into a marine beacon:
-
-### Features:
-- **Real-time GPS Tracking**: Broadcasts your vessel's position every 5 seconds
-- **AIS Beacon**: Your phone acts as an AIS transmitter for nearby vessels
-- **Vessel Information**: Store complete vessel details (Name, ID, Type, MMSI, IMO)
-- **Backend Integration**: All tracking data is sent to backend for storage and retrieval
-- **Nearby Vessels**: See other MarineTrack users within 10km radius
-- **Status Updates**: Set your vessel status (Active, Idle, Anchored)
-
-### How to Use:
-1. Go to the **Tracker** tab
-2. Fill in your vessel information (Name and ID are required)
-3. Enable the tracking switch
-4. Your location will be broadcast to nearby vessels
-5. View other tracked vessels in the dashboard
-
-### Backend Integration:
-The app uses `utils/trackingService.ts` which stores data locally. To connect to your backend:
-
-1. Replace the mock API call in `sendTrackingData()` with your actual endpoint:
-```typescript
-const response = await fetch('https://your-backend-api.com/api/tracking', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(data)
-});
-```
-
-2. Update `getNearbyTrackedVessels()` to fetch from your backend API
 
 ## Get started
 

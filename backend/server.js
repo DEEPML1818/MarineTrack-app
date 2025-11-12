@@ -1,10 +1,10 @@
+
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
 const fs = require('fs').promises;
 const path = require('path');
-const maritimeRoutes = require('./maritime-routes');
 
 const app = express();
 const server = http.createServer(app);
@@ -28,51 +28,25 @@ const PORTS_FILE = path.join(DATA_DIR, 'ports.json');
 app.use(cors());
 app.use(express.json());
 
-// Ensure data directory and files exist
 async function ensureDataFiles() {
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
     
-    // Initialize vessels file if it doesn't exist
-    try {
-      await fs.access(VESSELS_FILE);
-    } catch {
-      await fs.writeFile(VESSELS_FILE, JSON.stringify([], null, 2));
-    }
+    const files = [
+      { path: VESSELS_FILE, data: [] },
+      { path: USERS_FILE, data: [] },
+      { path: MESSAGES_FILE, data: [] },
+      { path: NOTIFICATIONS_FILE, data: [] },
+      { path: BOAT_LIKES_FILE, data: [] },
+      { path: BOAT_COMMENTS_FILE, data: [] }
+    ];
     
-    // Initialize users file if it doesn't exist
-    try {
-      await fs.access(USERS_FILE);
-    } catch {
-      await fs.writeFile(USERS_FILE, JSON.stringify([], null, 2));
-    }
-    
-    // Initialize messages file if it doesn't exist
-    try {
-      await fs.access(MESSAGES_FILE);
-    } catch {
-      await fs.writeFile(MESSAGES_FILE, JSON.stringify([], null, 2));
-    }
-    
-    // Initialize notifications file if it doesn't exist
-    try {
-      await fs.access(NOTIFICATIONS_FILE);
-    } catch {
-      await fs.writeFile(NOTIFICATIONS_FILE, JSON.stringify([], null, 2));
-    }
-    
-    // Initialize boat likes file if it doesn't exist
-    try {
-      await fs.access(BOAT_LIKES_FILE);
-    } catch {
-      await fs.writeFile(BOAT_LIKES_FILE, JSON.stringify([], null, 2));
-    }
-    
-    // Initialize boat comments file if it doesn't exist
-    try {
-      await fs.access(BOAT_COMMENTS_FILE);
-    } catch {
-      await fs.writeFile(BOAT_COMMENTS_FILE, JSON.stringify([], null, 2));
+    for (const file of files) {
+      try {
+        await fs.access(file.path);
+      } catch {
+        await fs.writeFile(file.path, JSON.stringify(file.data, null, 2));
+      }
     }
     
     console.log('Data files initialized');
@@ -81,7 +55,6 @@ async function ensureDataFiles() {
   }
 }
 
-// Read JSON file helper
 async function readJsonFile(filePath) {
   try {
     const data = await fs.readFile(filePath, 'utf8');
@@ -92,7 +65,6 @@ async function readJsonFile(filePath) {
   }
 }
 
-// Write JSON file helper
 async function writeJsonFile(filePath, data) {
   try {
     await fs.writeFile(filePath, JSON.stringify(data, null, 2));
@@ -103,14 +75,22 @@ async function writeJsonFile(filePath, data) {
   }
 }
 
-// API Routes
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
 
-// Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'MarineTrack backend server running' });
 });
 
-// Get all vessels
 app.get('/api/vessels', async (req, res) => {
   try {
     const vessels = await readJsonFile(VESSELS_FILE);
@@ -120,7 +100,6 @@ app.get('/api/vessels', async (req, res) => {
   }
 });
 
-// Get nearby vessels
 app.get('/api/vessels/nearby', async (req, res) => {
   try {
     const { lat, lng, radius = 100 } = req.query;
@@ -150,7 +129,6 @@ app.get('/api/vessels/nearby', async (req, res) => {
   }
 });
 
-// Save vessel tracking data
 app.post('/api/tracking', async (req, res) => {
   try {
     const trackingData = req.body;
@@ -163,7 +141,7 @@ app.post('/api/tracking', async (req, res) => {
     const existingIndex = vessels.findIndex(v => v.userId === trackingData.userId);
     
     const vesselData = {
-      id: trackingData.userId, // Add id field for frontend compatibility
+      id: trackingData.userId,
       ...trackingData,
       lastUpdate: new Date().toISOString()
     };
@@ -175,8 +153,6 @@ app.post('/api/tracking', async (req, res) => {
     }
     
     await writeJsonFile(VESSELS_FILE, vessels);
-    
-    // Broadcast to all connected clients
     io.emit('vessel_update', vesselData);
     
     res.json({ success: true, message: 'Tracking data saved' });
@@ -186,33 +162,6 @@ app.post('/api/tracking', async (req, res) => {
   }
 });
 
-// Save user data
-app.post('/api/users', async (req, res) => {
-  try {
-    const userData = req.body;
-    
-    if (!userData.id) {
-      return res.status(400).json({ error: 'User ID required' });
-    }
-    
-    const users = await readJsonFile(USERS_FILE);
-    const existingIndex = users.findIndex(u => u.id === userData.id);
-    
-    if (existingIndex >= 0) {
-      users[existingIndex] = { ...userData, lastLogin: new Date().toISOString() };
-    } else {
-      users.push({ ...userData, createdAt: new Date().toISOString() });
-    }
-    
-    await writeJsonFile(USERS_FILE, users);
-    
-    res.json({ success: true, message: 'User data saved' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to save user data' });
-  }
-});
-
-// Get messages
 app.get('/api/messages', async (req, res) => {
   try {
     const messages = await readJsonFile(MESSAGES_FILE);
@@ -222,7 +171,6 @@ app.get('/api/messages', async (req, res) => {
   }
 });
 
-// Save message
 app.post('/api/messages', async (req, res) => {
   try {
     const message = req.body;
@@ -237,17 +185,7 @@ app.post('/api/messages', async (req, res) => {
     messages.push(newMessage);
     await writeJsonFile(MESSAGES_FILE, messages);
     
-    // Broadcast to all connected clients
     io.emit('new_message', newMessage);
-    
-    // Send notification to recipient
-    io.emit('notification', {
-      type: 'chat_message',
-      title: 'New Message',
-      message: `${message.senderName} sent you a message`,
-      recipientId: message.recipientId,
-      data: newMessage
-    });
     
     res.json({ success: true, message: newMessage });
   } catch (error) {
@@ -255,258 +193,16 @@ app.post('/api/messages', async (req, res) => {
   }
 });
 
-// Like a boat
-app.post('/api/boats/like', async (req, res) => {
-  try {
-    const { userId, boatId, userName } = req.body;
-    const likes = await readJsonFile(BOAT_LIKES_FILE);
-    
-    const existingLike = likes.find(l => l.userId === userId && l.boatId === boatId);
-    
-    if (!existingLike) {
-      const newLike = {
-        id: Date.now().toString(),
-        userId,
-        boatId,
-        userName,
-        timestamp: new Date().toISOString()
-      };
-      
-      likes.push(newLike);
-      await writeJsonFile(BOAT_LIKES_FILE, likes);
-      
-      // Send notification
-      io.emit('notification', {
-        type: 'boat_liked',
-        title: 'Boat Liked',
-        message: `${userName} liked your boat!`,
-        recipientId: boatId,
-        data: newLike
-      });
-      
-      res.json({ success: true, like: newLike });
-    } else {
-      res.json({ success: true, message: 'Already liked' });
-    }
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to like boat' });
-  }
-});
-
-// Comment on a boat
-app.post('/api/boats/comment', async (req, res) => {
-  try {
-    const { userId, boatId, userName, comment } = req.body;
-    const comments = await readJsonFile(BOAT_COMMENTS_FILE);
-    
-    const newComment = {
-      id: Date.now().toString(),
-      userId,
-      boatId,
-      userName,
-      comment,
-      timestamp: new Date().toISOString()
-    };
-    
-    comments.push(newComment);
-    await writeJsonFile(BOAT_COMMENTS_FILE, comments);
-    
-    // Send notification
-    io.emit('notification', {
-      type: 'boat_commented',
-      title: 'New Comment',
-      message: `${userName} commented on your boat: "${comment}"`,
-      recipientId: boatId,
-      data: newComment
-    });
-    
-    res.json({ success: true, comment: newComment });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to comment on boat' });
-  }
-});
-
-// Get boat likes
-app.get('/api/boats/:boatId/likes', async (req, res) => {
-  try {
-    const { boatId } = req.params;
-    const likes = await readJsonFile(BOAT_LIKES_FILE);
-    const boatLikes = likes.filter(l => l.boatId === boatId);
-    res.json(boatLikes);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch boat likes' });
-  }
-});
-
-// Get boat comments
-app.get('/api/boats/:boatId/comments', async (req, res) => {
-  try {
-    const { boatId } = req.params;
-    const comments = await readJsonFile(BOAT_COMMENTS_FILE);
-    const boatComments = comments.filter(c => c.boatId === boatId);
-    res.json(boatComments);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch boat comments' });
-  }
-});
-
-// Search ports by name
-app.get('/api/ports/search', async (req, res) => {
-  try {
-    const { query } = req.query;
-    
-    if (!query || query.length < 2) {
-      return res.json([]);
-    }
-    
-    const ports = await readJsonFile(PORTS_FILE);
-    const searchTerm = query.toLowerCase();
-    
-    const results = ports.filter(port => {
-      return (
-        port.name.toLowerCase().includes(searchTerm) ||
-        port.city.toLowerCase().includes(searchTerm) ||
-        port.country.toLowerCase().includes(searchTerm) ||
-        port.id.toLowerCase().includes(searchTerm) ||
-        port.aliases.some(alias => alias.toLowerCase().includes(searchTerm))
-      );
-    }).slice(0, 10);
-    
-    res.json(results);
-  } catch (error) {
-    console.error('Port search error:', error);
-    res.status(500).json({ error: 'Failed to search ports' });
-  }
-});
-
-// Get port by ID
-app.get('/api/ports/:portId', async (req, res) => {
-  try {
-    const { portId } = req.params;
-    const ports = await readJsonFile(PORTS_FILE);
-    const port = ports.find(p => p.id === portId);
-    
-    if (!port) {
-      return res.status(404).json({ error: 'Port not found' });
-    }
-    
-    res.json(port);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch port' });
-  }
-});
-
-// Maritime Routing Endpoints (using searoute-ts)
-
-// Calculate maritime route
-app.post('/api/route/calculate', async (req, res) => {
-  try {
-    const { origin, destination, preferences } = req.body;
-    
-    if (!origin || !destination) {
-      return res.status(400).json({ error: 'Origin and destination are required' });
-    }
-    
-    const result = await maritimeRoutes.calculateRoute(origin, destination, preferences);
-    
-    if (result.success) {
-      res.json(result.route);
-    } else {
-      res.status(500).json({ error: result.error });
-    }
-  } catch (error) {
-    console.error('Route calculation error:', error);
-    res.status(500).json({ error: 'Failed to calculate route' });
-  }
-});
-
-// Report a hazard
-app.post('/api/hazards/report', async (req, res) => {
-  try {
-    const result = await maritimeRoutes.reportHazard(req.body);
-    
-    if (result.success) {
-      // Broadcast hazard to all connected clients
-      io.emit('hazard_reported', result.hazard);
-      res.json(result.hazard);
-    } else {
-      res.status(500).json({ error: result.error });
-    }
-  } catch (error) {
-    console.error('Hazard report error:', error);
-    res.status(500).json({ error: 'Failed to report hazard' });
-  }
-});
-
-// Get nearby hazards
-app.get('/api/hazards/nearby', async (req, res) => {
-  try {
-    const { lat, lng, radius } = req.query;
-    
-    if (!lat || !lng) {
-      return res.status(400).json({ error: 'Latitude and longitude are required' });
-    }
-    
-    const result = await maritimeRoutes.getNearbyHazards(
-      parseFloat(lat),
-      parseFloat(lng),
-      radius ? parseFloat(radius) : 50
-    );
-    
-    if (result.success) {
-      res.json(result.hazards);
-    } else {
-      res.status(500).json({ error: result.error });
-    }
-  } catch (error) {
-    console.error('Nearby hazards error:', error);
-    res.status(500).json({ error: 'Failed to get nearby hazards' });
-  }
-});
-
-// Report traffic
-app.post('/api/traffic/report', async (req, res) => {
-  try {
-    const result = await maritimeRoutes.reportTraffic(req.body);
-    
-    if (result.success) {
-      // Broadcast traffic report to all connected clients
-      io.emit('traffic_reported', result.report);
-      res.json(result.report);
-    } else {
-      res.status(500).json({ error: result.error });
-    }
-  } catch (error) {
-    console.error('Traffic report error:', error);
-    res.status(500).json({ error: 'Failed to report traffic' });
-  }
-});
-
-// Calculate distance helper (Haversine formula)
-function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
-}
-
-// Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
   
   socket.on('vessel_location', async (data) => {
     try {
-      // Save vessel location
       const vessels = await readJsonFile(VESSELS_FILE);
       const existingIndex = vessels.findIndex(v => v.userId === data.userId);
       
       const vesselData = {
-        id: data.userId, // Add id field for frontend compatibility
+        id: data.userId,
         ...data,
         lastUpdate: new Date().toISOString()
       };
@@ -518,29 +214,6 @@ io.on('connection', (socket) => {
       }
       
       await writeJsonFile(VESSELS_FILE, vessels);
-      
-      // Check for nearby vessels and send notifications
-      const nearbyVessels = vessels.filter(v => {
-        if (v.userId === data.userId) return false;
-        const distance = calculateDistance(
-          data.location.latitude,
-          data.location.longitude,
-          v.location.latitude,
-          v.location.longitude
-        );
-        return distance <= 2; // Within 2km
-      });
-      
-      if (nearbyVessels.length > 0) {
-        socket.emit('notification', {
-          type: 'vessel_nearby',
-          title: 'Vessel Nearby',
-          message: `${nearbyVessels[0].vesselInfo.vesselName} is within 2km of your location`,
-          data: nearbyVessels[0]
-        });
-      }
-      
-      // Broadcast to all other clients
       socket.broadcast.emit('vessel_update', vesselData);
     } catch (error) {
       console.error('Error handling vessel location:', error);
@@ -558,8 +231,6 @@ io.on('connection', (socket) => {
       
       messages.push(newMessage);
       await writeJsonFile(MESSAGES_FILE, messages);
-      
-      // Broadcast to all clients
       io.emit('new_message', newMessage);
     } catch (error) {
       console.error('Error handling chat message:', error);
@@ -571,7 +242,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// Start server
 async function startServer() {
   await ensureDataFiles();
   
