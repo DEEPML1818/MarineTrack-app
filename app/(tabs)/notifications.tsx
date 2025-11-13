@@ -1,186 +1,182 @@
+
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/Colors';
-import {
-  getNotificationHistory,
-  markNotificationAsRead,
-  clearAllNotifications,
-  NotificationData,
-  NotificationType,
-  requestNotificationPermissions,
-} from '@/utils/notificationService';
+import { IconSymbol } from '@/components/ui/IconSymbol';
+import { getNotifications, markNotificationAsRead } from '@/utils/notificationService';
+import { getCurrentUser } from '@/utils/auth';
+
+interface Notification {
+  id: string;
+  type: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  data?: any;
+}
 
 export default function NotificationsScreen() {
   const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  const [notifications, setNotifications] = useState<NotificationData[]>([]);
+  const isDark = colorScheme === 'dark';
+  const colors = Colors[isDark ? 'dark' : 'light'];
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [permissionsGranted, setPermissionsGranted] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
   useEffect(() => {
     loadNotifications();
-    checkPermissions();
   }, []);
 
-  const checkPermissions = async () => {
-    const granted = await requestNotificationPermissions();
-    setPermissionsGranted(granted);
-  };
-
   const loadNotifications = async () => {
-    const history = await getNotificationHistory();
-    setNotifications(history);
+    try {
+      const user = await getCurrentUser();
+      if (user) {
+        const notifs = await getNotifications(user.id);
+        setNotifications(notifs);
+      }
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+    }
   };
 
-  const handleRefresh = async () => {
+  const onRefresh = async () => {
     setRefreshing(true);
     await loadNotifications();
     setRefreshing(false);
   };
 
-  const handleNotificationPress = async (notification: NotificationData) => {
+  const handleNotificationPress = async (notification: Notification) => {
     if (!notification.read) {
       await markNotificationAsRead(notification.id);
-      loadNotifications();
+      setNotifications(prev =>
+        prev.map(n => (n.id === notification.id ? { ...n, read: true } : n))
+      );
     }
   };
 
-  const handleClearAll = async () => {
-    await clearAllNotifications();
-    setNotifications([]);
+  const getNotificationIcon = (type: string) => {
+    const icons: { [key: string]: string } = {
+      weather_alert: '⚠️',
+      sos_nearby: '🚨',
+      vessel_nearby: '🚢',
+      message: '💬',
+      zone_warning: '⛔',
+      safe_zone: '✅',
+      like: '❤️',
+      comment: '💬',
+      mention: '📢',
+    };
+    return icons[type] || '🔔';
   };
 
-  const getNotificationIcon = (type: NotificationType): string => {
-    switch (type) {
-      case NotificationType.CHAT_MESSAGE:
-        return '💬';
-      case NotificationType.VESSEL_NEARBY:
-        return '🚢';
-      case NotificationType.BOAT_LIKED:
-        return '❤️';
-      case NotificationType.BOAT_COMMENTED:
-        return '💭';
-      case NotificationType.SOS_ALERT:
-        return '🆘';
-      case NotificationType.RESTRICTED_ZONE:
-        return '⛔';
-      case NotificationType.SAFE_ZONE:
-        return '✅';
-      case NotificationType.WEATHER_WARNING:
-        return '⛈️';
-      case NotificationType.LOW_FUEL:
-        return '⛽';
-      default:
-        return '🔔';
-    }
+  const getTimeAgo = (timestamp: string) => {
+    const now = new Date();
+    const notifTime = new Date(timestamp);
+    const diffMs = now.getTime() - notifTime.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m`;
+    if (diffHours < 24) return `${diffHours}h`;
+    if (diffDays < 7) return `${diffDays}d`;
+    return new Date(timestamp).toLocaleDateString();
   };
 
-  const getTypeColor = (type: NotificationType): string => {
-    switch (type) {
-      case NotificationType.SOS_ALERT:
-      case NotificationType.RESTRICTED_ZONE:
-        return '#ef4444';
-      case NotificationType.WEATHER_WARNING:
-        return '#f59e0b';
-      case NotificationType.SAFE_ZONE:
-      case NotificationType.BOAT_LIKED:
-        return '#22c55e';
-      default:
-        return colors.primary;
-    }
-  };
-
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const filteredNotifications = filter === 'all' 
+    ? notifications 
+    : notifications.filter(n => !n.read);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.primary }]}>
-        <Text style={styles.headerTitle}>Notifications</Text>
-        <View style={styles.headerStats}>
-          <Text style={styles.headerSubtitle}>
-            {unreadCount} unread • {notifications.length} total
-          </Text>
-        </View>
-      </View>
-
-      {!permissionsGranted && (
-        <View style={[styles.permissionBanner, { backgroundColor: '#f59e0b' }]}>
-          <Text style={styles.permissionText}>
-            📌 Enable notifications to receive alerts about nearby vessels, restricted zones, and more!
-          </Text>
-        </View>
-      )}
-
-      <View style={styles.actionBar}>
-        <TouchableOpacity
-          style={[styles.clearButton, { backgroundColor: colors.card }]}
-          onPress={handleClearAll}
-          disabled={notifications.length === 0}
-        >
-          <Text style={[styles.clearButtonText, { color: colors.text }]}>
-            🗑️ Clear All
-          </Text>
+      {/* Header */}
+      <View style={[styles.header, { backgroundColor: isDark ? colors.card : '#FFFFFF', borderBottomColor: isDark ? colors.border : 'rgba(0,0,0,0.05)' }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Notifications</Text>
+        <TouchableOpacity style={styles.settingsButton}>
+          <IconSymbol name="ellipsis.circle" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
+      {/* Filter Pills */}
+      <View style={styles.filterContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
+          <TouchableOpacity
+            style={[
+              styles.filterPill,
+              { backgroundColor: filter === 'all' ? colors.primary : (isDark ? colors.card : '#F0F0F0') }
+            ]}
+            onPress={() => setFilter('all')}
+          >
+            <Text style={[styles.filterText, { color: filter === 'all' ? '#FFFFFF' : colors.text }]}>
+              All
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.filterPill,
+              { backgroundColor: filter === 'unread' ? colors.primary : (isDark ? colors.card : '#F0F0F0') }
+            ]}
+            onPress={() => setFilter('unread')}
+          >
+            <Text style={[styles.filterText, { color: filter === 'unread' ? '#FFFFFF' : colors.text }]}>
+              Unread
+            </Text>
+            {notifications.filter(n => !n.read).length > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                  {notifications.filter(n => !n.read).length}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+
+      {/* Notifications List */}
       <ScrollView
-        style={styles.scrollView}
+        style={styles.listContainer}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
       >
-        {notifications.length === 0 ? (
+        {filteredNotifications.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyIcon}>🔔</Text>
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>
-              No Notifications Yet
+            <Text style={[styles.emptyText, { color: colors.secondaryText }]}>
+              {filter === 'unread' ? 'All caught up!' : 'No notifications yet'}
             </Text>
-            <Text style={[styles.emptySubtitle, { color: colors.icon }]}>
-              You'll see updates about messages, nearby vessels, and zone alerts here
+            <Text style={[styles.emptySubtext, { color: colors.tertiaryText }]}>
+              {filter === 'unread' ? 'You have no unread notifications' : 'Stay tuned for updates'}
             </Text>
           </View>
         ) : (
-          notifications.map((notification) => (
+          filteredNotifications.map((notification) => (
             <TouchableOpacity
               key={notification.id}
               style={[
-                styles.notificationCard,
+                styles.notificationItem,
                 {
-                  backgroundColor: notification.read ? colors.card : colors.primary + '15',
-                  borderLeftColor: getTypeColor(notification.type),
-                },
+                  backgroundColor: !notification.read ? (isDark ? colors.card : '#F0F7FF') : 'transparent',
+                  borderBottomColor: isDark ? colors.border : 'rgba(0,0,0,0.05)',
+                }
               ]}
               onPress={() => handleNotificationPress(notification)}
             >
-              <View style={styles.notificationIcon}>
-                <Text style={styles.iconText}>
-                  {getNotificationIcon(notification.type)}
-                </Text>
+              <View style={[styles.iconContainer, { backgroundColor: isDark ? colors.background : '#FFFFFF' }]}>
+                <Text style={styles.notificationIcon}>{getNotificationIcon(notification.type)}</Text>
               </View>
               <View style={styles.notificationContent}>
-                <Text style={[styles.notificationTitle, { color: colors.text }]}>
-                  {notification.title}
-                </Text>
-                <Text
-                  style={[styles.notificationMessage, { color: colors.icon }]}
-                  numberOfLines={2}
-                >
+                <Text style={[styles.notificationMessage, { color: colors.text }]}>
                   {notification.message}
                 </Text>
-                <Text style={[styles.notificationTime, { color: colors.icon }]}>
+                <Text style={[styles.notificationTime, { color: colors.tertiaryText }]}>
                   {getTimeAgo(notification.timestamp)}
                 </Text>
               </View>
               {!notification.read && (
-                <View style={[styles.unreadBadge, { backgroundColor: colors.primary }]} />
+                <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />
               )}
             </TouchableOpacity>
           ))
@@ -190,69 +186,97 @@ export default function NotificationsScreen() {
   );
 }
 
-function getTimeAgo(timestamp: number): string {
-  const now = Date.now();
-  const diff = now - timestamp;
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (minutes < 1) return 'Just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  return `${days}d ago`;
-}
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
   header: {
-    paddingTop: 50,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: '700',
   },
-  headerStats: {
-    marginTop: 4,
+  settingsButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#fff',
-    opacity: 0.9,
+  filterContainer: {
+    paddingVertical: 12,
   },
-  permissionBanner: {
-    padding: 16,
-    margin: 16,
-    borderRadius: 12,
+  filterScroll: {
+    paddingHorizontal: 16,
+    gap: 8,
   },
-  permissionText: {
-    color: '#fff',
-    fontSize: 14,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  actionBar: {
+  filterPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
   },
-  clearButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignSelf: 'flex-end',
-  },
-  clearButtonText: {
+  filterText: {
     fontSize: 14,
     fontWeight: '600',
   },
-  scrollView: {
+  badge: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    minWidth: 20,
+    alignItems: 'center',
+  },
+  badgeText: {
+    color: '#007AFF',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  listContainer: {
     flex: 1,
+  },
+  notificationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 16,
+    borderBottomWidth: 1,
+  },
+  iconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  notificationIcon: {
+    fontSize: 22,
+  },
+  notificationContent: {
+    flex: 1,
+  },
+  notificationMessage: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 4,
+  },
+  notificationTime: {
+    fontSize: 12,
+  },
+  unreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginLeft: 8,
   },
   emptyState: {
     alignItems: 'center',
@@ -263,49 +287,12 @@ const styles = StyleSheet.create({
     fontSize: 64,
     marginBottom: 16,
   },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
     marginBottom: 8,
   },
-  emptySubtitle: {
+  emptySubtext: {
     fontSize: 14,
-    textAlign: 'center',
-    paddingHorizontal: 40,
-  },
-  notificationCard: {
-    flexDirection: 'row',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    borderLeftWidth: 4,
-  },
-  notificationIcon: {
-    marginRight: 12,
-    justifyContent: 'center',
-  },
-  iconText: {
-    fontSize: 28,
-  },
-  notificationContent: {
-    flex: 1,
-  },
-  notificationTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  notificationMessage: {
-    fontSize: 14,
-    marginBottom: 6,
-  },
-  notificationTime: {
-    fontSize: 12,
-  },
-  unreadBadge: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    alignSelf: 'center',
   },
 });

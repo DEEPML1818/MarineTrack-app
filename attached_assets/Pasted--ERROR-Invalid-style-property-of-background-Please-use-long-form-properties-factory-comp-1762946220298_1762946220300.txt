@@ -1,0 +1,43 @@
+λ  ERROR  Invalid style property of "background". Please use long-form properties. 
+  factory (components/WazeVesselMap.tsx:795:27)
+  factory (app/(tabs)/map.tsx:7:1)
+Web Bundled 4976ms node_modules/expo-router/entry.js (1011 modules)
+Web Bundled 1587ms node_modules/expo-router/entry.js (950 modules)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 10ms config.ts (1 module)
+Web Bundled 6ms utils/database.ts (1 module)
+λ Bundled 738ms node_modules/expo-router/node/render.js (1 module)
+Web node_modules/expo-router/entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  factory (components/WazeVesselMap.tsx:795:27)
+  factory (app/(tabs)/map.tsx:7:1)
+λ  ERROR  Invalid style property of "background". Please use long-form properties. 
+  factory (components/WazeVesselMap.tsx:795:27)
+  factory (app/(tabs)/map.tsx:7:1)
+Web Bundled 1233ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 43ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 2ms config.ts (1 module)
+Web Bundled 1ms utils/database.ts (1 module)
+Web node_modules/expo-router/entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  factory (components/WazeVesselMap.tsx:795:27)
+  factory (app/(tabs)/map.tsx:7:1)
+λ  ERROR  Invalid style property of "background". Please use long-form properties. 
+  factory (components/WazeVesselMap.tsx:795:27)
+  factory (app/(tabs)/map.tsx:7:1)
+λ Bundled 19ms node_modules/expo-router/node/render.js (1 module)
+Web Bundled 251ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 42ms node_modules/expo-router/entry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 3ms config.ts (1 module)
+Web Bundled 2ms utils/database.ts (1 module)
+Web node_modules/expo-router/entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ  WARN  "shadow*" style props are deprecated. Use "boxShadow". 
+  factory (components/WazeVesselMap.tsx:795:27)
+  factory (app/(tabs)/map.tsx:7:1)
+λ  ERROR  Invalid style property of "background". Please use long-form properties. 
+  factory (components/WazeVesselMap.tsx:795:27)
+  factory (app/(tabs)/map.tsx:7:1)
+λ Bundled 20ms node_modules/expo-router/node/render.js (1 module)
+Web Bundled 280ms node_modules/expo-router/entry.js (1 module)

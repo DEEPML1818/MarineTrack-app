@@ -1,82 +1,46 @@
+
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, StatusBar, RefreshControl, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Image } from 'react-native';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
 import { Theme } from '@/constants/Theme';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 import * as Location from 'expo-location';
-import { WeatherWidget, SectionHeader } from '@/components/ui/redesign';
 import { fetchWeatherAPIData, getMockWeatherData } from '@/utils/weatherApi';
 
 export default function WeatherScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const colors = Colors[isDark ? 'dark' : 'light'];
+
   const [weatherData, setWeatherData] = useState(getMockWeatherData());
+  const [locationName, setLocationName] = useState('Loading...');
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    const loadWeather = async () => {
-      try {
-        // Request location permission
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Permission Required', 'Location permission is needed to show weather for your area.');
-          return;
-        }
-
-        // Get current location
-        const location = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.High,
-        });
-
-        const lat = location.coords.latitude;
-        const lng = location.coords.longitude;
-
-        console.log('Fetching weather for location:', lat.toFixed(4), lng.toFixed(4));
-
-        // Get location name
-        try {
-          const geocode = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
-          if (geocode && geocode.length > 0) {
-            const place = geocode[0];
-            setLocationName(place.city || place.region || place.country || 'Unknown Location');
-          }
-        } catch (geoError) {
-          console.error('Error geocoding:', geoError);
-          setLocationName('Current Location');
-        }
-
-        // Fetch weather data for current location
-        const data = await fetchWeatherAPIData(lat, lng);
-        if (data && data.current) {
-          setWeatherData({
-            temperature: Math.round(data.current.temp_c),
-            windSpeed: Math.round(data.current.wind_kph),
-            waveHeight: 1.2,
-            visibility: Math.round(data.current.vis_km),
-            condition: data.current.condition.text,
-            icon: '⛅'
-          });
-        }
-      } catch (error) {
-        console.error('Error loading weather:', error);
-        Alert.alert('Weather Error', 'Could not load weather data for your location.');
-      }
-    };
     loadWeather();
   }, []);
 
-  const [locationName, setLocationName] = useState('Loading...');
-
-  const onRefresh = async () => {
-    setRefreshing(true);
+  const loadWeather = async () => {
     try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return;
+
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
       });
+
       const lat = location.coords.latitude;
       const lng = location.coords.longitude;
-      
-      // Get location name
-      const geocode = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
-      if (geocode && geocode.length > 0) {
-        const place = geocode[0];
-        setLocationName(place.city || place.region || place.country || 'Unknown Location');
+
+      try {
+        const geocode = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
+        if (geocode && geocode.length > 0) {
+          const place = geocode[0];
+          setLocationName(place.city || place.region || place.country || 'Current Location');
+        }
+      } catch (geoError) {
+        setLocationName('Current Location');
       }
 
       const data = await fetchWeatherAPIData(lat, lng);
@@ -91,220 +55,303 @@ export default function WeatherScreen() {
         });
       }
     } catch (error) {
-      console.error('Error refreshing:', error);
+      console.error('Error loading weather:', error);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadWeather();
     setRefreshing(false);
   };
 
   return (
-    <>
-      <StatusBar barStyle="light-content" />
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View style={styles.locationBadge}>
-            <Text style={styles.locationIcon}>📍</Text>
-            <Text style={styles.locationText}>{locationName}</Text>
-          </View>
-          <Text style={styles.menuIcon}>⚙️</Text>
-        </View>
-      </View>
-
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
-        style={styles.screen}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Theme.colors.teal} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
+        showsVerticalScrollIndicator={false}
       >
-        <WeatherWidget
-          temperature={weatherData.temperature}
-          condition={weatherData.condition}
-          windSpeed={weatherData.windSpeed}
-          windDirection="N"
-          humidity={65}
-          location="Marine Zone"
-        />
-
-        <SectionHeader title="Port nefo" />
-
-        <View style={styles.portCard}>
-          <View style={styles.portHeader}>
+        {/* Header */}
+        <View style={[styles.header, { backgroundColor: isDark ? colors.card : '#FFFFFF' }]}>
+          <View style={styles.headerContent}>
             <View>
-              <View style={styles.conditionRow}>
-                <Text style={styles.conditionIcon}>☀️</Text>
-                <Text style={styles.conditionText}>Sunny</Text>
-                <Text style={styles.temperatureText}>{weatherData.temperature}°C</Text>
+              <Text style={[styles.headerTitle, { color: colors.text }]}>Weather</Text>
+              <View style={styles.locationRow}>
+                <IconSymbol name="location.fill" size={14} color={colors.primary} />
+                <Text style={[styles.locationText, { color: colors.secondaryText }]}>{locationName}</Text>
               </View>
-              <Text style={styles.portName}>Charleston Port</Text>
-              <Text style={styles.portLocation}>Norfolk Terminail</Text>
             </View>
-            <Text style={styles.addIcon}>+</Text>
-          </View>
-
-          <View style={styles.divider} />
-
-          <View style={styles.portDetails}>
-            <Text style={styles.etaLabel}>ETA: 2/172 40gpm</Text>
+            <TouchableOpacity style={styles.settingsButton}>
+              <IconSymbol name="ellipsis.circle" size={24} color={colors.text} />
+            </TouchableOpacity>
           </View>
         </View>
 
-        <View style={styles.detailsCard}>
-          <Text style={styles.detailsTitle}>Marine Conditions</Text>
+        {/* Hero Weather Card */}
+        <View style={[styles.heroCard, { backgroundColor: isDark ? colors.card : '#FFFFFF' }]}>
+          <View style={styles.heroContent}>
+            <Text style={styles.weatherIcon}>{weatherData.icon}</Text>
+            <Text style={[styles.temperature, { color: colors.text }]}>{weatherData.temperature}°</Text>
+            <Text style={[styles.condition, { color: colors.secondaryText }]}>{weatherData.condition}</Text>
+            
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <IconSymbol name="wind" size={20} color={colors.primary} />
+                <Text style={[styles.statValue, { color: colors.text }]}>{weatherData.windSpeed}</Text>
+                <Text style={[styles.statLabel, { color: colors.secondaryText }]}>kts</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <IconSymbol name="eye" size={20} color={colors.primary} />
+                <Text style={[styles.statValue, { color: colors.text }]}>{weatherData.visibility}</Text>
+                <Text style={[styles.statLabel, { color: colors.secondaryText }]}>km</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.waveIcon}>🌊</Text>
+                <Text style={[styles.statValue, { color: colors.text }]}>{weatherData.waveHeight}</Text>
+                <Text style={[styles.statLabel, { color: colors.secondaryText }]}>m</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Featured Port */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Featured Port</Text>
           
-          <View style={styles.detailsGrid}>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailIcon}>🌊</Text>
-              <Text style={styles.detailValue}>{weatherData.waveHeight} m</Text>
-              <Text style={styles.detailLabel}>Wave Height</Text>
+          <TouchableOpacity style={[styles.portCard, { backgroundColor: isDark ? colors.card : '#FFFFFF' }]}>
+            <View style={styles.portHeader}>
+              <View style={styles.portIcon}>
+                <Text style={styles.portIconText}>⚓</Text>
+              </View>
+              <View style={styles.portInfo}>
+                <Text style={[styles.portName, { color: colors.text }]}>Charleston Port</Text>
+                <Text style={[styles.portLocation, { color: colors.secondaryText }]}>Norfolk Terminal</Text>
+                <Text style={[styles.portETA, { color: colors.primary }]}>ETA: 2/17 4:00pm</Text>
+              </View>
+              <TouchableOpacity style={[styles.addButton, { backgroundColor: colors.primary }]}>
+                <IconSymbol name="plus" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
             </View>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailIcon}>👁️</Text>
-              <Text style={styles.detailValue}>{weatherData.visibility} km</Text>
-              <Text style={styles.detailLabel}>Visibility</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Marine Conditions */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Marine Conditions</Text>
+          
+          <View style={styles.conditionsGrid}>
+            <View style={[styles.conditionCard, { backgroundColor: isDark ? colors.card : '#FFFFFF' }]}>
+              <View style={[styles.conditionIcon, { backgroundColor: '#34C75920' }]}>
+                <Text style={styles.conditionEmoji}>🌊</Text>
+              </View>
+              <Text style={[styles.conditionValue, { color: colors.text }]}>{weatherData.waveHeight}m</Text>
+              <Text style={[styles.conditionLabel, { color: colors.secondaryText }]}>Wave Height</Text>
             </View>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailIcon}>💨</Text>
-              <Text style={styles.detailValue}>{weatherData.windSpeed} kts</Text>
-              <Text style={styles.detailLabel}>Wind Speed</Text>
+
+            <View style={[styles.conditionCard, { backgroundColor: isDark ? colors.card : '#FFFFFF' }]}>
+              <View style={[styles.conditionIcon, { backgroundColor: '#007AFF20' }]}>
+                <Text style={styles.conditionEmoji}>👁️</Text>
+              </View>
+              <Text style={[styles.conditionValue, { color: colors.text }]}>{weatherData.visibility}km</Text>
+              <Text style={[styles.conditionLabel, { color: colors.secondaryText }]}>Visibility</Text>
+            </View>
+
+            <View style={[styles.conditionCard, { backgroundColor: isDark ? colors.card : '#FFFFFF' }]}>
+              <View style={[styles.conditionIcon, { backgroundColor: '#FF950020' }]}>
+                <Text style={styles.conditionEmoji}>💨</Text>
+              </View>
+              <Text style={[styles.conditionValue, { color: colors.text }]}>{weatherData.windSpeed}kts</Text>
+              <Text style={[styles.conditionLabel, { color: colors.secondaryText }]}>Wind Speed</Text>
             </View>
           </View>
         </View>
 
-        <View style={styles.bottomSpacing} />
+        <View style={{ height: 100 }} />
       </ScrollView>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  container: {
     flex: 1,
-    backgroundColor: Theme.colors.offWhite,
   },
   header: {
-    backgroundColor: Theme.colors.navy,
-    paddingTop: 50,
-    paddingBottom: Theme.spacing.base,
-    paddingHorizontal: Theme.spacing.base,
+    paddingTop: 60,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
   },
-  headerTop: {
+  headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 16,
   },
-  locationBadge: {
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Theme.colors.white,
-    paddingHorizontal: Theme.spacing.md,
-    paddingVertical: Theme.spacing.xs,
-    borderRadius: Theme.radius.full,
-    opacity: 0.15,
-  },
-  locationIcon: {
-    fontSize: Theme.fonts.sizes.base,
-    marginRight: Theme.spacing.xs,
+    gap: 4,
   },
   locationText: {
-    color: Theme.colors.white,
-    fontSize: Theme.fonts.sizes.md,
-    fontWeight: Theme.fonts.weights.medium,
+    fontSize: 14,
   },
-  menuIcon: {
-    fontSize: Theme.fonts.sizes.lg,
+  settingsButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  heroCard: {
+    margin: 16,
+    borderRadius: 20,
+    padding: 32,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  heroContent: {
+    alignItems: 'center',
+  },
+  weatherIcon: {
+    fontSize: 80,
+    marginBottom: 16,
+  },
+  temperature: {
+    fontSize: 64,
+    fontWeight: '200',
+    marginBottom: 8,
+  },
+  condition: {
+    fontSize: 18,
+    marginBottom: 32,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 24,
+  },
+  statItem: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  statDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  statLabel: {
+    fontSize: 12,
+  },
+  waveIcon: {
+    fontSize: 20,
+  },
+  section: {
+    paddingHorizontal: 16,
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 12,
   },
   portCard: {
-    backgroundColor: Theme.colors.white,
-    borderRadius: Theme.radius.lg,
-    padding: Theme.spacing.xl,
-    marginHorizontal: Theme.spacing.base,
-    marginBottom: Theme.spacing.xl,
-    ...Theme.shadows.md,
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   portHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  conditionRow: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: Theme.spacing.sm,
-    marginBottom: Theme.spacing.md,
+    gap: 12,
   },
-  conditionIcon: {
-    fontSize: Theme.fonts.sizes.lg,
+  portIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#007AFF20',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  conditionText: {
-    fontSize: Theme.fonts.sizes.md,
-    color: Theme.colors.mutedGray,
+  portIconText: {
+    fontSize: 28,
   },
-  temperatureText: {
-    fontSize: Theme.fonts.sizes.lg,
-    fontWeight: Theme.fonts.weights.bold,
-    color: Theme.colors.navy,
+  portInfo: {
+    flex: 1,
   },
   portName: {
-    fontSize: Theme.fonts.sizes.xl,
-    fontWeight: Theme.fonts.weights.bold,
-    color: Theme.colors.navy,
-    marginBottom: Theme.spacing.xs,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
   },
   portLocation: {
-    fontSize: Theme.fonts.sizes.md,
-    color: Theme.colors.mutedGray,
+    fontSize: 14,
+    marginBottom: 4,
   },
-  addIcon: {
-    fontSize: Theme.fonts.sizes.xxl,
-    color: Theme.colors.mutedGray,
+  portETA: {
+    fontSize: 13,
+    fontWeight: '500',
   },
-  divider: {
-    height: 1,
-    backgroundColor: Theme.colors.mutedGray,
-    marginVertical: Theme.spacing.base,
-    opacity: 0.2,
-  },
-  portDetails: {
-    paddingTop: Theme.spacing.sm,
-  },
-  etaLabel: {
-    fontSize: Theme.fonts.sizes.md,
-    color: Theme.colors.mutedGray,
-  },
-  detailsCard: {
-    backgroundColor: Theme.colors.white,
-    borderRadius: Theme.radius.lg,
-    padding: Theme.spacing.xl,
-    marginHorizontal: Theme.spacing.base,
-    ...Theme.shadows.md,
-  },
-  detailsTitle: {
-    fontSize: Theme.fonts.sizes.lg,
-    fontWeight: Theme.fonts.weights.bold,
-    color: Theme.colors.navy,
-    marginBottom: Theme.spacing.base,
-  },
-  detailsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  detailItem: {
+  addButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  detailIcon: {
-    fontSize: Theme.fonts.sizes.xxl,
-    marginBottom: Theme.spacing.sm,
+  conditionsGrid: {
+    flexDirection: 'row',
+    gap: 12,
   },
-  detailValue: {
-    fontSize: Theme.fonts.sizes.lg,
-    fontWeight: Theme.fonts.weights.bold,
-    color: Theme.colors.navy,
-    marginBottom: Theme.spacing.xs,
+  conditionCard: {
+    flex: 1,
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  detailLabel: {
-    fontSize: Theme.fonts.sizes.sm,
-    color: Theme.colors.mutedGray,
+  conditionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
   },
-  bottomSpacing: {
-    height: 100,
+  conditionEmoji: {
+    fontSize: 24,
+  },
+  conditionValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  conditionLabel: {
+    fontSize: 12,
+    textAlign: 'center',
   },
 });

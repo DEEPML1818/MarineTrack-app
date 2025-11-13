@@ -1,75 +1,104 @@
 
-// MarineTrack Theme - ZUS Coffee-Inspired Maritime Aesthetic
-// Warm, modern design with coffee-inspired colors and clean interfaces
+// MarineTrack Theme - iOS-Inspired Elegant Design System
+// Modern, posh, and stylishly luxurious maritime interface
 
 export const Theme = {
-  // Primary Colors - Zus Coffee-Inspired Palette
+  // Primary Colors - iOS-Inspired Palette
   colors: {
-    espresso: '#4A2C2A',    // Rich espresso - primary headers and emphasis
-    coffeeBrown: '#6B4423', // Coffee brown - secondary headers
-    latte: '#F5E6D3',       // Latte cream - warm backgrounds
-    cream: '#E8D5C4',       // Cream beige - subtle highlights
-    burntOrange: '#D97757', // Burnt orange - CTAs and accents
-    foam: '#FAF7F2',        // Soft foam - main backgrounds
-    mutedGray: '#8B7E74',   // Warm gray - secondary text
+    // iOS System Colors
+    iosBlue: '#007AFF',      // Primary blue - actions, links, highlights
+    iosGreen: '#34C759',     // Success green
+    iosOrange: '#FF9500',    // Warning orange
+    iosRed: '#FF3B30',       // Danger red
+    iosPurple: '#AF52DE',    // Accent purple
+    iosTeal: '#5AC8FA',      // Info teal
+    
+    // Neutral Grays - Light Mode
+    black: '#000000',
+    gray1: '#1C1C1E',        // Dark elements
+    gray2: '#2C2C2E',        // Elevated dark
+    gray3: '#3A3A3C',        // Tertiary dark
+    gray4: '#48484A',        // Secondary dark
+    gray5: '#636366',        // Mid gray
+    gray6: '#8E8E93',        // Secondary text
+    gray7: '#AEAEB2',        // Tertiary text
+    gray8: '#C7C7CC',        // Separator light
+    gray9: '#D1D1D6',        // Border light
+    gray10: '#E5E5EA',       // Fill light
+    gray11: '#F2F2F7',       // Background light
     white: '#FFFFFF',
-    black: '#2C1810',       // Warm black
     
-    // Legacy aliases for compatibility
-    teal: '#D97757',        // Maps to burntOrange for actions
-    navy: '#4A2C2A',        // Maps to espresso
-    coral: '#D97757',       // Maps to burntOrange for alerts
-    sand: '#E8D5C4',        // Maps to cream
-    offWhite: '#FAF7F2',    // Maps to foam
-    caramel: '#D97757',     // Alias for burntOrange
-    crema: '#E8D5C4',       // Alias for cream
+    // Light Mode Specific
+    lightBackground: '#F2F2F7',
+    lightCard: '#FFFFFF',
+    lightText: '#000000',
+    lightSecondary: '#6C6C70',
+    lightTertiary: '#8E8E93',
+    lightBorder: '#E5E5EA',
     
-    // Semantic Colors
-    success: '#7A6F4F',     // Warm olive success
-    warning: '#D9953C',     // Amber warning
-    danger: '#B85A3D',      // Warm terracotta danger
-    info: '#8B7355',        // Warm brown info
+    // Dark Mode Specific
+    darkBackground: '#000000',
+    darkCard: '#1C1C1E',
+    darkText: '#FFFFFF',
+    darkSecondary: '#8E8E93',
+    darkTertiary: '#6C6C70',
+    darkBorder: '#38383A',
     
-    // Status Colors
-    statusLive: '#7A6F4F',      // Olive for live/active
-    statusDocked: '#8B7E74',    // Muted for docked
-    statusDelayed: '#D9953C',   // Amber for delayed
-    statusAttention: '#D97757', // Burnt orange for attention
+    // Semantic Colors (iOS-style)
+    success: '#34C759',
+    warning: '#FF9500',
+    danger: '#FF3B30',
+    info: '#007AFF',
+    
+    // Status Colors (Maritime-specific)
+    statusLive: '#34C759',
+    statusDocked: '#8E8E93',
+    statusDelayed: '#FF9500',
+    statusAttention: '#FF3B30',
+    
+    // Legacy compatibility
+    espresso: '#1C1C1E',
+    teal: '#007AFF',
+    navy: '#1C1C1E',
+    coral: '#FF3B30',
   },
   
-  // Typography - Zus Coffee Style
+  // Typography - iOS San Francisco Pro Style
   fonts: {
-    base: 'Inter',          // Body and general text
-    heading: 'Poppins',     // Headers and emphasis (bold, modern)
+    base: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    heading: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
     sizes: {
-      xs: 10,      // Helper text, labels
-      sm: 12,      // Secondary text, timestamps
-      md: 14,      // Body text
+      xs: 10,      // Tiny labels, captions
+      sm: 12,      // Secondary text, badges, timestamps
+      md: 14,      // Body text, labels
       base: 16,    // Primary body, inputs
-      lg: 22,      // Section headers (H2)
-      xl: 24,      // Screen titles
-      xxl: 28,     // Hero headings (H1)
-      xxxl: 32,    // Large hero text
+      lg: 18,      // Section titles
+      xl: 20,      // Screen headers
+      xxl: 24,     // Large titles
+      xxxl: 28,    // Hero headings
+      huge: 34,    // Large display
     },
     weights: {
       regular: '400' as const,
       medium: '500' as const,
       semibold: '600' as const,
       bold: '700' as const,
+      heavy: '800' as const,
     },
     lineHeights: {
-      tight: 1.2,     // Headings
-      normal: 1.5,    // Body text
+      tight: 1.2,     // Headings, titles
+      normal: 1.5,    // Body text, comfortable reading
       relaxed: 1.75,  // Long-form content
     },
   },
   
-  // Spacing (4px baseline grid)
+  // Spacing (iOS-style 8px baseline grid)
   spacing: {
-    xs: 4,       // Tight spacing
-    sm: 8,       // Small gaps
+    xxs: 2,      // Micro spacing
+    xs: 4,       // Extra small gaps
+    sm: 8,       // Small spacing
     md: 12,      // Medium spacing
-    base: 16,    // Base unit
+    base: 16,    // Base unit (iOS standard)
     lg: 20,      // Large spacing
     xl: 24,      // Extra large
     xxl: 32,     // Double extra large
@@ -77,42 +106,50 @@ export const Theme = {
     huge: 48,    // Section spacing
   },
   
-  // Border Radius - Larger, softer curves for modern feel
+  // Border Radius - iOS-style rounded corners
   radius: {
-    sm: 12,
-    md: 16,
-    lg: 20,
-    xl: 24,
-    full: 999,
+    xs: 8,       // Small elements
+    sm: 12,      // Cards, buttons
+    md: 16,      // Standard cards
+    lg: 20,      // Large cards
+    xl: 24,      // Hero elements
+    full: 999,   // Circular/pill shape
   },
   
-  // Shadows - Soft, elevated (Zus Coffee style)
+  // Shadows - iOS-style subtle elevations
   shadows: {
+    none: {
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0,
+      shadowRadius: 0,
+      elevation: 0,
+    },
     sm: {
       shadowColor: '#000000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.04,
-      shadowRadius: 4,
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
       elevation: 2,
     },
     md: {
       shadowColor: '#000000',
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.08,
+      shadowOpacity: 0.1,
       shadowRadius: 12,
       elevation: 4,
     },
     lg: {
       shadowColor: '#000000',
       shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.12,
+      shadowOpacity: 0.15,
       shadowRadius: 16,
       elevation: 8,
     },
     xl: {
       shadowColor: '#000000',
       shadowOffset: { width: 0, height: 12 },
-      shadowOpacity: 0.15,
+      shadowOpacity: 0.2,
       shadowRadius: 24,
       elevation: 12,
     },
@@ -120,17 +157,20 @@ export const Theme = {
   
   // Web-compatible shadows (CSS box-shadow)
   webShadows: {
+    none: {
+      boxShadow: 'none',
+    },
     sm: {
-      boxShadow: '0 2px 4px rgba(75, 46, 27, 0.06)',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
     },
     md: {
-      boxShadow: '0 4px 8px rgba(75, 46, 27, 0.08)',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
     },
     lg: {
-      boxShadow: '0 8px 16px rgba(75, 46, 27, 0.1)',
+      boxShadow: '0 8px 16px rgba(0, 0, 0, 0.15)',
     },
     xl: {
-      boxShadow: '0 12px 24px rgba(75, 46, 27, 0.12)',
+      boxShadow: '0 12px 24px rgba(0, 0, 0, 0.2)',
     },
   },
   

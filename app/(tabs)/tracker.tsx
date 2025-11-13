@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Switch, TextInput, ScrollView, Alert, Platform } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Theme } from '@/constants/Theme';
+import { Colors } from '@/constants/Colors';
+import { AddItemModal } from '@/components/redesign/AddItemModal';
 import * as Location from 'expo-location';
 import { getCurrentUser, updateVesselInfo } from '@/utils/auth';
 import { sendTrackingData, startTracking, getNearbyTrackedVessels } from '@/utils/trackingService';
@@ -34,6 +36,7 @@ export default function TrackerScreen() {
   const [nearbyVessels, setNearbyVessels] = useState<any[]>([]);
   const [trackingSubscription, setTrackingSubscription] = useState<any>(null);
   const [weatherData, setWeatherData] = useState<any>(null);
+  const [showAddVesselModal, setShowAddVesselModal] = useState(false);
 
   // Effect to load initial user data and set up location tracking
   useEffect(() => {
@@ -385,12 +388,57 @@ export default function TrackerScreen() {
     return `${(heightMeters * 3.28084).toFixed(1)} ft`; // meters to feet
   };
 
+  const handleQuickAddVessel = async (data: any) => {
+    setVesselInfo({
+      vesselName: data.vesselName,
+      vesselId: data.vesselId,
+      vesselType: data.vesselType,
+      mmsi: data.mmsi || '',
+      imo: data.imo || '',
+    });
+    await handleSaveVesselInfo();
+  };
+
+  const vesselFormFields = [
+    { key: 'vesselName', label: 'Vessel Name', placeholder: 'e.g., Nelayan Jaya', required: true },
+    { key: 'vesselId', label: 'Vessel ID', placeholder: 'e.g., MYS-12345', required: true },
+    { 
+      key: 'vesselType', 
+      label: 'Vessel Type', 
+      placeholder: 'Select type',
+      type: 'picker' as const,
+      options: ['Fishing Vessel', 'Cargo Ship', 'Yacht', 'Ferry', 'Tugboat'],
+      required: true 
+    },
+    { key: 'mmsi', label: 'MMSI', placeholder: '9-digit MMSI number', type: 'number' as const },
+    { key: 'imo', label: 'IMO', placeholder: '7-digit IMO number', type: 'number' as const },
+  ];
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.primary }]}>
-        <Text style={styles.headerTitle}>🛰️ AIS Location Tracker</Text>
-        <Text style={styles.headerSubtitle}>Broadcast your position to nearby vessels</Text>
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.headerTitle}>🛰️ AIS Location Tracker</Text>
+            <Text style={styles.headerSubtitle}>Broadcast your position to nearby vessels</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.quickAddButton}
+            onPress={() => setShowAddVesselModal(true)}
+          >
+            <Text style={styles.quickAddIcon}>+</Text>
+          </TouchableOpacity>
+        </View>
       </View>
+
+      <AddItemModal
+        visible={showAddVesselModal}
+        onClose={() => setShowAddVesselModal(false)}
+        onSubmit={handleQuickAddVessel}
+        title="Add Vessel"
+        fields={vesselFormFields}
+        submitText="Save Vessel"
+      />
 
       <ScrollView style={styles.content}>
         {/* Location Display */}
@@ -591,6 +639,11 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     paddingHorizontal: 20,
   },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -601,6 +654,19 @@ const styles = StyleSheet.create({
     color: '#fff',
     opacity: 0.9,
     marginTop: 4,
+  },
+  quickAddButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quickAddIcon: {
+    fontSize: 24,
+    color: '#fff',
+    fontWeight: '300',
   },
   content: {
     flex: 1,

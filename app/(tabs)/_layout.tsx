@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -10,87 +10,134 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Theme.colors.teal,
-        tabBarInactiveTintColor: Theme.colors.mutedGray,
+        tabBarActiveTintColor: Theme.colors.iosBlue,
+        tabBarInactiveTintColor: isDark ? Theme.colors.gray6 : Theme.colors.gray7,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute',
-            borderTopColor: 'rgba(107, 119, 133, 0.1)',
-          },
-          default: {
-            borderTopColor: 'rgba(107, 119, 133, 0.1)',
-            backgroundColor: '#FFFFFF',
-          },
-        }),
+        tabBarShowLabel: false,
+        tabBarStyle: {
+          backgroundColor: isDark ? Theme.colors.darkCard : Theme.colors.white,
+          borderTopWidth: 0,
+          height: 70,
+          paddingBottom: 10,
+          paddingTop: 10,
+          ...Theme.shadows.sm,
+        },
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Dashboard',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="weather"
-        options={{
-          title: 'Weather',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="cloud.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="sos"
-        options={{
-          title: 'SOS',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="exclamationmark.triangle.fill" color={color} />,
+          title: '',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{ 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              transform: [{ scale: focused ? 1.1 : 1 }],
+            }}>
+              <IconSymbol size={26} name="house.fill" color={color} />
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
         name="map"
         options={{
-          title: 'Map',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="map.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="chat"
-        options={{
-          title: 'Chat',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="bubble.left.and.bubble.right.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="ports"
-        options={{
-          title: 'Ports',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="anchor.fill" color={color} />,
+          title: '',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{ 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              transform: [{ scale: focused ? 1.1 : 1 }],
+            }}>
+              <IconSymbol size={26} name="map.fill" color={color} />
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
         name="tracker"
         options={{
-          title: 'Tracker',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="location.fill" color={color} />,
+          title: '',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              width: 56,
+              height: 56,
+              borderRadius: 28,
+              backgroundColor: focused ? Theme.colors.iosBlue : Theme.colors.iosBlue,
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: 20,
+              ...Theme.shadows.md,
+            }}>
+              <IconSymbol size={28} name="location.fill" color="#FFFFFF" />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: '',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{ 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              transform: [{ scale: focused ? 1.1 : 1 }],
+            }}>
+              <IconSymbol size={26} name="bubble.left.and.bubble.right.fill" color={color} />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: '',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{ 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              transform: [{ scale: focused ? 1.1 : 1 }],
+            }}>
+              <IconSymbol size={26} name="person.fill" color={color} />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="weather"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="sos"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="ports"
+        options={{
+          href: null,
         }}
       />
       <Tabs.Screen
         name="notifications"
         options={{
-          title: 'Notifications',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="bell.fill" color={color} />,
+          href: null,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="gear" color={color} />,
+          href: null,
         }}
       />
     </Tabs>

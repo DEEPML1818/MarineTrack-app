@@ -1,19 +1,25 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, StatusBar, RefreshControl } from 'react-native';
-import { Theme } from '@/constants/Theme';
-import { AlertBanner, TabBar, VesselCard, SectionHeader, ForecastCard } from '@/components/ui/redesign';
-import { useRouter } from 'expo-router';
 
-const tabs = [
-  { id: 'route', label: 'Route' },
-  { id: 'vessel-models', label: 'Vessel models' },
-  { id: 'fisher', label: 'Fisher' },
-];
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Image } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/Colors';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 
 export default function PortsScreen() {
   const router = useRouter();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const colors = Colors[isDark ? 'dark' : 'light'];
+
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState('route');
+  const [activeTab, setActiveTab] = useState('all');
+
+  const tabs = [
+    { id: 'all', label: 'All', icon: 'square.grid.2x2' },
+    { id: 'live', label: 'Live', icon: 'record.circle' },
+    { id: 'docked', label: 'Docked', icon: 'anchor' },
+  ];
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -22,132 +28,391 @@ export default function PortsScreen() {
   };
 
   return (
-    <>
-      <StatusBar barStyle="light-content" />
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View style={styles.locationBadge}>
-            <Text style={styles.locationIcon}>📍</Text>
-            <Text style={styles.locationText}>Coastal City</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[styles.header, { backgroundColor: isDark ? colors.card : '#FFFFFF', borderBottomColor: isDark ? colors.border : 'rgba(0,0,0,0.05)' }]}>
+        <View style={styles.headerContent}>
+          <View>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>Fleet</Text>
+            <View style={styles.locationRow}>
+              <IconSymbol name="location.fill" size={14} color={colors.primary} />
+              <Text style={[styles.locationText, { color: colors.secondaryText }]}>Coastal City</Text>
+            </View>
           </View>
-          <Text style={styles.menuIcon}>⚙️</Text>
+          <TouchableOpacity style={styles.settingsButton}>
+            <IconSymbol name="ellipsis.circle" size={24} color={colors.text} />
+          </TouchableOpacity>
         </View>
+
+        {/* Tabs */}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.tabsContainer}
+          contentContainerStyle={styles.tabsContent}
+        >
+          {tabs.map((tab) => (
+            <TouchableOpacity
+              key={tab.id}
+              style={[
+                styles.tab,
+                activeTab === tab.id && [styles.tabActive, { backgroundColor: colors.primary }]
+              ]}
+              onPress={() => setActiveTab(tab.id)}
+            >
+              <IconSymbol 
+                name={tab.icon as any} 
+                size={18} 
+                color={activeTab === tab.id ? '#FFFFFF' : colors.text} 
+              />
+              <Text style={[
+                styles.tabText,
+                { color: activeTab === tab.id ? '#FFFFFF' : colors.text }
+              ]}>
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       <ScrollView
-        style={styles.screen}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Theme.colors.teal} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
+        showsVerticalScrollIndicator={false}
       >
-        <AlertBanner
-          title="WAVE ALERT!"
-          message="Waves exceeding 6 meters into the bay"
-          variant="warning"
-          onPress={() => {}}
-        />
-
-        <TabBar tabs={tabs} onTabChange={setActiveTab} initialTab="route" />
-
-        <SectionHeader title="Tracking your fleet" />
-
-        <View style={styles.vesselGrid}>
-          <VesselCard
-            vesselName="MT Golden Frigga"
-            vesselType="Nayarit"
-            status="live"
-            speed={12.4}
-            onPress={() => router.push('/map')}
-            showDetails={false}
-          />
-          <VesselCard
-            vesselName="Cargo Express"
-            vesselType="Container Ship"
-            status="docked"
-            speed={0}
-            onPress={() => router.push('/map')}
-            showDetails={false}
-          />
+        {/* Alert Banner */}
+        <View style={styles.alertBanner}>
+          <View style={styles.alertContent}>
+            <View style={styles.alertIcon}>
+              <IconSymbol name="exclamationmark.triangle.fill" size={24} color="#FF9500" />
+            </View>
+            <View style={styles.alertTextContainer}>
+              <Text style={styles.alertTitle}>Wave Alert</Text>
+              <Text style={styles.alertMessage}>Waves exceeding 6m into the bay</Text>
+            </View>
+          </View>
         </View>
 
-        <SectionHeader title="Today's forecast" />
+        {/* Vessel Cards */}
+        <View style={styles.vesselsSection}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Your Fleet</Text>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.forecastScroll}>
-          <View style={styles.forecastContainer}>
-            <ForecastCard
-              vesselName="MT Golden Frigga"
-              temperature={26}
-              windSpeed={4}
-              waveHeight={4}
-              period="Today flags"
-            />
-            <ForecastCard
-              vesselName="Cargo Express"
-              temperature={24}
-              windSpeed={3}
-              waveHeight={3}
-              period="Tomorrow"
-            />
-          </View>
-        </ScrollView>
+          <TouchableOpacity 
+            style={[styles.vesselCard, { backgroundColor: isDark ? colors.card : '#FFFFFF' }]}
+            onPress={() => router.push('/map')}
+          >
+            <View style={styles.vesselHeader}>
+              <View style={styles.vesselAvatar}>
+                <Text style={styles.vesselAvatarText}>🚢</Text>
+              </View>
+              <View style={styles.vesselInfo}>
+                <Text style={[styles.vesselName, { color: colors.text }]}>MT Golden Frigga</Text>
+                <Text style={[styles.vesselType, { color: colors.secondaryText }]}>Nayarit</Text>
+                <View style={styles.vesselStats}>
+                  <IconSymbol name="speedometer" size={14} color={colors.secondaryText} />
+                  <Text style={[styles.statText, { color: colors.secondaryText }]}>12.4 kts</Text>
+                </View>
+              </View>
+              <View style={styles.liveBadge}>
+                <View style={styles.liveDot} />
+                <Text style={styles.liveText}>LIVE</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
 
-        <View style={styles.bottomSpacing} />
+          <TouchableOpacity 
+            style={[styles.vesselCard, { backgroundColor: isDark ? colors.card : '#FFFFFF' }]}
+            onPress={() => router.push('/map')}
+          >
+            <View style={styles.vesselHeader}>
+              <View style={styles.vesselAvatar}>
+                <Text style={styles.vesselAvatarText}>⚓</Text>
+              </View>
+              <View style={styles.vesselInfo}>
+                <Text style={[styles.vesselName, { color: colors.text }]}>Cargo Express</Text>
+                <Text style={[styles.vesselType, { color: colors.secondaryText }]}>Container Ship</Text>
+                <View style={styles.vesselStats}>
+                  <IconSymbol name="speedometer" size={14} color={colors.secondaryText} />
+                  <Text style={[styles.statText, { color: colors.secondaryText }]}>0 kts</Text>
+                </View>
+              </View>
+              <View style={[styles.dockedBadge, { backgroundColor: colors.secondaryText }]}>
+                <Text style={styles.badgeText}>DOCKED</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* Forecast Section */}
+        <View style={styles.forecastSection}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Today's Forecast</Text>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.forecastRow}>
+              <View style={[styles.forecastCard, { backgroundColor: isDark ? colors.card : '#FFFFFF' }]}>
+                <Text style={[styles.forecastVessel, { color: colors.text }]}>MT Golden Frigga</Text>
+                <Text style={[styles.forecastPeriod, { color: colors.secondaryText }]}>Today</Text>
+                <View style={styles.forecastStats}>
+                  <View style={styles.forecastItem}>
+                    <Text style={styles.forecastIcon}>🌡️</Text>
+                    <Text style={[styles.forecastValue, { color: colors.text }]}>26°C</Text>
+                  </View>
+                  <View style={styles.forecastItem}>
+                    <Text style={styles.forecastIcon}>💨</Text>
+                    <Text style={[styles.forecastValue, { color: colors.text }]}>4 kts</Text>
+                  </View>
+                  <View style={styles.forecastItem}>
+                    <Text style={styles.forecastIcon}>🌊</Text>
+                    <Text style={[styles.forecastValue, { color: colors.text }]}>4 m</Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={[styles.forecastCard, { backgroundColor: isDark ? colors.card : '#FFFFFF' }]}>
+                <Text style={[styles.forecastVessel, { color: colors.text }]}>Cargo Express</Text>
+                <Text style={[styles.forecastPeriod, { color: colors.secondaryText }]}>Tomorrow</Text>
+                <View style={styles.forecastStats}>
+                  <View style={styles.forecastItem}>
+                    <Text style={styles.forecastIcon}>🌡️</Text>
+                    <Text style={[styles.forecastValue, { color: colors.text }]}>24°C</Text>
+                  </View>
+                  <View style={styles.forecastItem}>
+                    <Text style={styles.forecastIcon}>💨</Text>
+                    <Text style={[styles.forecastValue, { color: colors.text }]}>3 kts</Text>
+                  </View>
+                  <View style={styles.forecastItem}>
+                    <Text style={styles.forecastIcon}>🌊</Text>
+                    <Text style={[styles.forecastValue, { color: colors.text }]}>3 m</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </ScrollView>
+        </View>
+
+        <View style={{ height: 100 }} />
       </ScrollView>
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  container: {
     flex: 1,
-    backgroundColor: Theme.colors.offWhite,
   },
   header: {
-    backgroundColor: Theme.colors.navy,
-    paddingTop: 50,
-    paddingBottom: Theme.spacing.base,
-    paddingHorizontal: Theme.spacing.base,
+    paddingTop: 60,
+    paddingBottom: 0,
+    borderBottomWidth: 1,
   },
-  headerTop: {
+  headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
-  locationBadge: {
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Theme.colors.white,
-    paddingHorizontal: Theme.spacing.md,
-    paddingVertical: Theme.spacing.xs,
-    borderRadius: Theme.radius.full,
-    opacity: 0.15,
-  },
-  locationIcon: {
-    fontSize: Theme.fonts.sizes.base,
-    marginRight: Theme.spacing.xs,
+    gap: 4,
   },
   locationText: {
-    color: Theme.colors.white,
-    fontSize: Theme.fonts.sizes.md,
-    fontWeight: Theme.fonts.weights.medium,
+    fontSize: 14,
   },
-  menuIcon: {
-    fontSize: Theme.fonts.sizes.lg,
+  settingsButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  vesselGrid: {
-    paddingHorizontal: Theme.spacing.base,
-    gap: Theme.spacing.base,
-    marginBottom: Theme.spacing.xl,
+  tabsContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
-  forecastScroll: {
-    paddingLeft: Theme.spacing.base,
+  tabsContent: {
+    gap: 8,
   },
-  forecastContainer: {
+  tab: {
     flexDirection: 'row',
-    gap: Theme.spacing.base,
-    paddingRight: Theme.spacing.base,
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.05)',
   },
-  bottomSpacing: {
-    height: 100,
+  tabActive: {
+    backgroundColor: '#007AFF',
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  alertBanner: {
+    margin: 16,
+    borderRadius: 16,
+    backgroundColor: '#FFF3CD',
+    padding: 16,
+  },
+  alertContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  alertIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FF950020',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  alertTextContainer: {
+    flex: 1,
+  },
+  alertTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#856404',
+    marginBottom: 4,
+  },
+  alertMessage: {
+    fontSize: 14,
+    color: '#856404',
+  },
+  vesselsSection: {
+    paddingHorizontal: 16,
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  vesselCard: {
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  vesselHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  vesselAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#007AFF20',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  vesselAvatarText: {
+    fontSize: 28,
+  },
+  vesselInfo: {
+    flex: 1,
+  },
+  vesselName: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  vesselType: {
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  vesselStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  statText: {
+    fontSize: 13,
+  },
+  liveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    backgroundColor: '#34C75920',
+  },
+  liveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#34C759',
+  },
+  liveText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#34C759',
+  },
+  dockedBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  forecastSection: {
+    paddingHorizontal: 16,
+    marginBottom: 24,
+  },
+  forecastRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  forecastCard: {
+    width: 180,
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  forecastVessel: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  forecastPeriod: {
+    fontSize: 13,
+    marginBottom: 12,
+  },
+  forecastStats: {
+    gap: 8,
+  },
+  forecastItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  forecastIcon: {
+    fontSize: 16,
+  },
+  forecastValue: {
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

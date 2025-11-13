@@ -1,0 +1,19 @@
+{
+  "name": "marinetrack-backend",
+  "version": "1.0.0",
+  "description": "Backend server for MarineTrack vessel tracking",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "http-proxy-middleware": "^3.0.5",
+    "socket.io": "^4.6.1"
+  },
+  "devDependencies": {
+    "searoute-js": "^0.1.0"
+  }
+}

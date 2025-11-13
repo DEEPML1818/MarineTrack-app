@@ -2,15 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView, Modal, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Theme } from '@/constants/Theme';
-import { 
-  reportHazard, 
-  getNearbyHazards, 
+import {
+  reportHazard,
+  getNearbyHazards,
   voteHazard,
   reportTraffic,
   calculateIntelligentRoute,
   getHazardIcon,
   getSeverityColor,
-  type MaritimeHazard 
+  type MaritimeHazard
 } from '@/utils/maritimeIntelligence';
 
 interface WazeVesselMapProps {
@@ -348,7 +348,7 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
     } catch (error) {
       console.error('Route calculation error:', error);
       Alert.alert(
-        '⚓ Route Error', 
+        '⚓ Route Error',
         'Unable to calculate maritime route. Please ensure:\n\n' +
         '• Origin and destination are accessible by sea\n' +
         '• Coordinates are valid ocean/water locations\n' +
@@ -524,8 +524,8 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
       <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
       <style>
         body { margin: 0; padding: 0; background: ${Theme.colors.darkBackground}; }
-        #map { 
-          width: 100%; 
+        #map {
+          width: 100%;
           height: 100vh;
           filter: invert(90%) hue-rotate(180deg) brightness(0.9) contrast(1.1);
         }
@@ -615,8 +615,8 @@ export default function WazeVesselMap({ userLocation, vessels = [], height = 500
             <TextInput
               style={[styles.input, { backgroundColor: colors.foam, color: colors.espresso }]}
               placeholder={
-                inputMode === 'port' 
-                  ? "Search for a port (e.g., Singapore, New York, Rotterdam)" 
+                inputMode === 'port'
+                  ? "Search for a port (e.g., Singapore, New York, Rotterdam)"
                   : "Enter coordinates (lat, lng)"
               }
               placeholderTextColor={colors.mutedGray}
@@ -807,10 +807,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
+    ...Theme.shadows.md,
     elevation: 10,
   },
   searchHeader: {
@@ -869,10 +866,7 @@ const styles = StyleSheet.create({
     right: 0,
     maxHeight: 200,
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    ...Theme.shadows.md,
     elevation: 5,
     zIndex: 2000,
   },
@@ -941,7 +935,7 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingBottom: 24,
     paddingHorizontal: 20,
-    background: 'linear-gradient(180deg, rgba(192, 90, 43, 0.98) 0%, rgba(192, 90, 43, 0.85) 100%)',
+    backgroundColor: Theme.colors.caramel,
   },
   navContent: {
     gap: 12,

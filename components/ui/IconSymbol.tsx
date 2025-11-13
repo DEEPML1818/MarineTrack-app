@@ -25,6 +25,10 @@ const MAPPING = {
   'anchor.fill': 'anchor',
   'location.fill': 'location-on',
   'gear': 'settings',
+  'person.fill': 'person',
+  'bell.fill': 'notifications',
+  'message.fill': 'message',
+  'speedometer': 'speed',
 } as IconMapping;
 
 /**
