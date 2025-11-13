@@ -28,6 +28,10 @@ export default function TabLayout() {
           paddingBottom: 10,
           paddingTop: 10,
           ...Theme.shadows.sm,
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
         },
       }}>
       <Tabs.Screen
@@ -136,6 +140,12 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="settings"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="map_old"
         options={{
           href: null,
         }}

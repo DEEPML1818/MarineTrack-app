@@ -229,6 +229,18 @@ export function getNearestSafeZone(
   return nearest;
 }
 
+export function getRestrictedZones(zones: Zone[] = maritimeZones): Zone[] {
+  return zones.filter(zone => zone.type === 'restricted');
+}
+
+export function getSafeZones(zones: Zone[] = maritimeZones): Zone[] {
+  return zones.filter(zone => zone.type === 'safe' || zone.type === 'fishing');
+}
+
+export function getBorderZones(zones: Zone[] = maritimeZones): Zone[] {
+  return zones.filter(zone => zone.type === 'border');
+}
+
 export function checkZoneWarnings(
   location: { lat: number; lng: number }
 ): { warning: boolean; message: string; zone?: Zone } {

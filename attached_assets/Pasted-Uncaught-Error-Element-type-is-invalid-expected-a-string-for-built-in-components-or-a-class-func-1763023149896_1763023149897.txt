@@ -1,0 +1,90 @@
+Uncaught Error
+Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+Check the render method of `MapScreen(./(tabs)/map.tsx)`.
+Source
+ 
+ 4257 |
+    
+"\n\nCheck the render method of `"
+ 
++
+ fiberTag 
++
+ 
+"`."
+)
+;
+ 
+ 4258 |
+fiberTag 
+=
+ 
+29
+;
+>
+ 4259 |
+pendingProps 
+=
+ 
+Error
+(
+ 
+      |
+               
+^
+ 
+ 4260 |
+  
+"Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: "
+ 
++
+ 
+ 4261 |
+    (pendingProps 
++
+ 
+"."
+ 
++
+ resolvedType)
+ 
+ 4262 |
+)
+;
+Call Stack
+createFiberFromTypeAndProps
+node_modules/react-dom/cjs/react-dom-client.development.js:4259:28
+createFiberFromElement
+node_modules/react-dom/cjs/react-dom-client.development.js:4273:14
+reconcileChildFibersImpl
+node_modules/react-dom/cjs/react-dom-client.development.js:7879:31
+<anonymous>
+node_modules/react-dom/cjs/react-dom-client.development.js:8057:33
+reconcileChildren
+node_modules/react-dom/cjs/react-dom-client.development.js:8622:13
+beginWork
+node_modules/react-dom/cjs/react-dom-client.development.js:10793:13
+runWithFiberInDEV
+node_modules/react-dom/cjs/react-dom-client.development.js:1519:30
+performUnitOfWork
+node_modules/react-dom/cjs/react-dom-client.development.js:15132:22
+workLoopSync
+node_modules/react-dom/cjs/react-dom-client.development.js:14956:41
+renderRootSync
+node_modules/react-dom/cjs/react-dom-client.development.js:14936:11
+performWorkOnRoot
+node_modules/react-dom/cjs/react-dom-client.development.js:14462:44
+performWorkOnRootViaSchedulerTask
+node_modules/react-dom/cjs/react-dom-client.development.js:16216:7
+performWorkUntilDeadline
+node_modules/scheduler/cjs/scheduler.development.js:45:48
+Collapse all 13 frames
+Component Stack
+MapScreen
+app/(tabs)/map.tsx:16:37
+TabLayout
+app/(tabs)/_layout.tsx:12:37
+RootLayout
+app/_layout.tsx:9:37
+See 93 more frames
