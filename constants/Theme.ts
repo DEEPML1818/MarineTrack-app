@@ -104,6 +104,8 @@ export const Theme = {
     xxl: 32,     // Double extra large
     xxxl: 40,    // Hero spacing
     huge: 48,    // Section spacing
+    card: 16,    // Card padding
+    drawer: 20,  // Drawer horizontal padding
   },
   
   // Border Radius - iOS-style rounded corners
@@ -113,7 +115,10 @@ export const Theme = {
     md: 16,      // Standard cards
     lg: 20,      // Large cards
     xl: 24,      // Hero elements
+    xxl: 28,     // Extra large cards
     full: 999,   // Circular/pill shape
+    pill: 999,   // Pill shape
+    search: 999, // Search bars
   },
   
   // Shadows - iOS-style subtle elevations

@@ -44,13 +44,13 @@ export default function TabLayout() {
               justifyContent: 'center',
               transform: [{ scale: focused ? 1.1 : 1 }],
             }}>
-              <IconSymbol size={26} name="house.fill" color={color} />
+              <IconSymbol size={26} name="map.fill" color={color} />
             </View>
           ),
         }}
       />
       <Tabs.Screen
-        name="map"
+        name="dashboard"
         options={{
           title: '',
           tabBarIcon: ({ color, focused }) => (
@@ -59,7 +59,7 @@ export default function TabLayout() {
               justifyContent: 'center',
               transform: [{ scale: focused ? 1.1 : 1 }],
             }}>
-              <IconSymbol size={26} name="map.fill" color={color} />
+              <IconSymbol size={26} name="house.fill" color={color} />
             </View>
           ),
         }}
@@ -115,6 +115,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="map"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="weather"
         options={{
           href: null,
@@ -134,12 +140,6 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="notifications"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
         options={{
           href: null,
         }}

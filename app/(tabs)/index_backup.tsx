@@ -6,16 +6,14 @@ import { Theme } from '@/constants/Theme';
 import * as Location from 'expo-location';
 import { WebView } from 'react-native-webview';
 import { BottomSheet } from '@/components/redesign/BottomSheet';
-import { MapBottomDrawer } from '@/components/redesign/MapBottomDrawer';
-import { FloatingControlsStack } from '@/components/redesign/FloatingControlsStack';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { StatChip } from '@/components/redesign/StatChip';
 import { QuickActionTile } from '@/components/redesign/QuickActionTile';
 import { WeatherWidget } from '@/components/redesign/WeatherWidget';
+import { StatChip } from '@/components/redesign/StatChip';
 import { Card } from '@/components/redesign/Card';
 import { SectionHeader } from '@/components/redesign/SectionHeader';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 import { getNearbyTrackedVessels } from '@/utils/trackingService';
-import { getCurrentWeather } from '@/utils/maritimeIntelligence';
+import { getCurrentWeather } from '@/utils/weatherApi';
 import { getNearbyHazards } from '@/utils/maritimeIntelligence';
 import { useRouter } from 'expo-router';
 import { Text } from 'react-native';
@@ -55,9 +53,6 @@ export default function MapScreen() {
   const [destination, setDestination] = useState<{ lat: number; lng: number } | null>(null);
   const [routeInfo, setRouteInfo] = useState<{ distance: number; time: number } | null>(null);
   const webViewRef = useRef<WebView>(null);
-  const mapRef = useRef<any>(null); // Ref for the map component if it were a native map
-  const [drawerOpen, setDrawerOpen] = useState(false); // State to control bottom drawer
-  const [selectedVessel, setSelectedVessel] = useState<any>(null); // State for selected vessel
 
   useEffect(() => {
     getCurrentLocation();
@@ -392,16 +387,12 @@ export default function MapScreen() {
         </View>
       )}
 
-      <FloatingControlsStack 
-        onLocationPress={getCurrentLocation}
-      />
+      {/* Search Bar - Removed from here and placed inside BottomSheet */}
+      {/* Navigation Info Bar - Removed from here and placed inside BottomSheet */}
+      {/* Speed HUD - Removed from here and placed inside BottomSheet */}
+      {/* Hazard Report Button - Removed from here and placed inside BottomSheet */}
 
-      {/* Bottom Sheet for drawer content */}
-      <BottomSheet 
-        isOpen={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        snapPoints={[SCREEN_HEIGHT * 0.25, SCREEN_HEIGHT * 0.75]} // Example snap points
-      >
+      <BottomSheet>
         <View style={styles.sheetContent}>
           <View style={styles.drawerTopControls}>
             <View style={[styles.searchBar, { backgroundColor: isDark ? '#2C2C2E' : '#F2F2F7' }]}>
@@ -576,11 +567,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
-  },
-  // Styles for FloatingControlsStack
-  mapContainer: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'flex-end', // Align map content to the bottom by default
   },
   // Search and Navigation controls moved into BottomSheet
   searchContainer: {

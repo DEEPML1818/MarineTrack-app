@@ -174,3 +174,64 @@
     - App tested with screenshot - full-screen map with floating menu button visible
     - Architect-reviewed and approved - all critical issues resolved
     - UI redesign complete with elegant, aligned, and luxurious feel ✅✅✅
+
+[x] 27. Complete Replit Environment Migration - Completed: November 13, 2025
+    - Fixed backend workflow failure (Express module not found)
+    - Installed all backend dependencies (123 packages including express, cors, socket.io)
+    - Installed all root directory dependencies (1340 packages including expo, react-native)
+    - Both workflows now running successfully:
+      * Frontend (Expo web) - Port 5000 ✅ (webview, serving Map interface with port search)
+      * Backend (Node.js Express server) - Port 3000 ✅ (console, with socket.io support)
+    - App verified working with screenshot - Map loads correctly showing:
+      * Port search functionality ("Search ports...")
+      * Port/Coordinates toggle buttons
+      * Welcome message "Welcome back, Captain" with current date
+      * Full-screen interactive map with boat icon
+      * Red alert button (SOS/notifications)
+      * Bottom navigation (Home, Bookmark, Map active, Messages, Profile)
+    - All dependencies resolved and services operational
+    - All progress tracker items marked as complete [x]
+    - Import migration fully complete and ready for development ✅✅✅
+
+[x] 28. App Reorganization - Completed: November 13, 2025
+    - Removed duplicate settings.tsx file (functionality already exists in profile.tsx)
+    - Reorganized navigation structure:
+      * Renamed index.tsx (old home/dashboard) to dashboard.tsx
+      * Renamed map.tsx to index.tsx (making map the main/home page)
+      * Created new map.tsx redirect file to maintain compatibility
+      * Updated _layout.tsx navigation tabs:
+        - index tab now shows map icon (map is the main page)
+        - Added dashboard tab with house icon (old home page)
+        - Removed duplicate settings tab
+    - Fixed dashboard Settings quick action to point to /profile instead of deleted /settings route
+    - Both workflows running successfully:
+      * Frontend (Expo web) - Port 5000 ✅ (webview, map as main page)
+      * Backend (Node.js Express server) - Port 3000 ✅ (console)
+    - App verified working with screenshot:
+      * Map is now the main/home page
+      * Navigation tabs show: Map (active), Dashboard (house icon), Tracker, Chat, Profile
+      * All quick actions navigate correctly
+    - Architect-reviewed and approved:
+      * All navigation routes working correctly
+      * No broken imports or references
+      * Settings quick action properly redirects to profile
+    - App reorganization complete and fully functional ✅✅✅
+
+[x] 29. Waze-Style UI Redesign - In Progress: November 13, 2025
+    - Created elegant Waze-inspired components:
+      * FloatingControl.tsx - Circular floating buttons (64px, iOS glassmorphism)
+      * FloatingControlsStack.tsx - Speed HUD (bottom-left) + Alert button (bottom-right)
+      * QuickAccessButton.tsx - Pill-shaped buttons for Home Port, Work Port, New destination
+      * MapBottomDrawer.tsx - Clean white drawer with generous spacing matching Waze aesthetic
+    - MapBottomDrawer features:
+      * Elegant search bar with microphone icon
+      * Quick access pill buttons (Home Port, Work Port, + New)
+      * Recent vessels/ports list with clean typography
+      * Generous 16-24px spacing matching Waze rhythm
+      * White background with subtle shadows
+    - Updated imports in index.tsx to use new components
+    - Integration in progress following architect's plan:
+      * Replace BottomSheet content with MapBottomDrawer
+      * Add FloatingControlsStack overlay
+      * Wire existing handlers (handleSearch, selectPort, currentSpeed, hazards)
+    - Next: Complete integration and test with screenshot ⏳
