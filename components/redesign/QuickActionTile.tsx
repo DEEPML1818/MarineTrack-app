@@ -27,10 +27,10 @@ export function QuickActionTile({ icon, label, color, onPress }: QuickActionTile
 
 const styles = StyleSheet.create({
   tile: {
-    width: '48%',
-    aspectRatio: 1.4,
+    width: '31%',
+    aspectRatio: 1.1,
     borderRadius: Theme.radius.lg,
-    padding: Theme.spacing.lg,
+    padding: Theme.spacing.md,
     justifyContent: 'space-between',
     backgroundColor: Theme.colors.white,
     ...Theme.shadows.md,

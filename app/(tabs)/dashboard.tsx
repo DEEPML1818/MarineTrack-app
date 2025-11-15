@@ -117,10 +117,11 @@ export default function HomeScreen() {
 
   const quickActions = [
     { id: '1', icon: 'cloud.fill', label: 'Weather', color: Theme.colors.iosOrange, route: '/weather' },
-    { id: '2', icon: 'exclamationmark.triangle.fill', label: 'SOS Alert', color: Theme.colors.iosRed, route: '/sos' },
+    { id: '2', icon: 'exclamationmark.triangle.fill', label: 'SOS', color: Theme.colors.iosRed, route: '/sos' },
     { id: '3', icon: 'anchor.fill', label: 'Ports', color: Theme.colors.iosPurple, route: '/ports' },
     { id: '4', icon: 'bell.fill', label: 'Alerts', color: Theme.colors.iosTeal, route: '/notifications' },
-    { id: '5', icon: 'gear', label: 'Settings', color: Theme.colors.gray5, route: '/profile' },
+    { id: '5', icon: 'map.fill', label: 'Map', color: Theme.colors.iosBlue, route: '/' },
+    { id: '6', icon: 'location.fill', label: 'Tracker', color: Theme.colors.iosGreen, route: '/tracker' },
   ];
 
   return (
