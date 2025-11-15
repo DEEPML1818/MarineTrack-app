@@ -4953,6 +4953,11 @@ expo-server@^1.0.3:
   resolved "https://registry.npmjs.org/expo-server/-/expo-server-1.0.3.tgz"
   integrity sha512-SOwdzM/BFAL+vTFlUDJG6ljhyk6TyTl+LRK3ubGmN+Pf18ENRqKj37U8krc5vH926sAsB3IFcE8kJEYf4dG7PA==
 
+expo-speech@^14.0.7:
+  version "14.0.7"
+  resolved "https://registry.npmjs.org/expo-speech/-/expo-speech-14.0.7.tgz"
+  integrity sha512-Ff/seq4tfj6AnGZj8Mj83EGnHj636f2mO30bPr3qQJzF9zn3ArakuUQTK8UrkVy0OS0E12z28d+9Fe+AgSUB0w==
+
 expo-splash-screen@~31.0.10:
   version "31.0.10"
   resolved "https://registry.npmjs.org/expo-splash-screen/-/expo-splash-screen-31.0.10.tgz"

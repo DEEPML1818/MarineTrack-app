@@ -495,6 +495,170 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+// Weather API endpoint - returns mock weather data (can be enhanced with real API later)
+app.get('/api/weather', async (req, res) => {
+  try {
+    const { lat, lng } = req.query;
+    
+    if (!lat || !lng) {
+      return res.status(400).json({ error: 'Latitude and longitude are required' });
+    }
+    
+    // Mock weather data - replace with real API call when OPENWEATHER_API_KEY is available
+    const weather = {
+      temperature: 72,
+      tempUnit: 'F',
+      condition: 'Partly Cloudy',
+      windSpeed: 12,
+      windDirection: 'NE',
+      humidity: 65,
+      pressure: 1013,
+      visibility: 10,
+      waves: {
+        height: 2.5,
+        period: 8,
+        direction: 'E'
+      },
+      forecast: [
+        { time: '12:00', temp: 74, condition: 'Sunny', windSpeed: 10 },
+        { time: '15:00', temp: 76, condition: 'Partly Cloudy', windSpeed: 12 },
+        { time: '18:00', temp: 72, condition: 'Cloudy', windSpeed: 15 }
+      ]
+    };
+    
+    res.json(weather);
+  } catch (error) {
+    console.error('Weather fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch weather data' });
+  }
+});
+
+// Get all data (vessels, weather, hazards, ports) - comprehensive endpoint
+app.get('/api/data/all', async (req, res) => {
+  try {
+    const { lat, lng, radius = 50 } = req.query;
+    
+    if (!lat || !lng) {
+      return res.status(400).json({ error: 'Latitude and longitude are required' });
+    }
+    
+    const location = { lat: parseFloat(lat), lng: parseFloat(lng) };
+    const searchRadius = parseFloat(radius);
+    
+    // Get all vessels
+    const vessels = await readJsonFile(VESSELS_FILE);
+    
+    // Get nearby hazards
+    const hazardsResult = await maritimeRoutes.getNearbyHazards(location.lat, location.lng, searchRadius);
+    const hazards = hazardsResult.success ? hazardsResult.hazards : [];
+    
+    // Get nearby ports
+    const ports = await readJsonFile(PORTS_FILE);
+    const nearbyPorts = ports.filter(port => {
+      const distance = calculateDistance(location.lat, location.lng, port.lat, port.lng);
+      return distance <= searchRadius;
+    }).slice(0, 10);
+    
+    // Mock weather data
+    const weather = {
+      temperature: 72,
+      condition: 'Partly Cloudy',
+      windSpeed: 12,
+      windDirection: 'NE'
+    };
+    
+    res.json({
+      vessels,
+      hazards,
+      ports: nearbyPorts,
+      weather,
+      location,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Data fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch data' });
+  }
+});
+
+// Update vessel position with GPS tracking (for real-time updates)
+app.post('/api/vessels/position', async (req, res) => {
+  try {
+    const { vesselId, latitude, longitude, speed, heading, timestamp } = req.body;
+    
+    if (!vesselId || !latitude || !longitude) {
+      return res.status(400).json({ error: 'vesselId, latitude, and longitude are required' });
+    }
+    
+    const vessels = await readJsonFile(VESSELS_FILE);
+    const vesselIndex = vessels.findIndex(v => v.id === vesselId || v.userId === vesselId);
+    
+    if (vesselIndex >= 0) {
+      // Update existing vessel
+      vessels[vesselIndex].location = {
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude)
+      };
+      vessels[vesselIndex].speed = speed || 0;
+      vessels[vesselIndex].heading = heading || 0;
+      vessels[vesselIndex].lastUpdate = timestamp || new Date().toISOString();
+      
+      // Add to position history (trail)
+      if (!vessels[vesselIndex].trail) {
+        vessels[vesselIndex].trail = [];
+      }
+      vessels[vesselIndex].trail.push({
+        lat: parseFloat(latitude),
+        lng: parseFloat(longitude),
+        timestamp: timestamp || new Date().toISOString(),
+        speed: speed || 0
+      });
+      
+      // Keep only last 100 positions for performance
+      if (vessels[vesselIndex].trail.length > 100) {
+        vessels[vesselIndex].trail = vessels[vesselIndex].trail.slice(-100);
+      }
+      
+      await writeJsonFile(VESSELS_FILE, vessels);
+      
+      // Broadcast position update via Socket.IO
+      io.emit('vessel_position_update', {
+        vesselId,
+        latitude,
+        longitude,
+        speed,
+        heading,
+        timestamp
+      });
+      
+      res.json({ success: true, vessel: vessels[vesselIndex] });
+    } else {
+      res.status(404).json({ error: 'Vessel not found' });
+    }
+  } catch (error) {
+    console.error('Position update error:', error);
+    res.status(500).json({ error: 'Failed to update position' });
+  }
+});
+
+// Get vessel trail/history
+app.get('/api/vessels/:vesselId/trail', async (req, res) => {
+  try {
+    const { vesselId } = req.params;
+    const vessels = await readJsonFile(VESSELS_FILE);
+    const vessel = vessels.find(v => v.id === vesselId || v.userId === vesselId);
+    
+    if (vessel && vessel.trail) {
+      res.json({ trail: vessel.trail });
+    } else {
+      res.json({ trail: [] });
+    }
+  } catch (error) {
+    console.error('Trail fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch vessel trail' });
+  }
+});
+
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);

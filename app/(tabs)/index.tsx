@@ -45,6 +45,7 @@ export default function MapScreen() {
   const [weather, setWeather] = useState<any>(null);
   const [hazards, setHazards] = useState<any[]>([]);
   const [currentSpeed, setCurrentSpeed] = useState<number>(0);
+  const [speedLimit, setSpeedLimit] = useState<number>(20); // Default maritime speed limit in knots
   const [showHazardReport, setShowHazardReport] = useState(false);
   const [hazardType, setHazardType] = useState<string>('');
   const [hazardDescription, setHazardDescription] = useState<string>('');
@@ -53,7 +54,13 @@ export default function MapScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [destination, setDestination] = useState<{ lat: number; lng: number } | null>(null);
-  const [routeInfo, setRouteInfo] = useState<{ distance: number; time: number } | null>(null);
+  const [routeInfo, setRouteInfo] = useState<{ distance: number; time: number; eta: string } | null>(null);
+  const [directions, setDirections] = useState<any[]>([]);
+  const [currentDirectionIndex, setCurrentDirectionIndex] = useState(0);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [alternateRoutes, setAlternateRoutes] = useState<any[]>([]);
+  const [showRouteOptions, setShowRouteOptions] = useState(false);
+  const [portActivity, setPortActivity] = useState<any[]>([]);
   const webViewRef = useRef<WebView>(null);
   const mapRef = useRef<any>(null); // Ref for the map component if it were a native map
   const [drawerOpen, setDrawerOpen] = useState(false); // State to control bottom drawer
@@ -66,6 +73,18 @@ export default function MapScreen() {
   useEffect(() => {
     if (currentLocation) {
       loadData();
+      
+      // Auto-refresh nearby vessels every 5 seconds
+      const vesselInterval = setInterval(() => {
+        loadData();
+      }, 5000);
+      
+      // Update ETA if navigating
+      if (destination) {
+        calculateRoute(destination);
+      }
+      
+      return () => clearInterval(vesselInterval);
     }
   }, [currentLocation]);
 
@@ -88,6 +107,11 @@ export default function MapScreen() {
             // Speed in m/s, convert to knots (1 m/s = 1.94384 knots)
             const speedInKnots = (location.coords.speed || 0) * 1.94384;
             setCurrentSpeed(speedInKnots);
+            
+            // Update speed limit based on zone (placeholder - you can enhance with real zone data)
+            if (speedInKnots > speedLimit) {
+              console.warn('Speed limit exceeded!');
+            }
           }
         );
       } else {
@@ -139,7 +163,7 @@ export default function MapScreen() {
     }
   };
 
-  const calculateRoute = (dest: { lat: number; lng: number }) => {
+  const calculateRoute = async (dest: { lat: number; lng: number }) => {
     if (!currentLocation) return;
 
     const R = 6371; // Earth's radius in km
@@ -150,9 +174,38 @@ export default function MapScreen() {
               Math.sin(dLng/2) * Math.sin(dLng/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     const distance = R * c;
-    const time = (distance / 20) * 60; // Assuming 20 knots speed
+    const speed = currentSpeed > 0 ? currentSpeed : 20; // Use current speed or default 20 knots
+    const time = (distance / (speed * 1.852)) * 60; // Convert knots to km/h and calculate time
+    
+    const eta = new Date(Date.now() + time * 60 * 1000).toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
 
-    setRouteInfo({ distance, time });
+    setRouteInfo({ distance, time, eta });
+    
+    // Generate directions
+    const { generateNauticalDirections } = await import('@/utils/nauticalDirections');
+    const nauticalDirections = generateNauticalDirections(
+      { lat: currentLocation.latitude, lng: currentLocation.longitude },
+      dest
+    );
+    setDirections(nauticalDirections);
+    setCurrentDirectionIndex(0);
+    
+    // Announce first direction
+    if (voiceEnabled && nauticalDirections.length > 0) {
+      speakDirection(nauticalDirections[0].instruction);
+    }
+  };
+
+  const speakDirection = (text: string) => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+      window.speechSynthesis.speak(utterance);
+    }
   };
 
   const cancelNavigation = () => {
@@ -207,6 +260,29 @@ export default function MapScreen() {
       setVessels(nearbyVessels);
       setWeather(weatherData);
       setHazards(hazardData);
+      
+      // Load port activity
+      try {
+        const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:3000';
+        const portResponse = await fetch(`${BACKEND_URL}/api/ports/search?query=`);
+        if (portResponse.ok) {
+          const ports = await portResponse.json();
+          setPortActivity(ports.slice(0, 5));
+        }
+      } catch (error) {
+        console.log('Port activity not available');
+      }
+      
+      // Generate alternate routes if destination is set
+      if (destination) {
+        const { generateAlternateRoutes } = await import('@/utils/routeAlternatives');
+        const routes = await generateAlternateRoutes(
+          { lat: currentLocation.latitude, lng: currentLocation.longitude },
+          destination,
+          hazardData
+        );
+        setAlternateRoutes(routes);
+      }
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -333,6 +409,70 @@ export default function MapScreen() {
         />
       )}
 
+      {/* Route Options Modal */}
+      {showRouteOptions && (
+        <View style={[styles.hazardModal, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}>
+          <View style={[styles.hazardModalContent, { backgroundColor: colors.background }]}>
+            <View style={styles.hazardModalHeader}>
+              <Text style={[styles.hazardModalTitle, { color: colors.text }]}>Route Options</Text>
+              <TouchableOpacity onPress={() => setShowRouteOptions(false)}>
+                <IconSymbol name="xmark.circle.fill" size={28} color={colors.secondaryText} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.routeList}>
+              {alternateRoutes.map((route) => (
+                <TouchableOpacity
+                  key={route.id}
+                  style={[styles.routeOption, { borderBottomColor: colors.border }]}
+                  onPress={() => {
+                    setShowRouteOptions(false);
+                    // Apply selected route
+                  }}
+                >
+                  <View style={styles.routeHeader}>
+                    <Text style={[styles.routeName, { color: colors.text }]}>{route.name}</Text>
+                    <View style={[styles.safetyBadge, { 
+                      backgroundColor: route.safetyScore > 80 ? '#34C75920' : route.safetyScore > 60 ? '#FF950020' : '#FF3B3020' 
+                    }]}>
+                      <Text style={[styles.safetyScore, { 
+                        color: route.safetyScore > 80 ? '#34C759' : route.safetyScore > 60 ? '#FF9500' : '#FF3B30' 
+                      }]}>
+                        {route.safetyScore}%
+                      </Text>
+                    </View>
+                  </View>
+                  <Text style={[styles.routeDescription, { color: colors.secondaryText }]}>{route.description}</Text>
+                  <View style={styles.routeMetrics}>
+                    <Text style={[styles.routeMetric, { color: colors.secondaryText }]}>
+                      {route.distance.toFixed(1)} nm • {route.duration.toFixed(0)} min • ETA {route.eta}
+                    </Text>
+                    {route.hazardCount > 0 && (
+                      <Text style={[styles.hazardWarning, { color: Theme.colors.iosOrange }]}>
+                        ⚠️ {route.hazardCount} hazard{route.hazardCount > 1 ? 's' : ''}
+                      </Text>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <Text style={[styles.sectionTitle, { color: colors.text, marginTop: 16 }]}>Nearby Port Activity</Text>
+            <ScrollView style={styles.portActivityList}>
+              {portActivity.map((port, idx) => (
+                <View key={idx} style={[styles.portItem, { borderBottomColor: colors.border }]}>
+                  <IconSymbol name="anchor.fill" size={20} color={Theme.colors.iosBlue} />
+                  <View style={styles.portInfo}>
+                    <Text style={[styles.portName, { color: colors.text }]}>{port.name}</Text>
+                    <Text style={[styles.portCountry, { color: colors.secondaryText }]}>{port.country}</Text>
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      )}
+
       {/* Hazard Report Modal */}
       {showHazardReport && (
         <View style={[styles.hazardModal, { backgroundColor: 'rgba(0, 0, 0, 0.5)' }]}>
@@ -443,20 +583,58 @@ export default function MapScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Navigation Info Bar */}
+            {/* Speed HUD */}
+          <View style={[styles.speedContainer, { backgroundColor: currentSpeed > speedLimit ? Theme.colors.iosRed : Theme.colors.iosBlue }]}>
+            <Text style={styles.speedValue}>{currentSpeed.toFixed(1)}</Text>
+            <Text style={styles.speedUnit}>kn</Text>
+            <Text style={styles.speedLimit}>Limit: {speedLimit} kn</Text>
+          </View>
+
+          {/* Enhanced Navigation Info Bar */}
             {destination && routeInfo && (
               <View style={[styles.navBar, { backgroundColor: Theme.colors.iosBlue }]}>
                 <View style={styles.navInfo}>
                   <Text style={styles.navLabel}>Distance</Text>
-                  <Text style={styles.navValue}>{routeInfo.distance.toFixed(1)} km</Text>
+                  <Text style={styles.navValue}>{routeInfo.distance.toFixed(1)} nm</Text>
                 </View>
                 <View style={styles.navInfo}>
                   <Text style={styles.navLabel}>ETA</Text>
+                  <Text style={styles.navValue}>{routeInfo.eta}</Text>
+                </View>
+                <View style={styles.navInfo}>
+                  <Text style={styles.navLabel}>Time</Text>
                   <Text style={styles.navValue}>{routeInfo.time.toFixed(0)} min</Text>
                 </View>
-                <TouchableOpacity onPress={cancelNavigation} style={styles.cancelNav}>
-                  <IconSymbol name="xmark-circle-fill" size={24} color="#FFFFFF" />
+                <TouchableOpacity onPress={() => setShowRouteOptions(true)} style={styles.routeOptionsBtn}>
+                  <IconSymbol name="map.fill" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
+                <TouchableOpacity onPress={cancelNavigation} style={styles.cancelNav}>
+                  <IconSymbol name="xmark.circle.fill" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Current Direction Card */}
+            {directions.length > 0 && currentDirectionIndex < directions.length && (
+              <View style={[styles.directionCard, { backgroundColor: colors.card }]}>
+                <View style={styles.directionHeader}>
+                  <IconSymbol 
+                    name={directions[currentDirectionIndex].maneuver === 'port' ? 'arrow.left' : directions[currentDirectionIndex].maneuver === 'starboard' ? 'arrow.right' : 'arrow.up'} 
+                    size={32} 
+                    color={Theme.colors.iosBlue} 
+                  />
+                  <View style={styles.directionInfo}>
+                    <Text style={[styles.directionDistance, { color: colors.text }]}>
+                      {directions[currentDirectionIndex].distance.toFixed(1)} nm
+                    </Text>
+                    <Text style={[styles.directionInstruction, { color: colors.text }]}>
+                      {directions[currentDirectionIndex].instruction}
+                    </Text>
+                  </View>
+                  <TouchableOpacity onPress={() => setVoiceEnabled(!voiceEnabled)}>
+                    <IconSymbol name={voiceEnabled ? 'speaker.wave.2.fill' : 'speaker.slash.fill'} size={24} color={colors.icon} />
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
           </View>
@@ -905,5 +1083,113 @@ const styles = StyleSheet.create({
   },
   bottomSpacing: {
     height: 100,
+  },
+  speedContainer: {
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 12,
+    ...Theme.shadows.md,
+  },
+  speedValue: {
+    fontSize: 48,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  speedUnit: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.9)',
+    marginTop: -8,
+  },
+  speedLimit: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 4,
+  },
+  directionCard: {
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    ...Theme.shadows.md,
+  },
+  directionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  directionInfo: {
+    flex: 1,
+  },
+  directionDistance: {
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  directionInstruction: {
+    fontSize: 14,
+    marginTop: 4,
+  },
+  routeOptionsBtn: {
+    marginLeft: 8,
+  },
+  routeList: {
+    maxHeight: 300,
+  },
+  routeOption: {
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  routeHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  routeName: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  safetyBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  safetyScore: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  routeDescription: {
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  routeMetrics: {
+    gap: 4,
+  },
+  routeMetric: {
+    fontSize: 12,
+  },
+  hazardWarning: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  portActivityList: {
+    maxHeight: 150,
+  },
+  portItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    gap: 12,
+  },
+  portInfo: {
+    flex: 1,
+  },
+  portName: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  portCountry: {
+    fontSize: 12,
+    marginTop: 2,
   },
 });

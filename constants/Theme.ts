@@ -1,65 +1,83 @@
 
-// MarineTrack Theme - iOS-Inspired Elegant Design System
-// Modern, posh, and stylishly luxurious maritime interface
+// MarineTrack Theme - Modern Social Media Design System
+// Instagram/TikTok/Waze-Inspired Elegant & Luxurious Interface
 
 export const Theme = {
-  // Primary Colors - iOS-Inspired Palette
+  // Primary Colors - Social Media Inspired Vibrant Palette
   colors: {
-    // iOS System Colors
-    iosBlue: '#007AFF',      // Primary blue - actions, links, highlights
-    iosGreen: '#34C759',     // Success green
-    iosOrange: '#FF9500',    // Warning orange
-    iosRed: '#FF3B30',       // Danger red
-    iosPurple: '#AF52DE',    // Accent purple
-    iosTeal: '#5AC8FA',      // Info teal
+    // Brand Colors - Modern & Vibrant
+    primary: '#0095F6',        // Instagram blue - primary actions
+    primaryDark: '#0074CC',    // Darker blue for pressed states
+    secondary: '#FE2C55',      // TikTok pink/red - accents
+    accent: '#00D9FF',         // Cyan accent - highlights
+    accentGreen: '#00E676',    // Success/live green
+    accentPurple: '#B75CFF',   // Premium purple
+    accentOrange: '#FF6B35',   // Warning orange
     
-    // Neutral Grays - Light Mode
+    // Navigation Colors (Waze-inspired)
+    wazeBlue: '#00AAFF',       // Primary navigation
+    wazeTurquoise: '#1CE5BA',  // Route line
+    wazeYellow: '#FFC107',     // Alerts
+    wazeOrange: '#FF9500',     // Caution
+    wazeRed: '#FF3B30',        // Danger/hazards
+    
+    // Neutral Grays - Clean & Modern
     black: '#000000',
-    gray1: '#1C1C1E',        // Dark elements
-    gray2: '#2C2C2E',        // Elevated dark
-    gray3: '#3A3A3C',        // Tertiary dark
-    gray4: '#48484A',        // Secondary dark
-    gray5: '#636366',        // Mid gray
-    gray6: '#8E8E93',        // Secondary text
-    gray7: '#AEAEB2',        // Tertiary text
-    gray8: '#C7C7CC',        // Separator light
-    gray9: '#D1D1D6',        // Border light
-    gray10: '#E5E5EA',       // Fill light
-    gray11: '#F2F2F7',       // Background light
+    gray1: '#0A0A0A',          // Almost black
+    gray2: '#1A1A1A',          // Dark card background
+    gray3: '#262626',          // Elevated dark
+    gray4: '#3F3F3F',          // Border dark
+    gray5: '#737373',          // Mid gray
+    gray6: '#A3A3A3',          // Secondary text
+    gray7: '#D4D4D4',          // Tertiary text
+    gray8: '#E5E5E5',          // Separator
+    gray9: '#F5F5F5',          // Background light
+    gray10: '#FAFAFA',         // Card light
     white: '#FFFFFF',
     
-    // Light Mode Specific
-    lightBackground: '#F2F2F7',
+    // Light Mode - Instagram/TikTok Style
+    lightBackground: '#FFFFFF',     // Pure white like Instagram
     lightCard: '#FFFFFF',
-    lightText: '#000000',
-    lightSecondary: '#6C6C70',
-    lightTertiary: '#8E8E93',
-    lightBorder: '#E5E5EA',
+    lightBorder: '#DBDBDB',         // Instagram border
+    lightText: '#262626',           // Instagram text
+    lightSecondary: '#8E8E8E',      // Secondary text
+    lightTertiary: '#C7C7C7',
+    lightHover: '#FAFAFA',          // Hover states
     
-    // Dark Mode Specific
-    darkBackground: '#000000',
-    darkCard: '#1C1C1E',
+    // Dark Mode - TikTok/Instagram Dark Style
+    darkBackground: '#000000',      // Pure black
+    darkCard: '#121212',            // Card background
+    darkElevated: '#1A1A1A',        // Elevated cards
+    darkBorder: '#262626',          // Dark borders
     darkText: '#FFFFFF',
-    darkSecondary: '#8E8E93',
-    darkTertiary: '#6C6C70',
-    darkBorder: '#38383A',
+    darkSecondary: '#A8A8A8',
+    darkTertiary: '#737373',
     
-    // Semantic Colors (iOS-style)
-    success: '#34C759',
-    warning: '#FF9500',
-    danger: '#FF3B30',
-    info: '#007AFF',
+    // Semantic Colors
+    success: '#00E676',        // Bright success green
+    warning: '#FFC107',        // Amber warning
+    danger: '#FF3B30',         // Red danger
+    info: '#00AAFF',          // Blue info
     
-    // Status Colors (Maritime-specific)
-    statusLive: '#34C759',
-    statusDocked: '#8E8E93',
-    statusDelayed: '#FF9500',
-    statusAttention: '#FF3B30',
+    // Status Colors
+    statusLive: '#00E676',     // Live/online - bright green
+    statusActive: '#00AAFF',   // Active - blue
+    statusDocked: '#8E8E8E',   // Inactive - gray
+    statusDelayed: '#FFC107',  // Delayed - amber
+    statusWarning: '#FF9500',  // Warning - orange
+    statusDanger: '#FF3B30',   // Danger - red
+    
+    // Overlay & Glassmorphism
+    overlay: 'rgba(0, 0, 0, 0.5)',
+    overlayLight: 'rgba(0, 0, 0, 0.3)',
+    overlayDark: 'rgba(0, 0, 0, 0.7)',
+    glass: 'rgba(255, 255, 255, 0.1)',
+    glassDark: 'rgba(0, 0, 0, 0.3)',
     
     // Legacy compatibility
     espresso: '#1C1C1E',
-    teal: '#007AFF',
-    navy: '#1C1C1E',
+    teal: '#00AAFF',
+    navy: '#000000',
     coral: '#FF3B30',
   },
   
@@ -92,33 +110,38 @@ export const Theme = {
     },
   },
   
-  // Spacing (iOS-style 8px baseline grid)
+  // Spacing - Social Media Tight & Clean Grid (4px base)
   spacing: {
     xxs: 2,      // Micro spacing
     xs: 4,       // Extra small gaps
-    sm: 8,       // Small spacing
+    sm: 8,       // Small spacing (Instagram style)
     md: 12,      // Medium spacing
-    base: 16,    // Base unit (iOS standard)
+    base: 16,    // Base unit
     lg: 20,      // Large spacing
     xl: 24,      // Extra large
-    xxl: 32,     // Double extra large
-    xxxl: 40,    // Hero spacing
-    huge: 48,    // Section spacing
-    card: 16,    // Card padding
-    drawer: 20,  // Drawer horizontal padding
+    xxl: 32,     // Section spacing
+    xxxl: 48,    // Hero spacing
+    huge: 64,    // Large section spacing
+    card: 12,    // Card padding (tighter like Instagram)
+    drawer: 16,  // Drawer horizontal padding
+    screen: 16,  // Screen horizontal padding
   },
   
-  // Border Radius - iOS-style rounded corners
+  // Border Radius - Modern Social Media Rounded Corners
   radius: {
-    xs: 8,       // Small elements
-    sm: 12,      // Cards, buttons
-    md: 16,      // Standard cards
-    lg: 20,      // Large cards
-    xl: 24,      // Hero elements
-    xxl: 28,     // Extra large cards
-    full: 999,   // Circular/pill shape
-    pill: 999,   // Pill shape
-    search: 999, // Search bars
+    none: 0,     // Sharp edges
+    xs: 4,       // Tiny elements
+    sm: 8,       // Small buttons, chips
+    md: 12,      // Standard cards (Instagram style)
+    lg: 16,      // Large cards
+    xl: 20,      // Hero elements
+    xxl: 24,     // Extra large cards
+    full: 9999,  // Circular/pill shape
+    pill: 9999,  // Pill shape
+    round: 9999, // Round buttons
+    search: 8,   // Search bars (Instagram uses less rounded)
+    button: 8,   // Standard button radius
+    card: 12,    // Card radius
   },
   
   // Shadows - iOS-style subtle elevations
